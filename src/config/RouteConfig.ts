@@ -1,4 +1,4 @@
-import { Home } from 'lucide-react';
+import { Compass } from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -9,5 +9,5 @@ export interface NavItem {
 }
 
 export const mainNavItems: NavItem[] = [
-  { path: '/', title: 'Home', icon: Home },
+  { path: '/', title: 'Navigate', icon: Compass },
 ];
