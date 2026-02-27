@@ -3,6 +3,7 @@
     "acro",
     "asynciterable",
     "autodocs",
+    "cartodb",
     "clsx",
     "codegen",
     "commitlint",

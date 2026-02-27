@@ -31,7 +31,7 @@ export function MarkPlacesPage() {
 
   return (
     <div className="relative flex flex-1 min-h-0">
-      <aside className="flex w-72 shrink-0 flex-col border-r border-border bg-background">
+      <aside className="flex w-52 shrink-0 flex-col border-r border-border bg-background">
         <div className="border-b border-border px-3 py-2 text-sm font-medium">
           Places
         </div>
