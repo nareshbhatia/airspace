@@ -1,5 +1,5 @@
-import { airports } from './airports';
 import { Button } from '../../../components/ui/button';
+import { airports } from '../../../data/airports';
 
 interface ButtonPanelProps {
   onAirportSelect: (airportId: string) => void;

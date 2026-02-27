@@ -1,4 +1,4 @@
-import { airportById } from './airports';
+import { airportById } from '../../../data/airports';
 import { useFlyTo } from '../../../lib/mapbox';
 
 interface FlyToAirportProps {

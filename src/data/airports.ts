@@ -1,4 +1,4 @@
-import type { LngLat } from '../../../lib/mapbox';
+import type { LngLat } from '../lib/mapbox';
 
 export interface Airport {
   id: string;
