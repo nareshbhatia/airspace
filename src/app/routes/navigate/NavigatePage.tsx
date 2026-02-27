@@ -18,7 +18,7 @@ export function NavigatePage() {
         zoom={14}
         className="w-full h-full"
       >
-        <FlyToAirport airportId={selectedAirportId} />
+        <FlyToAirport selectedAirportId={selectedAirportId} />
       </MapProvider>
       <ButtonPanel onAirportSelect={setSelectedAirportId} />
     </div>
