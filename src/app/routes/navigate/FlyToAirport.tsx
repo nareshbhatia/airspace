@@ -2,11 +2,13 @@ import { airportById } from '../../../data/airports';
 import { useFlyTo } from '../../../lib/mapbox';
 
 interface FlyToAirportProps {
-  airportId: string | null;
+  selectedAirportId: string | null;
 }
 
-export function FlyToAirport({ airportId }: FlyToAirportProps) {
-  const airport = airportId ? airportById.get(airportId) : null;
-  useFlyTo(airport?.coordinates ?? null, { zoom: 14, duration: 2000 });
+export function FlyToAirport({ selectedAirportId }: FlyToAirportProps) {
+  const selectedAirport = selectedAirportId
+    ? airportById.get(selectedAirportId)
+    : null;
+  useFlyTo(selectedAirport?.coordinates ?? null, { zoom: 14, duration: 2000 });
   return null;
 }

@@ -10,5 +10,5 @@ export interface NavItem {
 
 export const mainNavItems: NavItem[] = [
   { path: '/', title: 'Navigate', icon: Compass },
-  { path: '/mark', title: 'Mark', icon: MapPin },
+  { path: '/mark-places', title: 'Mark Places', icon: MapPin },
 ];
