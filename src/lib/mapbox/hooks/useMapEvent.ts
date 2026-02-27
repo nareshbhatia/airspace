@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 
 import { useMap } from './useMap';
 
@@ -8,8 +8,8 @@ import type { MapEventOf, MapEventType } from 'mapbox-gl';
  * Subscribes to a Mapbox GL map event for the lifetime of the component.
  *
  * The listener is attached when the map is ready and removed on unmount or
- * when `event`/`layerId` changes. The `handler` is held in a ref, so it
- * does not need to be memoized and swapping it won't re-subscribe.
+ * when `event`/`layerId` changes. The `handler` does not need to be memoized;
+ * it always sees the latest props/state via `useEffectEvent`.
  *
  * @param event - The map event name (e.g. `'click'`, `'moveend'`).
  * @param handler - Callback invoked with the event object. Does not need to be memoized.
@@ -30,16 +30,13 @@ export function useMapEvent<T extends MapEventType | string>(
   layerId?: string,
 ): void {
   const { map } = useMap();
-  const handlerRef = useRef(handler);
-  useEffect(() => {
-    handlerRef.current = handler;
-  });
+  const onEvent = useEffectEvent(handler);
 
   useEffect(() => {
     if (!map) return;
 
     const wrapped = (e: unknown) => {
-      handlerRef.current(e as T extends MapEventType ? MapEventOf<T> : unknown);
+      onEvent(e as T extends MapEventType ? MapEventOf<T> : unknown);
     };
 
     if (layerId != null) {

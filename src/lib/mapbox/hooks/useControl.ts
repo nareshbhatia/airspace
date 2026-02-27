@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 
 import { useMap } from './useMap';
 
@@ -14,7 +20,7 @@ export interface UseControlOptions {
  * The control is created via `factory`, added when the map is ready,
  * and automatically removed on unmount or when the map/position changes.
  *
- * @param factory - Returns a new control instance. Does not need to be memoized.
+ * @param factory - Returns a new control instance. Does not need to be memoized (useEffectEvent keeps latest).
  * @param options.position - Map corner to place the control (default: `'top-right'`).
  * @returns The live control instance, or `null` if the map isn't ready yet.
  *
@@ -31,10 +37,7 @@ export function useControl<T extends IControl>(
 ): T | null {
   const { map } = useMap();
   const controlRef = useRef<T | null>(null);
-  const factoryRef = useRef(factory);
-  useEffect(() => {
-    factoryRef.current = factory;
-  });
+  const createControl = useEffectEvent(factory);
   const listenersRef = useRef(new Set<() => void>());
   const position = options?.position ?? 'top-right';
 
@@ -56,7 +59,7 @@ export function useControl<T extends IControl>(
       return;
     }
 
-    const instance = factoryRef.current();
+    const instance = createControl();
     controlRef.current = instance;
     map.addControl(instance, position);
     listeners.forEach((l) => l());

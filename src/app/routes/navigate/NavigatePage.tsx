@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { airportById } from './airports';
 import { ButtonPanel } from './ButtonPanel';
 import { FlyToAirport } from './FlyToAirport';
+import { airportById } from '../../../data/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
 export function NavigatePage() {

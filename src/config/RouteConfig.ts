@@ -1,4 +1,4 @@
-import { Compass } from 'lucide-react';
+import { Compass, MapPin } from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -10,4 +10,5 @@ export interface NavItem {
 
 export const mainNavItems: NavItem[] = [
   { path: '/', title: 'Navigate', icon: Compass },
+  { path: '/mark', title: 'Mark', icon: MapPin },
 ];

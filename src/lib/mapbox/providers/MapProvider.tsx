@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import mapboxgl, { Map as MapboxMap, type LngLatLike } from 'mapbox-gl';
 
@@ -47,8 +47,8 @@ interface MapProviderProps {
  * @param pitch - Initial pitch in degrees (default: `0`).
  * @param bearing - Initial bearing in degrees (default: `0`).
  * @param className - Additional CSS classes for the map wrapper.
- * @param onLoad - Callback fired once the map has loaded. Does not need to be memoized.
- * @param onError - Optional. Called when a runtime map error occurs (e.g. tile failure). Use for logging/monitoring.
+ * @param onLoad - Callback fired once the map has loaded. Does not need to be memoized (useEffectEvent keeps latest).
+ * @param onError - Optional. Called when a runtime map error occurs (e.g. tile failure). Use for logging/monitoring. Does not need to be memoized.
  * @param enable3D - When `true`, adds a DEM source and enables 3-D terrain.
  * @param mapOptions - Extra `MapboxOptions` forwarded to the constructor (container/style/camera props are excluded).
  * @param children - React nodes rendered on top of the map (controls, overlays, etc.).
@@ -76,12 +76,8 @@ export function MapProvider({
   const containerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<MapboxMap | null>(null);
   const [mapError, setMapError] = useState<string | null>(getInitialMapError);
-  const onLoadRef = useRef(onLoad);
-  const onErrorRef = useRef(onError);
-  useEffect(() => {
-    onLoadRef.current = onLoad;
-    onErrorRef.current = onError;
-  }, [onLoad, onError]);
+  const onLoadEvent = useEffectEvent((m: MapboxMap) => onLoad?.(m));
+  const onErrorEvent = useEffectEvent((error: Error) => onError?.(error));
 
   const value = useMemo(() => ({ map }), [map]);
 
@@ -119,11 +115,11 @@ export function MapProvider({
           });
         }
         mapInstance.on('error', (e) => {
-          onErrorRef.current?.(e.error);
+          onErrorEvent(e.error);
         });
         setMap(mapInstance);
         setMapError(null);
-        onLoadRef.current?.(mapInstance);
+        onLoadEvent(mapInstance);
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load map';
