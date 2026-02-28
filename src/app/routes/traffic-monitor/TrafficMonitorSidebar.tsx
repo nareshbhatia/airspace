@@ -1,4 +1,6 @@
 import { AirportTypeahead } from './AirportTypeahead';
+import { RADIUS_MILES_VALUES } from './types';
+import { Button } from '../../../components/ui/button';
 import {
   Card,
   CardDescription,
@@ -7,9 +9,13 @@ import {
 } from '../../../components/ui/card';
 import { airportById } from '../../../gen/airports';
 
+import type { RadiusMiles } from './types';
+
 interface TrafficMonitorSidebarProps {
   selectedAirportId?: string;
   onAirportChange: (airportId: string | undefined) => void;
+  radiusMiles: RadiusMiles;
+  onRadiusChange: (radius: RadiusMiles) => void;
 }
 
 /**
@@ -18,6 +24,8 @@ interface TrafficMonitorSidebarProps {
 function TrafficMonitorSidebar({
   selectedAirportId,
   onAirportChange,
+  radiusMiles,
+  onRadiusChange,
 }: TrafficMonitorSidebarProps) {
   const selectedAirport = selectedAirportId
     ? airportById.get(selectedAirportId)
@@ -33,22 +41,43 @@ function TrafficMonitorSidebar({
           onAirportChange={onAirportChange}
         />
         {selectedAirport ? (
-          <Card className="mt-2" size="sm">
-            <CardHeader className="min-w-0">
-              <CardTitle>{selectedAirport.id}</CardTitle>
-              <CardDescription className="min-w-0">
-                <span
-                  className="block min-w-0 truncate"
-                  title={selectedAirport.name}
-                >
-                  {selectedAirport.name}
-                </span>
-                <span className="block">
-                  {selectedAirport.municipality}, {selectedAirport.iso_country}
-                </span>
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <>
+            <Card className="mt-2" size="sm">
+              <CardHeader className="min-w-0">
+                <CardTitle>{selectedAirport.id}</CardTitle>
+                <CardDescription className="min-w-0">
+                  <span
+                    className="block min-w-0 truncate"
+                    title={selectedAirport.name}
+                  >
+                    {selectedAirport.name}
+                  </span>
+                  <span className="block">
+                    {selectedAirport.municipality},{' '}
+                    {selectedAirport.iso_country}
+                  </span>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <div className="mt-2">
+              <div className="text-xs text-muted-foreground mb-1.5">
+                Search radius
+              </div>
+              <div className="flex gap-0 rounded-md border border-border overflow-hidden">
+                {RADIUS_MILES_VALUES.map((r) => (
+                  <Button
+                    key={r}
+                    variant={radiusMiles === r ? 'default' : 'outline'}
+                    size="sm"
+                    className="flex-1 rounded-none border-0 first:border-r last:border-l border-border"
+                    onClick={() => onRadiusChange(r)}
+                  >
+                    {r} mi
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </>
         ) : (
           <p className="mt-2 text-xs text-muted-foreground">
             Select an airport to view traffic
