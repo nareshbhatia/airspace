@@ -4,25 +4,41 @@ import { useMap, useMapEvent, useMapLayer } from '../../../lib/mapbox';
 
 import type { MapLayerSpec } from '../../../lib/mapbox';
 
-const LAYER_ID = 'subway-stops-circle';
-const HIGHLIGHT_LAYER_ID = 'subway-stops-highlight';
+const STOPS_LAYER_ID = 'subway-stops-circle';
+const STOPS_HIGHLIGHT_LAYER_ID = 'subway-stops-highlight';
+const STOPS_LABELS_LAYER_ID = 'subway-stops-labels';
 
 const layers: MapLayerSpec[] = [
+  // Red circles for each station with white stroke for contrast
+  // Visible from zoom 11, fade-in 11→12.
   {
-    id: LAYER_ID,
+    id: STOPS_LAYER_ID,
     type: 'circle',
     source: 'subway-stops',
+    minzoom: 11,
     paint: {
-      'circle-radius': 4,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 5],
       'circle-color': '#e11d48',
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0, 12, 1],
       'circle-stroke-width': 1,
       'circle-stroke-color': '#ffffff',
+      'circle-stroke-opacity': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        11,
+        0,
+        12,
+        1,
+      ],
     },
   },
+  // Larger yellow circle for the selected station; filter set at runtime.
   {
-    id: HIGHLIGHT_LAYER_ID,
+    id: STOPS_HIGHLIGHT_LAYER_ID,
     type: 'circle',
     source: 'subway-stops',
+    minzoom: 11,
     filter: ['==', ['get', 'cartodb_id'], -1],
     paint: {
       'circle-radius': 8,
@@ -31,11 +47,30 @@ const layers: MapLayerSpec[] = [
       'circle-stroke-color': '#ffffff',
     },
   },
+  // Station name labels; visible from zoom 13, fade-in 13→14.
+  {
+    id: STOPS_LABELS_LAYER_ID,
+    type: 'symbol',
+    source: 'subway-stops',
+    minzoom: 13,
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-size': 14,
+      'text-anchor': 'center',
+    },
+    paint: {
+      'text-color': '#000000',
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 1,
+      'text-translate': [1, 20],
+      'text-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 14, 1],
+    },
+  },
 ];
 
 interface SubwayStopsLayerProps {
-  data: GeoJSON.FeatureCollection | null;
-  selectedStationId: number | null;
+  data: GeoJSON.FeatureCollection | undefined;
+  selectedStationId: number | undefined;
   onStationClick: (id: number) => void;
   onDeselect: () => void;
 }
@@ -54,9 +89,9 @@ export function SubwayStopsLayer({
   }, [data, setData]);
 
   useEffect(() => {
-    if (!map || !map.getLayer(HIGHLIGHT_LAYER_ID)) return;
+    if (!map || !map.getLayer(STOPS_HIGHLIGHT_LAYER_ID)) return;
     const id = selectedStationId ?? -1;
-    map.setFilter(HIGHLIGHT_LAYER_ID, ['==', ['get', 'cartodb_id'], id]);
+    map.setFilter(STOPS_HIGHLIGHT_LAYER_ID, ['==', ['get', 'cartodb_id'], id]);
   }, [map, selectedStationId]);
 
   useMapEvent('click', (e) => {
@@ -64,7 +99,7 @@ export function SubwayStopsLayer({
     if (ev.point && map) {
       const point: [number, number] = [ev.point.x, ev.point.y];
       const under = map.queryRenderedFeatures(point, {
-        layers: [LAYER_ID],
+        layers: [STOPS_LAYER_ID],
       });
       if (under.length === 0) onDeselect();
     }
@@ -82,7 +117,7 @@ export function SubwayStopsLayer({
         if (!Number.isNaN(id)) onStationClick(id);
       }
     },
-    LAYER_ID,
+    STOPS_LAYER_ID,
   );
 
   useMapEvent(
@@ -90,14 +125,15 @@ export function SubwayStopsLayer({
     () => {
       if (map) map.getCanvas().style.cursor = 'pointer';
     },
-    LAYER_ID,
+    STOPS_LAYER_ID,
   );
+
   useMapEvent(
     'mouseleave',
     () => {
       if (map) map.getCanvas().style.cursor = '';
     },
-    LAYER_ID,
+    STOPS_LAYER_ID,
   );
 
   return null;

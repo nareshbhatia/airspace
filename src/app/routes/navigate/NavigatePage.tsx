@@ -6,9 +6,7 @@ import { airportById } from '../../../data/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
 export function NavigatePage() {
-  const [selectedAirportId, setSelectedAirportId] = useState<string | null>(
-    null,
-  );
+  const [selectedAirportId, setSelectedAirportId] = useState<string>();
 
   return (
     <div className="relative flex-1">

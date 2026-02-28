@@ -17,8 +17,8 @@ maps from reusable pieces.
 - **MapProvider** creates the map and exposes it via context only after the
   `load` event (style is ready). Add sources and layers in descendants; do not
   add them before the map is loaded.
-- **useMap** gives access to the map instance. It is `null` until load; always
-  guard before use.
+- **useMap** gives access to the map instance. It is `undefined` until load;
+  always guard before use.
 - **useControl** / **useMapLayer** / **useMapEvent** / **useFlyTo** /
   **useFitBounds** / **useDraw** are modular hooks that manage lifecycle and
   cleanup. Use them together to build layers, controls, and interactions without

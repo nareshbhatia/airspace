@@ -17,11 +17,11 @@ export interface UseFitBoundsOptions {
  * Fits the map view to the given bounds whenever they change.
  *
  * Calls `map.fitBounds()` reactively so that "fit to features" or "show all
- * markers" flows are easy to implement. Pass `null` to skip (e.g. when no
- * selection). Follows Mapbox best practice for fitting bounds with padding
- * and animation.
+ * markers" flows are easy to implement. Omit `bounds` or pass `undefined` to
+ * skip (e.g. when no selection). Follows Mapbox best practice for fitting bounds
+ * with padding and animation.
  *
- * @param bounds - Target bounds as `[[west, south], [east, north]]` or `[west, south, east, north]`, or `null` to do nothing.
+ * @param bounds - Target bounds as `[[west, south], [east, north]]` or `[west, south, east, north]`, or `undefined` to do nothing.
  * @param options.padding - Padding in pixels or `{ top, bottom, left, right }`.
  * @param options.duration - Animation duration in milliseconds.
  * @param options.maxZoom - Maximum zoom level when fitting.
@@ -34,7 +34,7 @@ export interface UseFitBoundsOptions {
  * ```
  */
 export function useFitBounds(
-  bounds: LngLatBoundsLike | null,
+  bounds?: LngLatBoundsLike,
   options: UseFitBoundsOptions = {},
 ): void {
   const { map } = useMap();

@@ -15,10 +15,10 @@ export interface UseFlyToOptions {
  * Smoothly flies the map to a given coordinate whenever it changes.
  *
  * Calls `map.flyTo()` reactively — each time `center` or any option value
- * changes, the map animates to the new position. Pass `null` for `center`
- * to skip the animation (e.g. when no location is selected).
+ * changes, the map animates to the new position. Omit `center` or pass
+ * `undefined` to skip the animation (e.g. when no location is selected).
  *
- * @param center - Target coordinates, or `null` to do nothing.
+ * @param center - Target coordinates, or `undefined` to do nothing.
  * @param options.zoom - Zoom level at the destination.
  * @param options.duration - Animation duration in milliseconds.
  * @param options.pitch - Pitch in degrees at the destination.
@@ -26,11 +26,11 @@ export interface UseFlyToOptions {
  *
  * @example
  * ```ts
- * const [selected, setSelected] = useState<LngLat | null>(null);
+ * const [selected, setSelected] = useState<LngLat>();
  * useFlyTo(selected, { zoom: 14, duration: 2000 });
  * ```
  */
-export function useFlyTo(center: LngLat | null, options: UseFlyToOptions = {}) {
+export function useFlyTo(center?: LngLat, options: UseFlyToOptions = {}) {
   const { map } = useMap();
 
   const lng = center?.lng;
@@ -38,6 +38,7 @@ export function useFlyTo(center: LngLat | null, options: UseFlyToOptions = {}) {
   const { zoom, duration, pitch, bearing } = options;
 
   useEffect(() => {
+    // Use == null so we allow 0 as a valid coordinate (e.g. [0, 0]).
     if (!map || lng == null || lat == null) return;
 
     map.flyTo({

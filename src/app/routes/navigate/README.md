@@ -10,6 +10,6 @@ selected airport.
 - **ButtonPanel** — Renders the airport buttons and calls
   `onAirportSelect(airportId)` on click.
 - **FlyToAirport** — Consumes `airportId` and calls `useFlyTo` with that
-  airport’s coordinates (or `null` when none selected).
+  airport’s coordinates (or `undefined` when none selected).
 - **airports** / **airportById** — Static list of airports (id, name,
   coordinates) and a lookup map.

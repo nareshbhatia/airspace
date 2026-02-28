@@ -10,7 +10,7 @@ import type { Place } from './types/Place';
 
 export function MarkPlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
-  const [selectedPlaceId, setSelectedPlaceId] = useState<string | undefined>();
+  const [selectedPlaceId, setSelectedPlaceId] = useState<string>();
 
   const handleMapClick = useCallback((event: MapClickEvent) => {
     const place = {
