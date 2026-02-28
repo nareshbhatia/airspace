@@ -2,15 +2,15 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import mapboxgl, { Map as MapboxMap, type LngLatLike } from 'mapbox-gl';
 
-import { MapContext } from './MapContext';
+import { MapContext, type MapContextValue } from './MapContext';
 import { cn } from '../../../utils/cn';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 
-function getInitialMapError(): string | null {
-  return MAPBOX_TOKEN ? null : 'VITE_MAPBOX_TOKEN is not set';
+function getInitialMapError(): string | undefined {
+  return MAPBOX_TOKEN ? undefined : 'VITE_MAPBOX_TOKEN is not set';
 }
 
 interface MapProviderProps {
@@ -74,17 +74,19 @@ export function MapProvider({
   children,
 }: MapProviderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<MapboxMap | null>(null);
-  const [mapError, setMapError] = useState<string | null>(getInitialMapError);
+  const [map, setMap] = useState<MapboxMap>();
+  const [mapError, setMapError] = useState<string | undefined>(
+    getInitialMapError,
+  );
   const onLoadEvent = useEffectEvent((m: MapboxMap) => onLoad?.(m));
   const onErrorEvent = useEffectEvent((error: Error) => onError?.(error));
 
-  const value = useMemo(() => ({ map }), [map]);
+  const value = useMemo<MapContextValue>(() => ({ map }), [map]);
 
   useEffect(() => {
     if (!MAPBOX_TOKEN || !containerRef.current) return;
 
-    let mapInstance: MapboxMap | null = null;
+    let mapInstance: MapboxMap | undefined;
 
     try {
       mapboxgl.accessToken = MAPBOX_TOKEN;
@@ -118,7 +120,7 @@ export function MapProvider({
           onErrorEvent(e.error);
         });
         setMap(mapInstance);
-        setMapError(null);
+        setMapError(undefined);
         onLoadEvent(mapInstance);
       });
     } catch (err) {
@@ -128,7 +130,7 @@ export function MapProvider({
 
     return () => {
       mapInstance?.remove();
-      setMap(null);
+      setMap(undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once with initial props
   }, []);

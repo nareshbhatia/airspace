@@ -5,11 +5,11 @@ import { MapContext } from '../providers/MapContext';
 /**
  * Returns the Mapbox GL `Map` instance from the nearest `MapProvider`.
  *
- * The returned `map` is `null` until the style has finished loading (after the
- * map `load` event). Guard against `null` before adding sources/layers or
+ * The returned `map` is `undefined` until the style has finished loading (after the
+ * map `load` event). Guard against `undefined` before adding sources/layers or
  * calling map methods. Throws if called outside a `MapProvider`.
  *
- * @returns `{ map }` — the live `Map` instance or `null`.
+ * @returns `{ map }` — the live `Map` instance or `undefined`.
  *
  * @example
  * ```ts

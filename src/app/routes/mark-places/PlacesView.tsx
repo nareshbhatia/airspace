@@ -20,7 +20,7 @@ export function PlacesView({
   const selectedPlace = selectedPlaceId
     ? places.find((p) => p.id === selectedPlaceId)
     : undefined;
-  useFlyTo(selectedPlace?.coordinates ?? null, { zoom: 12, duration: 2000 });
+  useFlyTo(selectedPlace?.coordinates, { zoom: 12, duration: 2000 });
 
   useMapEvent('click', (e) => {
     if (e.lngLat) {
