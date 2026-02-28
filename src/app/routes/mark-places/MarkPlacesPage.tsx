@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 import { PlacesList } from './PlacesList';
 import { PlacesView } from './PlacesView';
-import { airportById } from '../../../data/airports';
+import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
 import type { MapClickEvent } from './PlacesView';

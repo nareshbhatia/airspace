@@ -3,6 +3,6 @@
 /coverage/
 /dist/
 /node_modules/
-/src/generated/
+/src/gen/
 /storybook-static/
 /public/mockServiceWorker.js
