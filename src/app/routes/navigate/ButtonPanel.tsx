@@ -1,5 +1,16 @@
 import { Button } from '../../../components/ui/button';
-import { airports } from '../../../data/airports';
+
+const AIRPORTS = [
+  'BAH',
+  'BOS',
+  'DXB',
+  'HND',
+  'JFK',
+  'LAX',
+  'LHR',
+  'ORD',
+  'SFO',
+];
 
 interface ButtonPanelProps {
   onAirportSelect: (airportId: string) => void;
@@ -8,9 +19,9 @@ interface ButtonPanelProps {
 export function ButtonPanel({ onAirportSelect }: ButtonPanelProps) {
   return (
     <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 gap-2">
-      {airports.map((airport) => (
-        <Button key={airport.id} onClick={() => onAirportSelect(airport.id)}>
-          {airport.id}
+      {AIRPORTS.map((airportId) => (
+        <Button key={airportId} onClick={() => onAirportSelect(airportId)}>
+          {airportId}
         </Button>
       ))}
     </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { ButtonPanel } from './ButtonPanel';
 import { FlyToAirport } from './FlyToAirport';
-import { airportById } from '../../../data/airports';
+import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
 export function NavigatePage() {
