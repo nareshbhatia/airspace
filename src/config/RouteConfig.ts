@@ -1,4 +1,4 @@
-import { Compass, MapPin, Train } from 'lucide-react';
+import { Activity, Compass, MapPin, Train } from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -11,5 +11,6 @@ export interface NavItem {
 export const mainNavItems: NavItem[] = [
   { path: '/', title: 'Navigate', icon: Compass },
   { path: '/mark-places', title: 'Mark Places', icon: MapPin },
+  { path: '/traffic-monitor', title: 'Traffic Monitor', icon: Activity },
   { path: '/nyc-subway-stops', title: 'NYC Subway Stops', icon: Train },
 ];
