@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { AircraftLayer } from './AircraftLayer';
 import { SearchAreaLayer } from './SearchAreaLayer';
 import { TrafficMonitorMapFit } from './TrafficMonitorMapFit';
 import { TrafficMonitorSidebar } from './TrafficMonitorSidebar';
@@ -59,6 +60,7 @@ export function TrafficMonitorPage() {
         >
           <TrafficMonitorMapFit boundingBox={boundingBox} />
           <SearchAreaLayer boundingBox={boundingBox} />
+          <AircraftLayer aircraft={aircraft} />
         </MapProvider>
       </div>
     </div>
