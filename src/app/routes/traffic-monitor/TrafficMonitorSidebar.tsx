@@ -2,13 +2,13 @@ import { AircraftList } from './AircraftList';
 import { TrafficFilter } from './TrafficFilter';
 import { TrafficSummary } from './TrafficSummary';
 
-import type { Aircraft, RadiusMiles } from './types';
+import type { Aircraft } from './types';
 
 interface TrafficMonitorSidebarProps {
   selectedAirportId?: string;
   onAirportChange: (airportId: string | undefined) => void;
-  radiusMiles: RadiusMiles;
-  onRadiusChange: (radius: RadiusMiles) => void;
+  radiusMiles: number;
+  onRadiusChange: (radius: number) => void;
   aircraft: Aircraft[];
   loading: boolean;
   error: string | null;

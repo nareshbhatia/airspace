@@ -5,7 +5,9 @@ import { fetchStateVectors, mapStateVectorsToAircraft } from './api/opensky';
 import type { Aircraft } from './types';
 import type { BoundingBox } from './utils/boundingBox';
 
-const POLL_INTERVAL_MS = 10_000;
+// OpenSky API limits anonymous requests to one per 10 seconds.
+// We poll every 15 seconds to be on the safe side.
+const POLL_INTERVAL_MS = 15_000;
 
 export interface UseTrafficDataResult {
   aircraft: Aircraft[];
