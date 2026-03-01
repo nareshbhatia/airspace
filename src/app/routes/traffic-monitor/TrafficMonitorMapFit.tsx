@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { boundsToLngLatBoundsLike } from './utils/boundingBox';
 import { useFitBounds } from '../../../lib/mapbox';
 
@@ -14,8 +16,11 @@ interface TrafficMonitorMapFitProps {
 export function TrafficMonitorMapFit({
   boundingBox,
 }: TrafficMonitorMapFitProps) {
-  const bounds =
-    boundingBox != null ? boundsToLngLatBoundsLike(boundingBox) : undefined;
+  const bounds = useMemo(
+    () =>
+      boundingBox != null ? boundsToLngLatBoundsLike(boundingBox) : undefined,
+    [boundingBox],
+  );
   useFitBounds(bounds, { padding: 40, maxZoom: 14 });
   return null;
 }

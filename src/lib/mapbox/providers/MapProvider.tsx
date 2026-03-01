@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
 import mapboxgl, { Map as MapboxMap, type LngLatLike } from 'mapbox-gl';
+import { useDebouncedCallback } from 'use-debounce';
 
 import { MapContext, type MapContextValue } from './MapContext';
 import { cn } from '../../../utils/cn';
@@ -81,8 +82,18 @@ export function MapProvider({
   const onLoadEvent = useEffectEvent((m: MapboxMap) => onLoad?.(m));
   const onErrorEvent = useEffectEvent((error: Error) => onError?.(error));
 
+  const DEBOUNCE_MS = 200;
+  const debouncedResize = useDebouncedCallback(
+    () => map?.resize(),
+    DEBOUNCE_MS,
+  );
+
   const value = useMemo<MapContextValue>(() => ({ map }), [map]);
 
+  // Create the map once on mount with initial props. We use an empty dependency array
+  // on purpose: adding style, center, zoom, pitch, bearing, mapOptions, or enable3D
+  // would cause the effect to re-run and destroy/recreate the map whenever those
+  // props change. We only want a single map instance with the initial configuration.
   useEffect(() => {
     if (!MAPBOX_TOKEN || !containerRef.current) return;
 
@@ -92,6 +103,10 @@ export function MapProvider({
       mapboxgl.accessToken = MAPBOX_TOKEN;
       mapInstance = new MapboxMap({
         ...mapOptions,
+        // Disable automatic map resize, we handle it manually in useEffect
+        // This is to account for map resize during window resize + container
+        // resize when the sidebar is open/closed.
+        trackResize: false,
         container: containerRef.current,
         style,
         center,
@@ -134,6 +149,20 @@ export function MapProvider({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once with initial props
   }, []);
+
+  // Handle map resize manually to account for window resize + container resize
+  useEffect(() => {
+    if (!map || !containerRef.current) return;
+    const container = containerRef.current;
+
+    const observer = new ResizeObserver(debouncedResize);
+    observer.observe(container);
+
+    return () => {
+      debouncedResize.cancel();
+      observer.disconnect();
+    };
+  }, [map, debouncedResize]);
 
   if (mapError) {
     return (

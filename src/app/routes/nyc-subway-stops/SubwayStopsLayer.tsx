@@ -84,16 +84,19 @@ export function SubwayStopsLayer({
   const { map } = useMap();
   const { setData } = useMapLayer('subway-stops', layers);
 
+  // Update the source data when the data prop changes
   useEffect(() => {
     if (data) setData(data);
   }, [data, setData]);
 
+  // Update the highlight layer filter when the selected station changes
   useEffect(() => {
     if (!map || !map.getLayer(STOPS_HIGHLIGHT_LAYER_ID)) return;
     const id = selectedStationId ?? -1;
     map.setFilter(STOPS_HIGHLIGHT_LAYER_ID, ['==', ['get', 'cartodb_id'], id]);
   }, [map, selectedStationId]);
 
+  // Handle click to deselect station
   useMapEvent('click', (e) => {
     const ev = e as { point?: { x: number; y: number } };
     if (ev.point && map) {
@@ -105,6 +108,7 @@ export function SubwayStopsLayer({
     }
   });
 
+  // Handle click to select station
   useMapEvent(
     'click',
     (e) => {
@@ -120,6 +124,7 @@ export function SubwayStopsLayer({
     STOPS_LAYER_ID,
   );
 
+  // Handle mouse enter to show pointer
   useMapEvent(
     'mouseenter',
     () => {
@@ -128,6 +133,7 @@ export function SubwayStopsLayer({
     STOPS_LAYER_ID,
   );
 
+  // Handle mouse leave to show default cursor
   useMapEvent(
     'mouseleave',
     () => {
