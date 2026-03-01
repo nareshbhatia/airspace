@@ -34,6 +34,7 @@ interface SearchAreaLayerProps {
 export function SearchAreaLayer({ boundingBox }: SearchAreaLayerProps) {
   const { setData } = useMapLayer('search-area', layers);
 
+  // Update the source data when the bounding box changes
   useEffect(() => {
     setData(
       boundingBox != null

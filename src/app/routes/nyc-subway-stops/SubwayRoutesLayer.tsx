@@ -51,6 +51,7 @@ interface SubwayRoutesLayerProps {
 export function SubwayRoutesLayer({ data }: SubwayRoutesLayerProps) {
   const { setData } = useMapLayer('subway-routes', layers);
 
+  // Update the source data when the data prop changes
   useEffect(() => {
     if (data) setData(data);
   }, [data, setData]);

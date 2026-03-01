@@ -34,6 +34,7 @@ export interface UseMapLayerReturn {
  *
  * @param sourceId - Unique id for the GeoJSON source.
  * @param layers - Layer specs to add on top of the source. Use `beforeId` for layer order. Does not need to be memoized.
+ * @param sourceOptions - Optional options merged into the GeoJSON source spec (e.g. cluster, clusterMaxZoom, clusterRadius).
  * @returns `{ setData }` — call with a `FeatureCollection` to update the source data.
  *
  * @example
@@ -46,16 +47,26 @@ export interface UseMapLayerReturn {
  *   setData(flightFeatures);
  * }, [flightFeatures, setData]);
  * ```
+ *
+ * @example With clustering
+ * ```ts
+ * const { setData } = useMapLayer('aircraft', layers, { cluster: true, clusterMaxZoom: 14, clusterRadius: 50 });
+ * ```
  */
 export function useMapLayer(
   sourceId: string,
   layers: MapLayerSpec[],
+  sourceOptions?: Record<string, unknown>,
 ): UseMapLayerReturn {
   const { map } = useMap();
   const layersRef = useRef<MapLayerSpec[]>(layers);
+  const sourceOptionsRef = useRef(sourceOptions);
   useEffect(() => {
     layersRef.current = layers;
   });
+  useEffect(() => {
+    sourceOptionsRef.current = sourceOptions;
+  }, [sourceOptions]);
 
   const setData = useCallback(
     (data: GeoJSON.FeatureCollection) => {
@@ -75,6 +86,7 @@ export function useMapLayer(
       map.addSource(sourceId, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
+        ...sourceOptionsRef.current,
       });
     }
 

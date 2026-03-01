@@ -15,6 +15,8 @@ import { airportById } from '../../../gen/airports';
 const RADIUS_MILES_MIN = 1;
 const RADIUS_MILES_MAX = 1000;
 
+const RADIUS_CHANGE_DEBOUNCE_MS = 1000;
+
 interface TrafficFilterProps {
   selectedAirportId?: string;
   onAirportChange: (airportId: string | undefined) => void;
@@ -66,7 +68,10 @@ export function TrafficFilter({
     [onRadiusChange],
   );
 
-  const debouncedCommit = useDebouncedCallback(commitRadius, 1000);
+  const debouncedCommit = useDebouncedCallback(
+    commitRadius,
+    RADIUS_CHANGE_DEBOUNCE_MS,
+  );
 
   const handleRadiusChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
