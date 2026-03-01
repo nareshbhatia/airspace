@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { SearchAreaLayer } from './SearchAreaLayer';
 import { TrafficMonitorMapFit } from './TrafficMonitorMapFit';
 import { TrafficMonitorSidebar } from './TrafficMonitorSidebar';
 import { RadiusMilesEnum } from './types';
+import { useTrafficData } from './useTrafficData';
 import { computeBoundingBox } from './utils/boundingBox';
 import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
@@ -26,13 +27,28 @@ export function TrafficMonitorPage() {
     return computeBoundingBox(airport.coordinates, radiusMiles);
   }, [selectedAirportId, radiusMiles]);
 
+  const { aircraft, lastUpdated, loading, error, clear } =
+    useTrafficData(boundingBox);
+
+  const handleAirportChange = useCallback(
+    (airportId: string | undefined) => {
+      setSelectedAirportId(airportId);
+      if (airportId === undefined) clear();
+    },
+    [clear],
+  );
+
   return (
     <div className="relative flex flex-1 min-h-0">
       <TrafficMonitorSidebar
         selectedAirportId={selectedAirportId}
-        onAirportChange={setSelectedAirportId}
+        onAirportChange={handleAirportChange}
         radiusMiles={radiusMiles}
         onRadiusChange={setRadiusMiles}
+        aircraft={aircraft}
+        loading={loading}
+        error={error}
+        lastUpdated={lastUpdated}
       />
       <div className="relative min-w-0 flex-1">
         <MapProvider
