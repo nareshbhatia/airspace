@@ -45,7 +45,9 @@ export function TrafficSummary({
             <span className="text-destructive">
               Unable to fetch traffic data — retrying
             </span>
-          ) : lastUpdated && !loading ? (
+          ) : loading ? (
+            <>Please standby</>
+          ) : lastUpdated ? (
             <>Updated {lastUpdated.toLocaleTimeString()}</>
           ) : null}
         </div>
