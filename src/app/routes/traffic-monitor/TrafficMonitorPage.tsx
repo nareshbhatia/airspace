@@ -4,22 +4,19 @@ import { AircraftLayer } from './AircraftLayer';
 import { SearchAreaLayer } from './SearchAreaLayer';
 import { TrafficMonitorMapFit } from './TrafficMonitorMapFit';
 import { TrafficMonitorSidebar } from './TrafficMonitorSidebar';
-import { RadiusMilesEnum } from './types';
 import { useTrafficData } from './useTrafficData';
 import { computeBoundingBox } from './utils/boundingBox';
 import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
-import type { RadiusMiles } from './types';
+const DEFAULT_RADIUS_MILES = 2;
 
 /**
  * Traffic Monitor page for viewing traffic-related data.
  */
 export function TrafficMonitorPage() {
   const [selectedAirportId, setSelectedAirportId] = useState<string>();
-  const [radiusMiles, setRadiusMiles] = useState<RadiusMiles>(
-    RadiusMilesEnum.Hundred,
-  );
+  const [radiusMiles, setRadiusMiles] = useState<number>(DEFAULT_RADIUS_MILES);
 
   const boundingBox = useMemo(() => {
     if (!selectedAirportId) return null;
