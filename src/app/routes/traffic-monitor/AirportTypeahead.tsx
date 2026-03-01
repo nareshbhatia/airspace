@@ -49,7 +49,7 @@ interface AirportTypeaheadProps {
  * Airport search typeahead. Matches IATA code, name, and city.
  * Selecting an airport stores its id; clear button resets selection.
  */
-function AirportTypeahead({
+export function AirportTypeahead({
   className,
   selectedAirportId,
   onAirportChange,
@@ -130,5 +130,3 @@ function AirportTypeahead({
     </div>
   );
 }
-
-export { AirportTypeahead };

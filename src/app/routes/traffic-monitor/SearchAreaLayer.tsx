@@ -31,7 +31,7 @@ interface SearchAreaLayerProps {
  * Renders the search area bounding box as a Mapbox fill layer. Hidden when
  * boundingBox is null/undefined (empty FeatureCollection).
  */
-function SearchAreaLayer({ boundingBox }: SearchAreaLayerProps) {
+export function SearchAreaLayer({ boundingBox }: SearchAreaLayerProps) {
   const { setData } = useMapLayer('search-area', layers);
 
   useEffect(() => {
@@ -44,5 +44,3 @@ function SearchAreaLayer({ boundingBox }: SearchAreaLayerProps) {
 
   return null;
 }
-
-export { SearchAreaLayer };

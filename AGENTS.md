@@ -137,7 +137,10 @@ interface FlightCommandPanelProps {
 /**
  * FlightCommandPanel component for controlling drone flight operations.
  */
-function FlightCommandPanel({ className, onTakeoff }: FlightCommandPanelProps) {
+export function FlightCommandPanel({
+  className,
+  onTakeoff,
+}: FlightCommandPanelProps) {
   return (
     <div className={cn('flex flex-col bg-card rounded-lg py-2', className)}>
       <Button onClick={onTakeoff}>Takeoff</Button>
