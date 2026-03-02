@@ -16,6 +16,7 @@ const AIRCRAFT_ICON_ID = 'aircraft-icon';
 
 const CLUSTER_MAX_ZOOM = 14; // above this zoom, no clustering
 const CLUSTER_RADIUS = 50; // pixels; points within this radius form a cluster
+const FLY_TO_QUERY_BOX_MARGIN = 15; // pixels; query this margin around projected point for symbol hit-test
 
 const clusterCircleLayer: MapLayerSpec = {
   id: AIRCRAFT_CLUSTERS_LAYER_ID,
@@ -103,7 +104,6 @@ function AircraftLayer({
   selectedAircraftId,
   onAircraftSelect,
 }: AircraftLayerProps) {
-  void selectedAircraftId;
   const { map } = useMap();
   const { setData } = useMapLayer(
     AIRCRAFT_SOURCE_ID,
@@ -111,10 +111,78 @@ function AircraftLayer({
     aircraftSourceOptions,
   );
 
+  // Fly to selected aircraft only when it is off-screen or in a cluster. Run after map is idle so
+  // bounds and queryRenderedFeatures see the latest paint (avoids false positives from stale map state).
+  useEffect(() => {
+    if (!map || !selectedAircraftId) return;
+    const selectedAircraft = aircraft.find(
+      (a) => a.icao24 === selectedAircraftId,
+    );
+    if (!selectedAircraft) return;
+
+    const lng = selectedAircraft.longitude;
+    const lat = selectedAircraft.latitude;
+
+    // Handle the map being idle
+    const handleIdle = () => {
+      const bounds = map.getBounds();
+
+      // If the aircraft is off-screen, fly to it
+      if (!bounds?.contains([lng, lat])) {
+        map.flyTo({
+          center: [lng, lat],
+          zoom: CLUSTER_MAX_ZOOM + 1,
+          duration: 500,
+        });
+        return;
+      }
+
+      // Is the aircraft visible as an individual icon?
+      const point = map.project([lng, lat]);
+      const margin = FLY_TO_QUERY_BOX_MARGIN;
+      const features = map.queryRenderedFeatures(
+        [
+          [point.x - margin, point.y - margin],
+          [point.x + margin, point.y + margin],
+        ],
+        { layers: [AIRCRAFT_SYMBOLS_LAYER_ID] },
+      );
+      const isVisibleAsIcon = features.some(
+        (f) => f.properties?.icao24 === selectedAircraftId,
+      );
+      if (!isVisibleAsIcon) {
+        map.flyTo({
+          center: [lng, lat],
+          zoom: CLUSTER_MAX_ZOOM + 1,
+          duration: 500,
+        });
+      }
+    };
+
+    // Handle the map being idle
+    map.once('idle', handleIdle);
+
+    return () => {
+      map.off('idle', handleIdle);
+    };
+  }, [aircraft, selectedAircraftId, map]);
+
   // Update the source data when the aircraft array changes
   useEffect(() => {
     setData(aircraftToFeatureCollection(aircraft));
   }, [aircraft, setData]);
+
+  // Data-driven icon size: selected aircraft slightly larger (0.7)
+  // When selectedAircraftId is undefined we pass '' so no feature matches and all stay 0.5
+  useEffect(() => {
+    if (!map || !map.getLayer(AIRCRAFT_SYMBOLS_LAYER_ID)) return;
+    map.setLayoutProperty(AIRCRAFT_SYMBOLS_LAYER_ID, 'icon-size', [
+      'case',
+      ['==', ['get', 'icao24'], ['literal', selectedAircraftId ?? '']],
+      0.7,
+      0.5,
+    ]);
+  }, [map, selectedAircraftId]);
 
   // Load the aircraft icon, then add the symbol layer (Mapbox needs the image in style before the layer is added)
   useEffect(() => {
