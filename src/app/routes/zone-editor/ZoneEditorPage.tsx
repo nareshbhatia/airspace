@@ -31,7 +31,10 @@ export function ZoneEditorPage() {
         return;
       }
       const geometry = feature.geometry as GeoJSON.Polygon;
-      const vertexCount = geometry.coordinates[0]?.length ?? 0;
+      const vertexCount =
+        geometry.coordinates.length > 0
+          ? geometry.coordinates[0].length - 1 // Subtract 1 to exclude the closing vertex
+          : 0;
       const zone: DrawnZone = {
         id: crypto.randomUUID(),
         type: activeDrawType,
