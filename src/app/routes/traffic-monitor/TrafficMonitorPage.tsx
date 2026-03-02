@@ -7,7 +7,7 @@ import { TrafficMonitorSidebar } from './TrafficMonitorSidebar';
 import { useTrafficData } from './useTrafficData';
 import { computeBoundingBox } from './utils/boundingBox';
 import { airportById } from '../../../gen/airports';
-import { MapProvider } from '../../../lib/mapbox';
+import { MapProvider, ZoomControl } from '../../../lib/mapbox';
 
 const DEFAULT_RADIUS_MILES = 2;
 
@@ -17,6 +17,9 @@ const DEFAULT_RADIUS_MILES = 2;
 export function TrafficMonitorPage() {
   const [selectedAirportId, setSelectedAirportId] = useState<string>();
   const [radiusMiles, setRadiusMiles] = useState<number>(DEFAULT_RADIUS_MILES);
+  const [selectedAircraftId, setSelectedAircraftId] = useState<
+    string | undefined
+  >();
 
   const boundingBox = useMemo(() => {
     if (!selectedAirportId) return null;
@@ -28,13 +31,27 @@ export function TrafficMonitorPage() {
   const { aircraft, lastUpdated, loading, error, clear } =
     useTrafficData(boundingBox);
 
+  // Undefined when the selected aircraft is no longer in the feed
+  const effectiveSelectedAircraftId =
+    selectedAircraftId != null &&
+    aircraft.some((a) => a.icao24 === selectedAircraftId)
+      ? selectedAircraftId
+      : undefined;
+
   const handleAirportChange = useCallback(
     (airportId: string | undefined) => {
       setSelectedAirportId(airportId);
-      if (airportId === undefined) clear();
+      if (airportId === undefined) {
+        setSelectedAircraftId(undefined);
+        clear();
+      }
     },
     [clear],
   );
+
+  const handleAircraftSelect = useCallback((icao24: string | undefined) => {
+    setSelectedAircraftId(icao24);
+  }, []);
 
   return (
     <div className="relative flex flex-1 min-h-0">
@@ -47,6 +64,8 @@ export function TrafficMonitorPage() {
         loading={loading}
         error={error}
         lastUpdated={lastUpdated}
+        selectedAircraftId={effectiveSelectedAircraftId}
+        onAircraftSelect={handleAircraftSelect}
       />
       <div className="relative min-w-0 flex-1">
         <MapProvider
@@ -55,9 +74,14 @@ export function TrafficMonitorPage() {
           zoom={13}
           className="w-full h-full"
         >
+          <ZoomControl />
           <TrafficMonitorMapFit boundingBox={boundingBox} />
           <SearchAreaLayer boundingBox={boundingBox} />
-          <AircraftLayer aircraft={aircraft} />
+          <AircraftLayer
+            aircraft={aircraft}
+            selectedAircraftId={effectiveSelectedAircraftId}
+            onAircraftSelect={handleAircraftSelect}
+          />
         </MapProvider>
       </div>
     </div>
