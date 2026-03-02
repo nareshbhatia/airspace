@@ -1,8 +1,4 @@
-# Airspace – Traffic Monitor Requirements
-
-> An evolving lab for geospatial and autonomous systems UI.
-
----
+# Traffic Monitor Requirements
 
 ## Purpose
 
