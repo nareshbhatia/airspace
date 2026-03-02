@@ -8,11 +8,14 @@ import { useMap, useMapLayer, useMapEvent } from '../../../lib/mapbox';
 import type { Aircraft } from './types';
 import type { MapLayerSpec } from '../../../lib/mapbox';
 
-const AIRCRAFT_ICON_ID = 'aircraft-icon';
 const AIRCRAFT_SOURCE_ID = 'aircraft';
 const AIRCRAFT_CLUSTERS_LAYER_ID = 'aircraft-clusters';
-const CLUSTER_MAX_ZOOM = 14;
-const CLUSTER_RADIUS = 50;
+const AIRCRAFT_CLUSTER_COUNT_LAYER_ID = 'aircraft-cluster-count';
+const AIRCRAFT_SYMBOLS_LAYER_ID = 'aircraft-symbols';
+const AIRCRAFT_ICON_ID = 'aircraft-icon';
+
+const CLUSTER_MAX_ZOOM = 14; // above this zoom, no clustering
+const CLUSTER_RADIUS = 50; // pixels; points within this radius form a cluster
 
 const clusterCircleLayer: MapLayerSpec = {
   id: AIRCRAFT_CLUSTERS_LAYER_ID,
@@ -26,7 +29,7 @@ const clusterCircleLayer: MapLayerSpec = {
 };
 
 const clusterCountLayer: MapLayerSpec = {
-  id: 'aircraft-cluster-count',
+  id: AIRCRAFT_CLUSTER_COUNT_LAYER_ID,
   type: 'symbol',
   source: AIRCRAFT_SOURCE_ID,
   filter: ['has', 'point_count'],
@@ -42,7 +45,7 @@ const clusterCountLayer: MapLayerSpec = {
 };
 
 const aircraftSymbolLayer: MapLayerSpec = {
-  id: 'aircraft-symbols',
+  id: AIRCRAFT_SYMBOLS_LAYER_ID,
   type: 'symbol',
   source: AIRCRAFT_SOURCE_ID,
   filter: ['!', ['has', 'point_count']],
@@ -62,27 +65,49 @@ const aircraftSourceOptions = {
   clusterRadius: CLUSTER_RADIUS,
 };
 
-const AIRCRAFT_LAYERS: MapLayerSpec[] = [
+/** Layer specs for the aircraft cluster layer. */
+const AIRCRAFT_CLUSTER_LAYER_SPECS: MapLayerSpec[] = [
   clusterCircleLayer,
   clusterCountLayer,
-  aircraftSymbolLayer,
 ];
+
+/** Layer spec for the aircraft symbol layer. */
+const AIRCRAFT_SYMBOL_LAYER_SPEC: MapLayerSpec = aircraftSymbolLayer;
 
 interface AircraftLayerProps {
   aircraft: Aircraft[];
+  selectedAircraftId?: string;
+  onAircraftSelect: (icao24: string | undefined) => void;
 }
 
 /**
  * Renders aircraft as a Mapbox symbol layer with a custom airplane icon
- * rotated to each aircraft's heading. Uses source-level clustering at low
- * zoom (cluster circles + count labels) and unclustered symbols above
- * clusterMaxZoom. Clicking a cluster zooms to expand it.
+ * rotated to each aircraft's heading.
+ *
+ * Clustering (source-level, CLUSTER_MAX_ZOOM=14, CLUSTER_RADIUS=50px):
+ * - At zoom <= 14: points within 50px of each other are grouped into
+ *   clusters (circle + count label). Points with no neighbors in that
+ *   radius stay unclustered and are drawn as individual plane icons.
+ * - At zoom >= 15: clustering is off; every aircraft is shown as an icon.
+ *
+ * So at low zoom levels you can see both clusters and isolated planes.
+ *
+ * Clicking a cluster circle zooms the map to the expansion zoom so the
+ * cluster breaks into smaller clusters or individual aircraft.
+ *
+ * Clicking a plane icon selects it (sidebar sync).
+ * Clicking the map background deselects.
  */
-function AircraftLayer({ aircraft }: AircraftLayerProps) {
+function AircraftLayer({
+  aircraft,
+  selectedAircraftId,
+  onAircraftSelect,
+}: AircraftLayerProps) {
+  void selectedAircraftId;
   const { map } = useMap();
   const { setData } = useMapLayer(
     AIRCRAFT_SOURCE_ID,
-    AIRCRAFT_LAYERS,
+    AIRCRAFT_CLUSTER_LAYER_SPECS,
     aircraftSourceOptions,
   );
 
@@ -91,13 +116,17 @@ function AircraftLayer({ aircraft }: AircraftLayerProps) {
     setData(aircraftToFeatureCollection(aircraft));
   }, [aircraft, setData]);
 
-  // Load the aircraft icon image
+  // Load the aircraft icon, then add the symbol layer (Mapbox needs the image in style before the layer is added)
   useEffect(() => {
     if (!map) return;
     let cancelled = false;
-    const size = 64;
+
+    // Initialize the aircraft icon image
     const img = new Image();
     img.crossOrigin = 'anonymous';
+    const size = 64;
+
+    // Initialize the on load handler
     img.onload = () => {
       if (cancelled) return;
       try {
@@ -108,30 +137,50 @@ function AircraftLayer({ aircraft }: AircraftLayerProps) {
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, size, size);
         const imageData = ctx.getImageData(0, 0, size, size);
+
+        // Add the aircraft icon to the map
         map.addImage(AIRCRAFT_ICON_ID, {
           width: size,
           height: size,
           data: imageData.data,
         });
+
+        // Now add the symbol layer
+        if (!map.getLayer(AIRCRAFT_SYMBOLS_LAYER_ID)) {
+          const { beforeId, ...layerConfig } = AIRCRAFT_SYMBOL_LAYER_SPEC;
+          map.addLayer(
+            layerConfig as Parameters<import('mapbox-gl').Map['addLayer']>[0],
+            beforeId,
+          );
+        }
       } catch {
         // ignore if already added or style changed
       }
     };
+
+    // Initialize the on error handler
     img.onerror = () => {
       console.error('Failed to load aircraft icon');
     };
+
+    // Set the aircraft icon image source - this will trigger image loading
     img.src = airplaneIconUrl;
+
+    // Cleanup on unmount
     return () => {
       cancelled = true;
       try {
+        if (map.getLayer(AIRCRAFT_SYMBOLS_LAYER_ID)) {
+          map.removeLayer(AIRCRAFT_SYMBOLS_LAYER_ID);
+        }
         map.removeImage(AIRCRAFT_ICON_ID);
       } catch {
-        // ignore if style changed or image not added
+        // ignore if style changed or not added
       }
     };
   }, [map]);
 
-  // Handle cluster click to expand
+  // Handle click in the clusters layer to expand a cluster
   useMapEvent(
     'click',
     (e) => {
@@ -139,18 +188,28 @@ function AircraftLayer({ aircraft }: AircraftLayerProps) {
       const ev = e as { point?: { x: number; y: number } };
       const point = ev.point;
       if (!point) return;
+
+      // Query the rendered features at the click point in the clusters layer
       const features = map.queryRenderedFeatures([point.x, point.y], {
         layers: [AIRCRAFT_CLUSTERS_LAYER_ID],
       });
       if (features.length === 0) return;
+
+      // Get the cluster id of the clicked feature
       const feature = features[0];
       const clusterId =
         feature.properties?.cluster_id ?? (feature as { id?: number }).id;
       if (clusterId == null) return;
+
+      // Get the geometry of the clicked feature
       const geometry = feature.geometry;
       if (geometry.type !== 'Point') return;
+
+      // Get the source of the aircraft layer
       const source = map.getSource(AIRCRAFT_SOURCE_ID);
       if (!source || !('getClusterExpansionZoom' in source)) return;
+
+      // Get the cluster expansion zoom for the clicked cluster
       (
         source as {
           getClusterExpansionZoom: (
@@ -160,6 +219,8 @@ function AircraftLayer({ aircraft }: AircraftLayerProps) {
         }
       ).getClusterExpansionZoom(Number(clusterId), (err, zoom) => {
         if (err || zoom == null) return;
+
+        // Fly to the clicked cluster
         map.flyTo({
           center: geometry.coordinates as [number, number],
           zoom,
@@ -170,7 +231,50 @@ function AircraftLayer({ aircraft }: AircraftLayerProps) {
     AIRCRAFT_CLUSTERS_LAYER_ID,
   );
 
-  // Handle mouse enter to show pointer
+  // Handle click in the symbols layer to select an aircraft
+  useMapEvent(
+    'click',
+    (e) => {
+      if (!map) return;
+      const ev = e as { point?: { x: number; y: number } };
+      const point = ev.point;
+      if (!point) return;
+
+      // Query the rendered features at the click point in the symbols layer
+      const features = map.queryRenderedFeatures([point.x, point.y], {
+        layers: [AIRCRAFT_SYMBOLS_LAYER_ID],
+      });
+      if (features.length === 0) return;
+
+      // Get the aircraft id of the clicked feature
+      const feature = features[0];
+      const icao24 = feature.properties?.icao24;
+
+      // Select the aircraft
+      if (typeof icao24 === 'string') onAircraftSelect(icao24);
+    },
+    AIRCRAFT_SYMBOLS_LAYER_ID,
+  );
+
+  // Handle click in any of the aircraft layers to deselect
+  useMapEvent('click', (e) => {
+    if (!map) return;
+    const ev = e as { point?: { x: number; y: number } };
+    const point = ev.point;
+    if (!point) return;
+
+    // Query the rendered features at the click point in the clusters, cluster count, and symbols layers
+    const features = map.queryRenderedFeatures([point.x, point.y], {
+      layers: [
+        AIRCRAFT_CLUSTERS_LAYER_ID,
+        AIRCRAFT_CLUSTER_COUNT_LAYER_ID,
+        AIRCRAFT_SYMBOLS_LAYER_ID,
+      ],
+    });
+    if (features.length === 0) onAircraftSelect(undefined);
+  });
+
+  // Handle mouse enter in the clusters layer to show pointer
   useMapEvent(
     'mouseenter',
     () => {
@@ -179,13 +283,31 @@ function AircraftLayer({ aircraft }: AircraftLayerProps) {
     AIRCRAFT_CLUSTERS_LAYER_ID,
   );
 
-  // Handle mouse leave to show default cursor
+  // Handle mouse leave in the clusters layer to show default cursor
   useMapEvent(
     'mouseleave',
     () => {
       if (map) map.getCanvas().style.cursor = '';
     },
     AIRCRAFT_CLUSTERS_LAYER_ID,
+  );
+
+  // Handle mouse enter in the symbols layer to show pointer
+  useMapEvent(
+    'mouseenter',
+    () => {
+      if (map) map.getCanvas().style.cursor = 'pointer';
+    },
+    AIRCRAFT_SYMBOLS_LAYER_ID,
+  );
+
+  // Handle mouse leave in the symbols layer to show default cursor
+  useMapEvent(
+    'mouseleave',
+    () => {
+      if (map) map.getCanvas().style.cursor = '';
+    },
+    AIRCRAFT_SYMBOLS_LAYER_ID,
   );
 
   return null;

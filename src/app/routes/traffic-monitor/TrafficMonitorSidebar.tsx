@@ -13,6 +13,8 @@ interface TrafficMonitorSidebarProps {
   loading: boolean;
   error: string | null;
   lastUpdated: Date | null;
+  selectedAircraftId?: string;
+  onAircraftSelect: (icao24: string | undefined) => void;
 }
 
 /**
@@ -27,6 +29,8 @@ export function TrafficMonitorSidebar({
   loading,
   error,
   lastUpdated,
+  selectedAircraftId,
+  onAircraftSelect,
 }: TrafficMonitorSidebarProps) {
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-background">
@@ -56,7 +60,11 @@ export function TrafficMonitorSidebar({
               No aircraft in search area
             </p>
           ) : (
-            <AircraftList aircraft={aircraft} />
+            <AircraftList
+              aircraft={aircraft}
+              selectedAircraftId={selectedAircraftId}
+              onAircraftSelect={onAircraftSelect}
+            />
           )}
         </div>
       </div>

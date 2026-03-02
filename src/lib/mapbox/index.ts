@@ -1,4 +1,5 @@
 export { MapProvider } from './providers/MapProvider';
+export { ZoomControl } from './controls/ZoomControl';
 export { useMap } from './hooks/useMap';
 export { useControl } from './hooks/useControl';
 export { useDraw } from './hooks/useDraw';

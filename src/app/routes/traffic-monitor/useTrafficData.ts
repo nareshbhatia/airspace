@@ -20,7 +20,7 @@ export interface UseTrafficDataResult {
 /**
  * Fetches OpenSky traffic data for the given bounding box. When boundingBox
  * is null, no fetch runs and no polling occurs. When boundingBox is set,
- * fetches immediately then every 10 seconds. Call clear() when the user
+ * fetches immediately then every 15 seconds. Call clear() when the user
  * clears the airport so aircraft/error/lastUpdated are reset.
  */
 export function useTrafficData(
