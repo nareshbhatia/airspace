@@ -4,9 +4,15 @@ import { useDraw, useMapEvent } from '../../../lib/mapbox';
 
 import type MapboxDraw from '@mapbox/mapbox-gl-draw';
 
+interface DrawUpdatePayload {
+  features: GeoJSON.Feature[];
+}
+
 interface ZoneEditorDrawBridgeProps {
   onDrawReady: (draw: MapboxDraw | null) => void;
   onDrawCreate: (e: { features: GeoJSON.Feature[] }) => void;
+  onDrawUpdate?: (e: DrawUpdatePayload) => void;
+  onDrawSelectionChange?: (e: DrawUpdatePayload) => void;
 }
 
 /**
@@ -20,6 +26,8 @@ interface ZoneEditorDrawBridgeProps {
 export function ZoneEditorDrawBridge({
   onDrawReady,
   onDrawCreate,
+  onDrawUpdate,
+  onDrawSelectionChange,
 }: ZoneEditorDrawBridgeProps) {
   // useDraw() returns the Mapbox Draw instance, or null if the map is not ready yet
   const draw = useDraw({ displayControlsDefault: false });
@@ -32,6 +40,14 @@ export function ZoneEditorDrawBridge({
 
   useMapEvent('draw.create', (e: unknown) => {
     onDrawCreate(e as { features: GeoJSON.Feature[] });
+  });
+
+  useMapEvent('draw.update', (e: unknown) => {
+    onDrawUpdate?.(e as DrawUpdatePayload);
+  });
+
+  useMapEvent('draw.selectionchange', (e: unknown) => {
+    onDrawSelectionChange?.(e as DrawUpdatePayload);
   });
 
   return null;
