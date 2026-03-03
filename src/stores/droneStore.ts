@@ -32,12 +32,19 @@ export const droneStore = createStore<DroneStoreState>()(
       ...initialState,
       selectDrone: (id) => set({ selectedDroneId: id }),
       _updateDrone: (id, update) =>
-        set((state) => ({
-          drones: new Map(state.drones).set(id, {
-            ...state.drones.get(id),
-            ...update,
-          } as DroneState),
-        })),
+        set((state) => {
+          const existing = state.drones.get(id);
+          if (!existing) {
+            console.error(`Cannot update non-existent drone: ${id}`);
+            return state;
+          }
+          return {
+            drones: new Map(state.drones).set(id, {
+              ...existing,
+              ...update,
+            }),
+          };
+        }),
     })),
     { name: 'DroneStore' },
   ),
