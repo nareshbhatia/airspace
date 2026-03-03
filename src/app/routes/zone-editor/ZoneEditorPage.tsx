@@ -91,6 +91,10 @@ export function ZoneEditorPage() {
     setActiveDrawType(null);
   }, []);
 
+  const handleDeleteZone = useCallback((zoneId: string) => {
+    setZones((prev) => prev.filter((z) => z.id !== zoneId));
+  }, []);
+
   return (
     <div className="relative flex flex-1 min-h-0">
       <ZoneEditorSidebar
@@ -98,6 +102,7 @@ export function ZoneEditorPage() {
         activeDrawType={activeDrawType}
         onSelectType={handleSelectType}
         onCancel={handleCancel}
+        onDeleteZone={handleDeleteZone}
       />
       <div className="relative min-w-0 flex-1">
         <MapProvider
