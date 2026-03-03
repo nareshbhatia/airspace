@@ -1,7 +1,10 @@
+import { Trash2 } from 'lucide-react';
+
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -39,9 +42,10 @@ function getTypeLabel(type: ZoneType | null): string {
 
 interface ZoneCardProps {
   zone: DrawnZone;
+  onDelete: (zoneId: string) => void;
 }
 
-function ZoneCard({ zone }: ZoneCardProps) {
+function ZoneCard({ zone, onDelete }: ZoneCardProps) {
   return (
     <Card size="sm" className="py-3">
       <CardHeader className="pb-2">
@@ -50,6 +54,20 @@ function ZoneCard({ zone }: ZoneCardProps) {
             {getTypeLabel(zone.type)}
           </Badge>
         </CardTitle>
+        <CardAction>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-destructive hover:text-destructive"
+            aria-label="Delete zone"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(zone.id);
+            }}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        </CardAction>
       </CardHeader>
       <CardContent className="pt-0 text-muted-foreground">
         <p className="text-xs">
@@ -66,6 +84,7 @@ interface ZoneEditorSidebarProps {
   activeDrawType: ZoneType | null;
   onSelectType: (type: ZoneType) => void;
   onCancel: () => void;
+  onDeleteZone: (zoneId: string) => void;
 }
 
 /**
@@ -77,6 +96,7 @@ export function ZoneEditorSidebar({
   activeDrawType,
   onSelectType,
   onCancel,
+  onDeleteZone,
 }: ZoneEditorSidebarProps) {
   return (
     <aside
@@ -140,7 +160,7 @@ export function ZoneEditorSidebar({
             <ul className="flex flex-col gap-2">
               {zones.map((zone) => (
                 <li key={zone.id}>
-                  <ZoneCard zone={zone} />
+                  <ZoneCard zone={zone} onDelete={onDeleteZone} />
                 </li>
               ))}
             </ul>
