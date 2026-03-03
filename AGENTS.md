@@ -36,8 +36,8 @@ server.
 
 ## Coding Style
 
-- Use TypeScript for all new files
-- Prefer `undefined` over `null` to represent the absence of a value. Use
+- **Use TypeScript** for all new files.
+- **Prefer `undefined` over `null` to represent the absence of a value.** Use
   `undefined` consistently for unset, missing, or cleared state. Avoid mixing
   `null` and `undefined` for the same semantic purpose.
   - Exception – context: Use `null` as the argument to createContext() when
@@ -47,6 +47,26 @@ server.
     ref.current (e.g. useRef<T>(null), ref.current = null). Reason: React uses
     null for DOM refs and the same convention for all refs keeps the rule
     simple.
+- **Do not use barreling.** Barreling is the practice of re-exporting multiple
+  modules from a single entry file (commonly `index.ts` or `index.js`) so that
+  consumers can import from a folder path instead of from individual files (e.g.
+  `import { Foo, Bar } from '../components'` instead of
+  `import { Foo } from '../components/Foo'` and
+  `import { Bar } from '../components/Bar'`). Avoid it in this project because:
+  - **Tree-shaking and bundle size:** Bundlers often pull in the whole barrel
+    when any symbol is used, so one import can pull in unrelated code and weaken
+    dead-code elimination.
+  - **Refactors and rename safety:** Moving or renaming a file forces updates to
+    the barrel and every re-export; direct file paths make the dependency
+    explicit and easier to update (e.g. with find-and-replace).
+  - **Discoverability and clarity:** Importing from the file that defines the
+    symbol (e.g. `from '../DroneServiceProvider/DroneServiceProvider'`) makes
+    the source of truth obvious; barrels hide where symbols actually live.
+  - **Circular dependencies:** Barrels can introduce or obscure circular
+    imports, which cause subtle runtime and build failures. Prefer importing
+    directly from the defining file:
+    `from '../DroneServiceProvider/DroneServiceProvider'` rather than
+    `from '../DroneServiceProvider'` or `from '../providers'`.
 
 ### Coding Style for imports
 
