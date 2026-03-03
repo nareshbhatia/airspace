@@ -1,7 +1,64 @@
+import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../../../components/ui/card';
 import { cn } from '../../../utils/cn';
 
 import type { DrawnZone, ZoneType } from './types';
+
+/** Badge style per zone type (matches map colors). */
+function getTypeBadgeClassName(type: ZoneType | null): string {
+  switch (type) {
+    case 'mission-boundary':
+      return 'bg-[#2563eb] text-white border-transparent';
+    case 'no-fly-zone':
+      return 'bg-[#dc2626] text-white border-transparent';
+    case 'restricted-airspace':
+      return 'bg-[#f59e0b] text-white border-transparent';
+    default:
+      return 'bg-[#6b7280] text-white border-transparent';
+  }
+}
+
+function getTypeLabel(type: ZoneType | null): string {
+  switch (type) {
+    case 'mission-boundary':
+      return 'Mission Boundary';
+    case 'no-fly-zone':
+      return 'No-Fly Zone';
+    case 'restricted-airspace':
+      return 'Restricted Airspace';
+    default:
+      return 'Untyped';
+  }
+}
+
+interface ZoneCardProps {
+  zone: DrawnZone;
+}
+
+function ZoneCard({ zone }: ZoneCardProps) {
+  return (
+    <Card size="sm" className="py-3">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xs font-medium">
+          <Badge className={cn(getTypeBadgeClassName(zone.type))}>
+            {getTypeLabel(zone.type)}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0 text-muted-foreground">
+        <p className="text-xs">
+          {zone.areaSqKm.toFixed(2)} km² · {zone.vertexCount} vertices
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 interface ZoneEditorSidebarProps {
   className?: string;
@@ -80,9 +137,13 @@ export function ZoneEditorSidebar({
               Select a zone type above to start drawing.
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              {zones.length} zone{zones.length === 1 ? '' : 's'} committed.
-            </p>
+            <ul className="flex flex-col gap-2">
+              {zones.map((zone) => (
+                <li key={zone.id}>
+                  <ZoneCard zone={zone} />
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>
