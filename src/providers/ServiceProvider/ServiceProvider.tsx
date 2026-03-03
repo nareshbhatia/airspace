@@ -22,7 +22,7 @@ const useServiceLifecycle = (service: Service) => {
 
 interface ServiceProviderProps<TService extends Service> {
   /** The React Context object that is defined for the service */
-  serviceContext: Context<TService | undefined>;
+  serviceContext: Context<TService | null>;
 
   /** The service instance that should be set as the provider value */
   serviceInstance: TService;
