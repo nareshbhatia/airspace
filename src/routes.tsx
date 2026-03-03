@@ -1,4 +1,5 @@
 import { RootLayout } from './app/RootLayout';
+import { FlightpathPage } from './app/routes/flightpath/FlightpathPage';
 import { MarkPlacesPage } from './app/routes/mark-places/MarkPlacesPage';
 import { NavigatePage } from './app/routes/navigate/NavigatePage';
 import { NotFoundPage } from './app/routes/not-found/NotFoundPage';
@@ -14,6 +15,7 @@ const navElementByPath: Record<string, ReactNode> = {
   '/': <NavigatePage />,
   '/mark-places': <MarkPlacesPage />,
   '/traffic-monitor': <TrafficMonitorPage />,
+  '/flightpath': <FlightpathPage />,
   '/zone-editor': <ZoneEditorPage />,
   '/nyc-subway-stops': <NycSubwayStopsPage />,
 };
