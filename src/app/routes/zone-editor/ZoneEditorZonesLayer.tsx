@@ -46,6 +46,9 @@ const lineWidthExpression: unknown[] = [
 const FILL_LAYER_ID = 'zone-editor-zones-fill';
 const LINE_LAYER_ID = 'zone-editor-zones-line';
 
+/** Both layers for zone hit-testing (selection, deselection, cursor). Stable reference for useMapEvent. */
+const ZONE_LAYER_IDS = [FILL_LAYER_ID, LINE_LAYER_ID] as const;
+
 const layers: MapLayerSpec[] = [
   {
     id: FILL_LAYER_ID,
@@ -131,19 +134,16 @@ export function ZoneEditorZonesLayer({
     }
   }, [map, selectedZoneId]);
 
-  // Handle click to select a zone
-  useMapEvent(
-    'click',
-    (e) => {
-      const ev = e as { features?: Array<{ properties?: { id?: string } }> };
-      const features = ev.features;
-      if (features?.length) {
-        const id = features[0].properties?.id;
-        if (typeof id === 'string') onZoneSelect(id);
-      }
-    },
-    FILL_LAYER_ID,
-  );
+  // Handle click to select a zone (fill or outline)
+  function handleZoneLayerClick(e: unknown) {
+    const ev = e as { features?: Array<{ properties?: { id?: string } }> };
+    const features = ev.features;
+    if (features?.length) {
+      const id = features[0].properties?.id;
+      if (typeof id === 'string') onZoneSelect(id);
+    }
+  }
+  useMapEvent('click', handleZoneLayerClick, ZONE_LAYER_IDS);
 
   // Handle click to deselect a zone
   useMapEvent('click', (e) => {
@@ -152,18 +152,18 @@ export function ZoneEditorZonesLayer({
     const point = ev.point;
     if (!point) return;
     const features = map.queryRenderedFeatures([point.x, point.y], {
-      layers: [FILL_LAYER_ID, LINE_LAYER_ID],
+      layers: [...ZONE_LAYER_IDS],
     });
     if (features.length === 0) onDeselect();
   });
 
-  // Handle mouse enter to show pointer
+  // Handle mouse enter to show pointer (fill or outline)
   useMapEvent(
     'mouseenter',
     () => {
       if (map) map.getCanvas().style.cursor = 'pointer';
     },
-    FILL_LAYER_ID,
+    ZONE_LAYER_IDS,
   );
 
   // Handle mouse leave to show default cursor
@@ -172,7 +172,7 @@ export function ZoneEditorZonesLayer({
     () => {
       if (map) map.getCanvas().style.cursor = '';
     },
-    FILL_LAYER_ID,
+    ZONE_LAYER_IDS,
   );
 
   return null;
