@@ -465,7 +465,7 @@ export const droneStore = createStore<DroneState>()(
   devtools(
     subscribeWithSelector((set) => ({
       drones: new Map<string, DroneState>(),
-      selectedDroneId: null,
+      selectedDroneId: undefined,
 
       selectDrone: (id) => set({ selectedDroneId: id }),
 
@@ -578,7 +578,7 @@ that can be wrapped in an Observable:
 
 ```typescript
 // Convert a Zustand store slice into an RxJS stream
-const selectedDroneId$ = new Observable<string | null>((subscriber) => {
+const selectedDroneId$ = new Observable<string | undefined>((subscriber) => {
   const unsub = droneStore.subscribe(
     (state) => state.selectedDroneId, // selector — requires subscribeWithSelector middleware
     (id) => subscriber.next(id), // listener fires only when selectedDroneId changes
@@ -780,7 +780,7 @@ linear interpolation — real flight dynamics are not required.
 - On selection: feature-state highlight, sidebar card highlight, `useFlyTo` to
   drone position (zoom 14, duration 1500ms).
 - Clicking map background deselects.
-- `selectedDroneId: string | null` lives in `droneStore`.
+- `selectedDroneId: string | undefined` lives in `droneStore`.
 
 ### Status Bar
 
@@ -803,8 +803,8 @@ linear interpolation — real flight dynamics are not required.
 | Field             | Type                                                | Description                              |
 | ----------------- | --------------------------------------------------- | ---------------------------------------- |
 | `drones`          | `Map<string, DroneState>`                           | Latest state per drone, keyed by droneId |
-| `selectedDroneId` | `string \| null`                                    | Currently selected drone                 |
-| `selectDrone`     | `(id: string \| null) => void`                      | Called by components and DroneService    |
+| `selectedDroneId` | `string \| undefined`                               | Currently selected drone                 |
+| `selectDrone`     | `(id: string \| undefined) => void`                 | Called by components and DroneService    |
 | `_updateDrone`    | `(id: string, update: Partial<DroneState>) => void` | Called only by DroneService              |
 
 `Map<string, DroneState>` is preferred over `DroneState[]` because updates
