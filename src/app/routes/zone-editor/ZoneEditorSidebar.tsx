@@ -1,88 +1,16 @@
-import { Trash2 } from 'lucide-react';
-
-import { Badge } from '../../../components/ui/badge';
+import { ZoneCard } from './ZoneCard';
 import { Button } from '../../../components/ui/button';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/card';
 import { cn } from '../../../utils/cn';
 
 import type { DrawnZone, ZoneType } from './types';
-
-/** Badge style per zone type (matches map colors). */
-function getTypeBadgeClassName(type: ZoneType | null): string {
-  switch (type) {
-    case 'mission-boundary':
-      return 'bg-[#2563eb] text-white border-transparent';
-    case 'no-fly-zone':
-      return 'bg-[#dc2626] text-white border-transparent';
-    case 'restricted-airspace':
-      return 'bg-[#f59e0b] text-white border-transparent';
-    default:
-      return 'bg-[#6b7280] text-white border-transparent';
-  }
-}
-
-function getTypeLabel(type: ZoneType | null): string {
-  switch (type) {
-    case 'mission-boundary':
-      return 'Mission Boundary';
-    case 'no-fly-zone':
-      return 'No-Fly Zone';
-    case 'restricted-airspace':
-      return 'Restricted Airspace';
-    default:
-      return 'Untyped';
-  }
-}
-
-interface ZoneCardProps {
-  zone: DrawnZone;
-  onDelete: (zoneId: string) => void;
-}
-
-function ZoneCard({ zone, onDelete }: ZoneCardProps) {
-  return (
-    <Card size="sm" className="py-3">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-medium">
-          <Badge className={cn(getTypeBadgeClassName(zone.type))}>
-            {getTypeLabel(zone.type)}
-          </Badge>
-        </CardTitle>
-        <CardAction>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="text-destructive hover:text-destructive"
-            aria-label="Delete zone"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(zone.id);
-            }}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="pt-0 text-muted-foreground">
-        <p className="text-xs">
-          {zone.areaSqKm.toFixed(2)} km² · {zone.vertexCount} vertices
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
 
 interface ZoneEditorSidebarProps {
   className?: string;
   zones: DrawnZone[];
   activeDrawType: ZoneType | null;
+  selectedZoneId: string | null;
   onSelectType: (type: ZoneType) => void;
+  onSelectZone: (zoneId: string) => void;
   onCancel: () => void;
   onDeleteZone: (zoneId: string) => void;
 }
@@ -94,7 +22,9 @@ export function ZoneEditorSidebar({
   className,
   zones,
   activeDrawType,
+  selectedZoneId,
   onSelectType,
+  onSelectZone,
   onCancel,
   onDeleteZone,
 }: ZoneEditorSidebarProps) {
@@ -159,9 +89,13 @@ export function ZoneEditorSidebar({
           ) : (
             <ul className="flex flex-col gap-2">
               {zones.map((zone) => (
-                <li key={zone.id}>
-                  <ZoneCard zone={zone} onDelete={onDeleteZone} />
-                </li>
+                <ZoneCard
+                  key={zone.id}
+                  zone={zone}
+                  isSelected={zone.id === selectedZoneId}
+                  onSelect={() => onSelectZone(zone.id)}
+                  onDelete={onDeleteZone}
+                />
               ))}
             </ul>
           )}
