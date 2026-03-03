@@ -486,7 +486,9 @@ export const useDroneStore = <T>(selector: (state: DroneState) => T): T =>
   useStore(droneStore, selector);
 ```
 
-`subscribeWithSelector` enables the two-argument `store.subscribe(selector, listener)` form used later in the Zustand → RxJS bridge example; without it, `store.subscribe` only accepts a listener.
+`subscribeWithSelector` enables the two-argument
+`store.subscribe(selector, listener)` form used later in the Zustand → RxJS
+bridge example; without it, `store.subscribe` only accepts a listener.
 
 **The critical rule:** Services import `droneStore` (the vanilla object).
 Components import `useDroneStore` (the React hook). These two imports never
@@ -853,7 +855,7 @@ src/
     DroneServiceContext.ts
     DroneServiceProvider.tsx
 
-  data/
+  gen/
     telemetry.json
 
   routes/
@@ -877,7 +879,7 @@ import { interval, Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { droneStore } from '../stores/droneStore';
 import { playbackStore } from '../stores/playbackStore';
-import telemetryData from '../data/telemetry.json';
+import telemetryData from '../../../gen/telemetry.json';
 
 export class DroneServiceImpl implements DroneService {
   // Single destroy signal — terminates all subscriptions in onDestroy

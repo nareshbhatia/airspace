@@ -11,7 +11,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUTPUT_PATH = new URL('../src/app/data/telemetry.json', import.meta.url);
+const OUTPUT_PATH = new URL('../src/gen/telemetry.json', import.meta.url);
 const outputDir = dirname(fileURLToPath(OUTPUT_PATH));
 
 // Boston Logan Airport vicinity (WGS84)
@@ -46,14 +46,21 @@ function ellipsePath(centerLat, centerLng, aDeg, bDeg, tSec, phaseRad = 0) {
   const lng = centerLng + bDeg * Math.sin(angle);
   const dlat = -aDeg * Math.sin(angle);
   const dlng = bDeg * Math.cos(angle);
-  const heading = toDeg(Math.atan2(dlng, dlat)) + 90;
+  const heading = toDeg(Math.atan2(dlng, dlat));
   return { lat, lng, heading: ((heading % 360) + 360) % 360 };
 }
 
 /**
  * Curved path: gentle arc (approach-style). Heading follows path.
  */
-function arcPath(centerLat, centerLng, radiusDeg, tSec, startAngleRad, arcSpanRad) {
+function arcPath(
+  centerLat,
+  centerLng,
+  radiusDeg,
+  tSec,
+  startAngleRad,
+  arcSpanRad,
+) {
   const angle = startAngleRad + (arcSpanRad * tSec) / 30;
   const lat = centerLat + radiusDeg * Math.cos(angle);
   const lng = centerLng + radiusDeg * Math.sin(angle);
@@ -70,15 +77,47 @@ function generateFrames() {
 
     // Alpha: clockwise circle north of Logan
     const a = circlePath(LOGAN_LAT + 0.003, LOGAN_LNG, 0.004, tSec, 0);
-    frames.push({ droneId: 'alpha', timestamp, lat: a.lat, lng: a.lng, heading: Math.round(a.heading * 10) / 10 });
+    frames.push({
+      droneId: 'alpha',
+      timestamp,
+      lat: a.lat,
+      lng: a.lng,
+      heading: Math.round(a.heading * 10) / 10,
+    });
 
     // Bravo: ellipse east of Logan
-    const b = ellipsePath(LOGAN_LAT, LOGAN_LNG + 0.004, 0.0025, 0.004, tSec, Math.PI / 4);
-    frames.push({ droneId: 'bravo', timestamp, lat: b.lat, lng: b.lng, heading: Math.round(b.heading * 10) / 10 });
+    const b = ellipsePath(
+      LOGAN_LAT,
+      LOGAN_LNG + 0.004,
+      0.0025,
+      0.004,
+      tSec,
+      Math.PI / 4,
+    );
+    frames.push({
+      droneId: 'bravo',
+      timestamp,
+      lat: b.lat,
+      lng: b.lng,
+      heading: Math.round(b.heading * 10) / 10,
+    });
 
     // Charlie: arc (approach-style) south of Logan
-    const c = arcPath(LOGAN_LAT - 0.002, LOGAN_LNG, 0.005, tSec, Math.PI * 0.3, Math.PI * 0.6);
-    frames.push({ droneId: 'charlie', timestamp, lat: c.lat, lng: c.lng, heading: Math.round(c.heading * 10) / 10 });
+    const c = arcPath(
+      LOGAN_LAT - 0.002,
+      LOGAN_LNG,
+      0.005,
+      tSec,
+      Math.PI * 0.3,
+      Math.PI * 0.6,
+    );
+    frames.push({
+      droneId: 'charlie',
+      timestamp,
+      lat: c.lat,
+      lng: c.lng,
+      heading: Math.round(c.heading * 10) / 10,
+    });
   }
 
   return frames;
