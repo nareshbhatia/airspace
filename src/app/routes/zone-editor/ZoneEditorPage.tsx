@@ -22,19 +22,31 @@ export function ZoneEditorPage() {
 
   const handleDrawCreate = useCallback(
     (e: { features?: GeoJSON.Feature[] }) => {
+      // Get the first feature
       const feature = e.features?.[0];
-      if (
-        !feature ||
-        !feature.geometry ||
-        feature.geometry.type !== 'Polygon'
-      ) {
+      if (!feature) return;
+
+      // If no type is selected, delete the feature
+      if (activeDrawType == null) {
+        if (feature.id != null) {
+          drawRef.current?.delete([String(feature.id)]);
+        }
         return;
       }
+
+      // If the feature is not a polygon, return
+      if (!feature.geometry || feature.geometry.type !== 'Polygon') {
+        return;
+      }
+
+      // Get the geometry
       const geometry = feature.geometry as GeoJSON.Polygon;
       const vertexCount =
         geometry.coordinates.length > 0
           ? geometry.coordinates[0].length - 1 // Subtract 1 to exclude the closing vertex
           : 0;
+
+      // Create the zone
       const zone: DrawnZone = {
         id: crypto.randomUUID(),
         type: activeDrawType,
@@ -43,7 +55,11 @@ export function ZoneEditorPage() {
         vertexCount,
         createdAt: new Date(),
       };
+
+      // Add the zone to the state
       setZones((prev) => [zone, ...prev]);
+
+      // Delete the feature from the map
       if (feature.id != null) {
         drawRef.current?.delete([String(feature.id)]);
       }
