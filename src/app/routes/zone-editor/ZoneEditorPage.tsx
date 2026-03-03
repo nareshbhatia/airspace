@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { area } from '@turf/area';
+
 import { ZoneEditorDrawBridge } from './ZoneEditorDrawBridge';
 import { ZoneEditorSidebar } from './ZoneEditorSidebar';
 import { ZoneEditorZonesLayer } from './ZoneEditorZonesLayer';
@@ -47,12 +49,19 @@ export function ZoneEditorPage() {
           ? geometry.coordinates[0].length - 1 // Subtract 1 to exclude the closing vertex
           : 0;
 
+      const turfFeature = {
+        type: 'Feature' as const,
+        properties: {},
+        geometry,
+      };
+      const areaSqKm = area(turfFeature) / 1_000_000;
+
       // Create the zone
       const zone: DrawnZone = {
         id: crypto.randomUUID(),
         type: activeDrawType,
         geometry,
-        areaSqKm: 0,
+        areaSqKm,
         vertexCount,
         createdAt: new Date(),
       };
