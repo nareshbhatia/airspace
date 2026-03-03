@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { ZoneEditorDrawBridge } from './ZoneEditorDrawBridge';
 import { ZoneEditorSidebar } from './ZoneEditorSidebar';
+import { ZoneEditorZonesLayer } from './ZoneEditorZonesLayer';
 import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
@@ -96,6 +97,7 @@ export function ZoneEditorPage() {
           zoom={12}
           className="w-full h-full"
         >
+          <ZoneEditorZonesLayer zones={zones} />
           <ZoneEditorDrawBridge
             onDrawReady={handleDrawReady}
             onDrawCreate={handleDrawCreate}
