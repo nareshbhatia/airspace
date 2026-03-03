@@ -1,14 +1,26 @@
 import { Button } from '../../../components/ui/button';
 import { cn } from '../../../utils/cn';
 
+import type { DrawnZone, ZoneType } from './types';
+
 interface ZoneEditorSidebarProps {
   className?: string;
+  zones: DrawnZone[];
+  activeDrawType: ZoneType | null;
+  onSelectType: (type: ZoneType) => void;
+  onCancel: () => void;
 }
 
 /**
  * Left sidebar for the Zone Editor: drawing mode toolbar and zone list.
  */
-export function ZoneEditorSidebar({ className }: ZoneEditorSidebarProps) {
+export function ZoneEditorSidebar({
+  className,
+  zones,
+  activeDrawType,
+  onSelectType,
+  onCancel,
+}: ZoneEditorSidebarProps) {
   return (
     <aside
       className={cn(
@@ -20,25 +32,42 @@ export function ZoneEditorSidebar({ className }: ZoneEditorSidebarProps) {
         <div className="flex flex-col gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant={
+              activeDrawType === 'mission-boundary' ? 'default' : 'outline'
+            }
             className="w-full justify-start"
+            onClick={() => onSelectType('mission-boundary')}
           >
             Mission Boundary
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant={activeDrawType === 'no-fly-zone' ? 'default' : 'outline'}
             className="w-full justify-start"
+            onClick={() => onSelectType('no-fly-zone')}
           >
             No-Fly Zone
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant={
+              activeDrawType === 'restricted-airspace' ? 'default' : 'outline'
+            }
             className="w-full justify-start"
+            onClick={() => onSelectType('restricted-airspace')}
           >
             Restricted Airspace
           </Button>
+          {activeDrawType !== null && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-start"
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </div>
       <div className="min-h-0 flex-1 flex flex-col">
@@ -46,9 +75,15 @@ export function ZoneEditorSidebar({ className }: ZoneEditorSidebarProps) {
           Zones
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
-          <p className="text-sm text-muted-foreground">
-            Select a zone type above to start drawing.
-          </p>
+          {zones.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Select a zone type above to start drawing.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {zones.length} zone{zones.length === 1 ? '' : 's'} committed.
+            </p>
+          )}
         </div>
       </div>
     </aside>
