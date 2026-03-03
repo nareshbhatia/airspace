@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { area } from '@turf/area';
 
 import { ZoneEditorDrawBridge } from './ZoneEditorDrawBridge';
+import { ZoneEditorMapFit } from './ZoneEditorMapFit';
 import { ZoneEditorSidebar } from './ZoneEditorSidebar';
 import { ZoneEditorZonesLayer } from './ZoneEditorZonesLayer';
 import { airportById } from '../../../gen/airports';
@@ -17,7 +18,21 @@ import type MapboxDraw from '@mapbox/mapbox-gl-draw';
 export function ZoneEditorPage() {
   const [zones, setZones] = useState<DrawnZone[]>([]);
   const [activeDrawType, setActiveDrawType] = useState<ZoneType | null>(null);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const drawRef = useRef<MapboxDraw | null>(null);
+
+  const handleZoneSelect = useCallback((zoneId: string) => {
+    setSelectedZoneId(zoneId);
+  }, []);
+
+  const handleDeselect = useCallback(() => {
+    setSelectedZoneId(null);
+  }, []);
+
+  const selectedZone =
+    selectedZoneId != null
+      ? (zones.find((z) => z.id === selectedZoneId) ?? null)
+      : null;
 
   const handleDrawReady = useCallback((draw: MapboxDraw | null) => {
     drawRef.current = draw;
@@ -91,16 +106,24 @@ export function ZoneEditorPage() {
     setActiveDrawType(null);
   }, []);
 
-  const handleDeleteZone = useCallback((zoneId: string) => {
-    setZones((prev) => prev.filter((z) => z.id !== zoneId));
-  }, []);
+  const handleDeleteZone = useCallback(
+    (zoneId: string) => {
+      if (zoneId === selectedZoneId) {
+        setSelectedZoneId(null);
+      }
+      setZones((prev) => prev.filter((z) => z.id !== zoneId));
+    },
+    [selectedZoneId],
+  );
 
   return (
     <div className="relative flex flex-1 min-h-0">
       <ZoneEditorSidebar
         zones={zones}
         activeDrawType={activeDrawType}
+        selectedZoneId={selectedZoneId}
         onSelectType={handleSelectType}
+        onSelectZone={handleZoneSelect}
         onCancel={handleCancel}
         onDeleteZone={handleDeleteZone}
       />
@@ -111,7 +134,13 @@ export function ZoneEditorPage() {
           zoom={12}
           className="w-full h-full"
         >
-          <ZoneEditorZonesLayer zones={zones} />
+          <ZoneEditorMapFit selectedZone={selectedZone} />
+          <ZoneEditorZonesLayer
+            zones={zones}
+            selectedZoneId={selectedZoneId}
+            onZoneSelect={handleZoneSelect}
+            onDeselect={handleDeselect}
+          />
           <ZoneEditorDrawBridge
             onDrawReady={handleDrawReady}
             onDrawCreate={handleDrawCreate}
