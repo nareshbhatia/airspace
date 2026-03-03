@@ -75,6 +75,7 @@ interface ZoneEditorZonesLayerProps {
   selectedZoneId: string | null;
   onZoneSelect: (zoneId: string) => void;
   onDeselect: () => void;
+  onEnterEditMode?: (zoneId: string) => void;
 }
 
 /**
@@ -87,6 +88,7 @@ export function ZoneEditorZonesLayer({
   selectedZoneId,
   onZoneSelect,
   onDeselect,
+  onEnterEditMode,
 }: ZoneEditorZonesLayerProps) {
   const { map } = useMap();
   const { setData } = useMapLayer(SOURCE_ID, layers, { promoteId: 'id' });
@@ -134,13 +136,16 @@ export function ZoneEditorZonesLayer({
     }
   }, [map, selectedZoneId]);
 
-  // Handle click to select a zone (fill or outline)
+  // Handle click to select a zone (fill or outline); also enter edit mode when selected from map
   function handleZoneLayerClick(e: unknown) {
     const ev = e as { features?: Array<{ properties?: { id?: string } }> };
     const features = ev.features;
     if (features?.length) {
       const id = features[0].properties?.id;
-      if (typeof id === 'string') onZoneSelect(id);
+      if (typeof id === 'string') {
+        onZoneSelect(id);
+        onEnterEditMode?.(id);
+      }
     }
   }
   useMapEvent('click', handleZoneLayerClick, ZONE_LAYER_IDS);
