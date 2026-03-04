@@ -6,22 +6,31 @@ import { createStore } from 'zustand/vanilla';
 export interface PlaybackStoreState {
   isPlaying: boolean;
   elapsedMs: number;
+  isAtEnd: boolean;
   play: () => void;
   pause: () => void;
   reset: () => void;
   _tick: (elapsedMs: number) => void;
+  _setAtEnd: (value: boolean) => void;
 }
 
-/** Vanilla store — importable by DroneService with no React dependency. */
+/**
+ * Vanilla store — importable by DroneService with no React dependency.
+ * The store's `play`, `pause`, and `reset` are for use by DroneServiceImpl
+ * when executing commands; components should call DroneService.play/pause/reset,
+ * not the store.
+ */
 export const playbackStore = createStore<PlaybackStoreState>()(
   devtools(
     (set) => ({
       isPlaying: false,
       elapsedMs: 0,
+      isAtEnd: false,
       play: () => set({ isPlaying: true }),
       pause: () => set({ isPlaying: false }),
-      reset: () => set({ isPlaying: false, elapsedMs: 0 }),
+      reset: () => set({ isPlaying: false, elapsedMs: 0, isAtEnd: false }),
       _tick: (elapsedMs) => set({ elapsedMs }),
+      _setAtEnd: (value) => set({ isAtEnd: value }),
     }),
     { name: 'PlaybackStore' },
   ),

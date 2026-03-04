@@ -35,6 +35,10 @@ export class DroneServiceImpl implements DroneService {
   /** Frames from the recorded telemetry stream. */
   private readonly frames = frames;
 
+  /** End of recording in ms (max timestamp in frames). Used to detect stream end. */
+  private readonly recordingDurationMs =
+    frames.length === 0 ? 0 : Math.max(...frames.map((f) => f.timestamp));
+
   /** Called once when the provider mounts. Auto-starts playback and the 10 Hz interval. */
   onInit(): void {
     playbackStore.getState().play();
@@ -86,7 +90,25 @@ export class DroneServiceImpl implements DroneService {
         }
 
         playbackStore.getState()._tick(elapsedMs);
+
+        if (
+          this.frameIndex >= this.frames.length &&
+          elapsedMs >= this.recordingDurationMs
+        ) {
+          this.stopAtEnd();
+        }
       });
+  }
+
+  /** Stops playback and sets store to "at end" when recording has finished. */
+  private stopAtEnd(): void {
+    if (this.runStop$) {
+      this.runStop$.next();
+      this.runStop$.complete();
+      this.runStop$ = null;
+    }
+    playbackStore.getState().pause();
+    playbackStore.getState()._setAtEnd(true);
   }
 
   /** Resume playback. Idempotent: only starts a new interval if not already playing. */

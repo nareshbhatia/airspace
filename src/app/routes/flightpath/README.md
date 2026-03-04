@@ -428,8 +428,8 @@ components or hooks.
 ┌────────────────────────┴────────────────────────────────┐
 │                    DroneService                         │
 │  Implements Service (onInit / onDestroy)                │
-│  RxJS interval drives 10 Hz playback                   │
-│  takeUntil(destroy$) manages all subscription cleanup  │
+│  RxJS interval drives 10 Hz playback                    │
+│  takeUntil(destroy$) manages all subscription cleanup   │
 │  Exposes play / pause / reset commands                  │
 └────────────────────────▲────────────────────────────────┘
                          │
@@ -723,7 +723,141 @@ architecture is designed to prevent.
 
 ---
 
-## Part 10: Telemetry Data
+## Part 10: Command Flow — How Components Send Commands
+
+The data flow from Service → Zustand → Components handles the read side cleanly.
+The write side — how components send commands back to the outside world —
+requires an equally deliberate answer.
+
+### The Two Options
+
+**Option A: Components call the Service directly**
+
+```typescript
+const droneService = useDroneService();
+droneService.arm(targetId);
+```
+
+**Option B: Components call a Zustand action, which delegates to the Service**
+
+```typescript
+const arm = useDroneStore((state) => state.arm);
+arm(targetId); // store action internally calls droneService.arm()
+```
+
+### Why Option B Is Architecturally Awkward
+
+Zustand stores are instantiated outside the React tree — before any Context
+exists. The Service is delivered via React Context (`DroneServiceContext`). A
+Zustand action has no access to Context, so routing commands through the store
+would require one of:
+
+- Importing the service singleton directly inside the store (breaking the
+  Context delivery model and testability), or
+- Storing a service reference inside Zustand state (violating the "no class
+  instances in state" rule), or
+- Some other workaround that adds indirection with no architectural benefit.
+
+Zustand is a state container, not a message bus. Routing commands through it
+asks it to do something it is not designed for.
+
+### Option A Is the Right Answer — With One Constraint
+
+Components call the Service directly for commands. This is clean, direct, and
+consistent with how Flightpath GCS works — `useMAVLinkService()` gives
+components access to `sendArmCommand`, `sendWaypoint`, and other command
+methods.
+
+The constraint that makes this safe is the **interface/implementation split**.
+Components never import `DroneServiceImpl` — they access `DroneService` (the
+interface) via `useDroneService()`. This means:
+
+- The component is fully testable — inject a mock service via Context
+- The component has no knowledge of how the command is executed
+- The implementation can change without touching any component
+
+```typescript
+// ✅ Component calls the interface — clean and testable
+function ArmButton({ targetId }: { targetId: string }) {
+  const droneService = useDroneService()
+  return (
+    <button onClick={() => droneService.arm(targetId)}>
+      Arm
+    </button>
+  )
+}
+```
+
+### When Zustand and the Service Are Both Called
+
+Many user interactions have two consequences: an immediate local UI change, and
+a command to the outside world. The component coordinates both — neither routes
+through the other:
+
+```typescript
+function DroneCard({ droneId }: { droneId: string }) {
+  const droneService = useDroneService()
+  const selectDrone  = useDroneStore(state => state.selectDrone)
+
+  const handleClick = () => {
+    selectDrone(droneId)                       // UI state → Zustand (immediate)
+    droneService.fetchMissionHistory(droneId)  // command → Service (async)
+  }
+
+  return <div onClick={handleClick}>...</div>
+}
+```
+
+`selectDrone` updates Zustand because selection is UI state — it belongs in the
+store and should be reflected immediately regardless of whether the async
+operation succeeds. `fetchMissionHistory` calls the Service because it initiates
+an operation that touches the outside world. Both happen in the same handler, at
+the same level, with no indirection between them.
+
+### The Clean Rule
+
+```
+UI state changes   →  Zustand actions       (store owns it)
+Commands to world  →  Service methods       (service owns it)
+Both at once       →  Component coordinates (call each directly)
+```
+
+This is the CQRS analogy made concrete. The `MAVLinkService` interface in
+Flightpath GCS makes this split explicit: Observables on the read side, command
+methods on the write side. Components sit at the boundary — reading from
+Zustand, writing through the Service — and the two worlds remain invisible to
+each other.
+
+### The Complete Data Flow
+
+With command flow added, the full architecture is symmetric:
+
+```
+                    React Components
+                   /                \
+          read (hooks)           write (methods)
+               |                       |
+        useDroneStore()          useDroneService()
+               |                       |
+        Zustand Store            DroneService
+               ▲                       |
+               |               (RxJS pipeline,
+        getState()._setX()       external I/O)
+               |                       |
+        DroneService  ◀────────────────┘
+               ▲
+               |
+        External world
+        (WebSocket / MAVLink / recorded stream)
+```
+
+Reads flow left (Service → Zustand → Components). Writes flow right (Components
+→ Service → external world → back through the pipeline as new streaming state).
+The Service is the only actor that touches both sides.
+
+---
+
+## Part 11: Telemetry Data
 
 ### Recorded Stream Format
 
@@ -750,7 +884,7 @@ linear interpolation — real flight dynamics are not required.
 
 ---
 
-## Part 11: Functional Requirements
+## Part 12: Functional Requirements
 
 ### Map
 
@@ -796,7 +930,7 @@ linear interpolation — real flight dynamics are not required.
 
 ---
 
-## Part 12: State
+## Part 13: State
 
 ### droneStore (vanilla)
 
@@ -804,7 +938,7 @@ linear interpolation — real flight dynamics are not required.
 | ----------------- | --------------------------------------------------- | ---------------------------------------- |
 | `drones`          | `Map<string, DroneState>`                           | Latest state per drone, keyed by droneId |
 | `selectedDroneId` | `string \| undefined`                               | Currently selected drone                 |
-| `selectDrone`     | `(id: string \| undefined) => void`                 | Called by components and DroneService    |
+| `selectDrone`     | `(id: string \| undefined) => void`                 | Called by components                     |
 | `_updateDrone`    | `(id: string, update: Partial<DroneState>) => void` | Called only by DroneService              |
 
 `Map<string, DroneState>` is preferred over `DroneState[]` because updates
@@ -824,14 +958,19 @@ interface DroneState {
 
 ### playbackStore (vanilla)
 
-| Field       | Type                          | Description                       |
-| ----------- | ----------------------------- | --------------------------------- |
-| `isPlaying` | `boolean`                     | Whether playback is active        |
-| `elapsedMs` | `number`                      | Milliseconds since playback start |
-| `play`      | `() => void`                  | Start or resume                   |
-| `pause`     | `() => void`                  | Pause                             |
-| `reset`     | `() => void`                  | Restart from beginning            |
-| `_tick`     | `(elapsedMs: number) => void` | Called only by DroneService       |
+| Field       | Type                          | Description                                              |
+| ----------- | ----------------------------- | -------------------------------------------------------- |
+| `isPlaying` | `boolean`                     | Whether playback is active                               |
+| `elapsedMs` | `number`                      | Milliseconds since playback start                        |
+| `play`      | `() => void`                  | Start or resume (called only by DroneServiceImpl)        |
+| `pause`     | `() => void`                  | Pause (called only by DroneServiceImpl)                  |
+| `reset`     | `() => void`                  | Restart from beginning (called only by DroneServiceImpl) |
+| `_tick`     | `(elapsedMs: number) => void` | Called only by DroneService                              |
+
+Components must not call the store's `play`, `pause`, or `reset` for commands —
+those are used by `DroneServiceImpl` to keep store state in sync. For playback
+commands, components call `DroneService` (e.g. `useDroneService().play()`). Use
+this store only to **read** `isPlaying` and `elapsedMs` for display.
 
 Both stores are created with `createStore` from `zustand/vanilla`. React
 components access them via thin `useDroneStore` and `usePlaybackStore` hooks
@@ -839,7 +978,7 @@ wrapping `useStore` from `zustand`.
 
 ---
 
-## Part 13: File Structure
+## Part 14: File Structure
 
 ```
 src/
@@ -871,7 +1010,7 @@ the Flightpath GCS versions, reusable for any future service.
 
 ---
 
-## Part 14: DroneServiceImpl
+## Part 15: DroneServiceImpl
 
 ```typescript
 // DroneServiceImpl.ts — zero React imports
@@ -965,7 +1104,7 @@ Zero React imports anywhere in the file.
 
 ---
 
-## Part 15: Tech Concepts This Page Teaches
+## Part 16: Tech Concepts This Page Teaches
 
 **The three categories of state** — UI state, server request/response state, and
 real-time streaming state. Understanding which category a piece of state belongs
@@ -1018,7 +1157,7 @@ data requires only a new `DroneServiceImpl` — no component changes.
 
 ---
 
-## Part 16: Out of Scope
+## Part 17: Out of Scope
 
 - Actual MAVLink protocol (simulated stream sufficient to learn the pattern)
 - Altitude, battery, or other telemetry beyond 2D position
@@ -1028,7 +1167,7 @@ data requires only a new `DroneServiceImpl` — no component changes.
 
 ---
 
-## Part 17: Implementation Steps
+## Part 18: Implementation Steps
 
 | Step                              | What to Build                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | What You Learn                                                                                                                                      |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1036,7 +1175,7 @@ data requires only a new `DroneServiceImpl` — no component changes.
 | **Step 2** Vanilla Stores         | Create `droneStore.ts` using `createStore` from `zustand/vanilla`. Export both the vanilla `droneStore` and the `useDroneStore` hook wrapper. Same pattern for `playbackStore`. Add `devtools` middleware to both.                                                                                                                                                                                                                                                                                                                                                                                   | Vanilla-first store pattern, the explicit separation of vanilla store from React hook.                                                              |
 | **Step 3** Service Infrastructure | Copy `Service.ts` and `ServiceProvider.tsx` from Flightpath GCS unchanged. Create `DroneService.ts` interface, `DroneServiceContext.ts`, `DroneServiceProvider.tsx` following the MAVLink pattern exactly.                                                                                                                                                                                                                                                                                                                                                                                           | Full Service pattern — interface, generic provider, Context delivery.                                                                               |
 | **Step 4** DroneServiceImpl       | Implement with `interval(100).pipe(takeUntil(this.destroy$))`. Import vanilla `droneStore` directly. Walk frames, push via `getState()`. Implement `onDestroy` with `destroy$.next()` + `complete()`. Verify in DevTools that `_updateDrone` fires 10 times per second.                                                                                                                                                                                                                                                                                                                              | `takeUntil` lifecycle pattern, vanilla store bridge, zero React imports discipline, DevTools verification.                                          |
-| **Step 5** Layout + Sidebar       | Wrap `FlightpathPage` in `DroneServiceProvider`. Two-panel layout. Sidebar subscribes to `drones` Map via `useDroneStore`, converts to array, renders `DroneCard` per drone with `shallow` selector. Wire playback controls to `usePlaybackStore`.                                                                                                                                                                                                                                                                                                                                                   | Consuming `Map<string, DroneState>`, `shallow` selectors, selective re-renders.                                                                     |
+| **Step 5** Layout + Sidebar       | Wrap `FlightpathPage` in `DroneServiceProvider`. Two-panel layout. Sidebar subscribes to `drones` Map via `useDroneStore`, converts to array, renders `DroneCard` per drone with `shallow` selector. Wire playback **commands** to `useDroneService().play/pause/reset`; use `usePlaybackStore` to **read** `isPlaying` and `elapsedMs` for display.                                                                                                                                                                                                                                                 | Consuming `Map<string, DroneState>`, `shallow` selectors, selective re-renders.                                                                     |
 | **Step 6** Map + Drone Layer      | Render all drones as a Mapbox symbol layer. On each store change, convert Map to GeoJSON FeatureCollection, call `setData`. Custom SVG drone icon with `icon-rotate` from heading property.                                                                                                                                                                                                                                                                                                                                                                                                          | `useMapLayer` + `setData` at 10 Hz, data-driven rotation, GeoJSON from Map.                                                                         |
 | **Step 7** Drone Selection        | Click handler on symbol layer and sidebar cards. On select: feature-state highlight, sidebar highlight, `useFlyTo`. Deselect on background click.                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Feature-state in real-time context, sidebar-map sync, `useFlyTo`.                                                                                   |
 | **Step 8** Connection Status      | Derive `isActive` from `lastUpdatedAt` — Lost if no update in 2 seconds. Show colored indicator on each card.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Heartbeat detection from timestamp — the same pattern used in real GCS systems.                                                                     |
