@@ -168,3 +168,52 @@ export function FlightCommandPanel({
   );
 }
 ```
+
+## Repository Management
+
+We use one of two approaches to manage repositories:
+
+1. For simple projects, we use a **polyrepo** strategy where each project or
+   service is assigned its own independent repository.
+2. For complex projects, we use a **monorepo** strategy where all projects,
+   libraries and services are consolidated into a single repository.
+
+If a repository contains a `turbo.json` file at the root level, it is a monorepo
+otherwise it is a polyrepo. That's because we use
+[Turborepo](https://turborepo.dev/) to manage our monorepos and `turbo.json` is
+the configuration file for turborepo.
+
+## Dependencies Management
+
+We use [pnpm](https://pnpm.io/) as our package manager. Commands to add a new
+dependency to a repository depend on whether it is a polyrepo or a monorepo.
+
+### Adding a dependency to a polyrepo
+
+```shell
+# add a regular dependency
+pnpm add <pkg>
+
+# add a dev dependency
+pnpm add -D <pkg>
+
+# Example
+pnpm add date-fns
+```
+
+### Adding a dependency to a monorepo
+
+When installing a dependency in a monorepo, it should be installed directly in
+the package that uses it. The package's package.json will have every dependency
+that the package needs.
+
+```shell
+# add a regular dependency
+pnpm add <pkg> --filter <pkg_selector>
+
+# add a dev dependency
+pnpm add -D <pkg> --filter <pkg_selector>
+
+# Example
+pnpm add date-fns --filter @flightpath/autopilot
+```
