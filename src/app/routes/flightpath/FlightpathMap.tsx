@@ -1,3 +1,4 @@
+import { DroneLayer } from './DroneLayer';
 import { airportById } from '../../../gen/airports';
 import { MapProvider, ZoomControl } from '../../../lib/mapbox';
 import { cn } from '../../../utils/cn';
@@ -19,6 +20,7 @@ export function FlightpathMap({ className }: FlightpathMapProps) {
         zoom={13}
         className="w-full h-full"
       >
+        <DroneLayer />
         <ZoomControl />
       </MapProvider>
     </div>
