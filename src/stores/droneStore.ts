@@ -28,18 +28,27 @@ const initialState = {
 /** Vanilla store — importable by Services with no React dependency. */
 export const droneStore = createStore<DroneStoreState>()(
   devtools(
+    // subscribeWithSelector: enables selectors that only re-run when selected slice changes (e.g. one drone).
     subscribeWithSelector((set) => ({
       ...initialState,
       selectDrone: (id) => set({ selectedDroneId: id }),
+      // Upsert: create drone if missing, otherwise merge update into existing. Used by DroneServiceImpl at 10 Hz.
       _updateDrone: (id, update) =>
         set((state) => {
           const existing = state.drones.get(id);
-          if (!existing) {
-            console.error(`Cannot update non-existent drone: ${id}`);
-            return state;
-          }
+          // Keep existing callSign on update; for new drones derive from id (e.g. "alpha" → "Alpha").
+          const callSign =
+            existing?.callSign ??
+            id.charAt(0).toUpperCase() + id.slice(1).toLowerCase();
           return {
+            // New Map so Zustand detects change; set(id, value) replaces or adds the drone.
             drones: new Map(state.drones).set(id, {
+              droneId: id,
+              callSign,
+              lat: 0,
+              lng: 0,
+              heading: 0,
+              lastUpdatedAt: 0,
               ...existing,
               ...update,
             }),
