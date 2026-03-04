@@ -1,0 +1,22 @@
+export const AccentEnum = {
+  Neutral: 'neutral',
+  Amber: 'amber',
+  Blue: 'blue',
+  Cyan: 'cyan',
+  Emerald: 'emerald',
+  Fuchsia: 'fuchsia',
+  Green: 'green',
+  Indigo: 'indigo',
+  Lime: 'lime',
+  Orange: 'orange',
+  Pink: 'pink',
+  Purple: 'purple',
+  Red: 'red',
+  Rose: 'rose',
+  Sky: 'sky',
+  Teal: 'teal',
+  Violet: 'violet',
+  Yellow: 'yellow',
+} as const;
+
+export type Accent = (typeof AccentEnum)[keyof typeof AccentEnum];
