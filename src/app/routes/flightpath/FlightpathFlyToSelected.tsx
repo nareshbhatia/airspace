@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { useFlyTo } from '../../../lib/mapbox';
 import { useDroneStore } from '../../../stores/droneStore';
 
@@ -11,9 +13,19 @@ export function FlightpathFlyToSelected() {
   const selectedDrone = selectedDroneId
     ? drones.get(selectedDroneId)
     : undefined;
-  const center = selectedDrone
-    ? { lat: selectedDrone.lat, lng: selectedDrone.lng }
-    : undefined;
-  useFlyTo(center, { zoom: 14, duration: 1500 });
+  // Only fly when selection changes, not when position updates (avoids 10 Hz re-renders)
+  const [centerOnSelection, setCenterOnSelection] = useState<
+    { lat: number; lng: number } | undefined
+  >(undefined);
+  useEffect(() => {
+    if (selectedDrone) {
+      setCenterOnSelection({ lat: selectedDrone.lat, lng: selectedDrone.lng });
+    } else {
+      setCenterOnSelection(undefined);
+    }
+    // Intentionally depend only on selectedDroneId so we don't fly on every position update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDroneId]);
+  useFlyTo(centerOnSelection, { zoom: 14, duration: 1500 });
   return null;
 }
