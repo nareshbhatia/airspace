@@ -1,4 +1,5 @@
 import { DroneLayer } from './DroneLayer';
+import { FlightpathFlyToSelected } from './FlightpathFlyToSelected';
 import { airportById } from '../../../gen/airports';
 import { MapProvider, ZoomControl } from '../../../lib/mapbox';
 import { cn } from '../../../utils/cn';
@@ -21,6 +22,7 @@ export function FlightpathMap({ className }: FlightpathMapProps) {
         className="w-full h-full"
       >
         <DroneLayer />
+        <FlightpathFlyToSelected />
         <ZoomControl />
       </MapProvider>
     </div>
