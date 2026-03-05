@@ -2,7 +2,7 @@
  * Drone Service Implementation — Simulation Mode
  * ================================================
  *
- * Drives an infinite V-formation telemetry stream and bridges it to the
+ * Drives an infinite wedge-formation telemetry stream and bridges it to the
  * Zustand stores that React components read from. This is the heart of
  * the stress-test architecture:
  *
