@@ -1,5 +1,6 @@
 import { RootLayout } from './app/RootLayout';
 import { FlightpathPage } from './app/routes/flightpath/FlightpathPage';
+import { FlightpathOLPage } from './app/routes/flightpath-ol/FlightpathOLPage';
 import { MarkPlacesPage } from './app/routes/mark-places/MarkPlacesPage';
 import { NavigatePage } from './app/routes/navigate/NavigatePage';
 import { NotFoundPage } from './app/routes/not-found/NotFoundPage';
@@ -16,6 +17,7 @@ const navElementByPath: Record<string, ReactNode> = {
   '/mark-places': <MarkPlacesPage />,
   '/traffic-monitor': <TrafficMonitorPage />,
   '/flightpath': <FlightpathPage />,
+  '/flightpath-ol': <FlightpathOLPage />,
   '/zone-editor': <ZoneEditorPage />,
   '/nyc-subway-stops': <NycSubwayStopsPage />,
 };
