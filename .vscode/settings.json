@@ -4,6 +4,7 @@
     "asynciterable",
     "autodocs",
     "callsign",
+    "CARTO",
     "cartodb",
     "clsx",
     "codegen",

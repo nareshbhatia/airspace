@@ -10,6 +10,8 @@ An evolving lab for geospatial and autonomous systems UI.
 
 ![Screenshot](assets/screenshot.png)
 
+![Screenshot](assets/wedge-formation.png)
+
 ## Prerequisites for development
 
 1. Install [Node Version Manager](https://github.com/nvm-sh/nvm) (nvm). It
