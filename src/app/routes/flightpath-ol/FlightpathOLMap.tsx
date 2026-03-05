@@ -161,9 +161,7 @@ export function FlightpathOLMap({ className }: FlightpathOLMapProps) {
         | Feature<Point>
         | undefined;
       if (!feature) {
-        feature = new Feature({
-          geometry: new Point(fromLonLat([drone.lng, drone.lat])),
-        });
+        feature = new Feature<Point>();
         feature.setId(drone.droneId);
         toAdd.push(feature);
       }

@@ -6,8 +6,8 @@ import { FlightpathSidebar } from '../flightpath/FlightpathSidebar';
 /**
  * Flightpath (OpenLayers) page. Same functionality as the Flightpath page:
  * DroneServiceProvider, sidebar with playback and drone list, and a map.
- * The map is implemented with OpenLayers and shows a single drone (selected
- * drone if set, otherwise the first drone in the store).
+ * The map is implemented with OpenLayers and renders all drones from the
+ * drone store, with click-to-select and fly-to-selected behavior.
  */
 export function FlightpathOLPage() {
   return (
