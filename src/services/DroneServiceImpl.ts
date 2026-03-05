@@ -50,26 +50,29 @@
  *
  * Elapsed Time Tracking:
  *   The playbackStore.elapsedMs is computed as:
- *     elapsedMs = initialElapsedMs + tick * periodMs
- *   where initialElapsedMs is captured at the start of each play() run.
+ *     elapsedMs = initialElapsedMs + (tick + 1) * periodMs
+ *   where initialElapsedMs is captured at the start of each play() run and
+ *   tick is the 0-indexed value from interval(periodMs) (0, 1, 2, ...). The
+ *   (tick + 1) is required because the first emission (tick = 0) occurs
+ *   after one period has elapsed, the second after two periods, and so on.
  *   This allows pause/resume to continue the timer seamlessly:
  *     - User plays for 5s → pauses → elapsedMs = 5000
  *     - User resumes → initialElapsedMs = 5000, tick starts at 0
- *     - After 3 more seconds → elapsedMs = 5000 + 30 * 100 = 8000
+ *     - After 3 more seconds (30 ticks) → elapsedMs = 5000 + 30 * 100 = 8000
  */
 
 import { EMPTY, interval, merge, Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
-import {
-  createTelemetryGenerator,
-  type FormationConfig,
-  type TelemetryGenerator,
-} from './formation-telemetry-generator';
+import { createTelemetryGenerator } from './formation-telemetry-generator';
 import { droneStore } from '../stores/droneStore';
 import { playbackStore } from '../stores/playbackStore';
 
 import type { DroneService } from './DroneService';
+import type {
+  FormationConfig,
+  TelemetryGenerator,
+} from './formation-telemetry-generator';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -220,9 +223,8 @@ export class DroneServiceImpl implements DroneService {
         droneStore.getState()._updateDrones(states);
 
         // 3. Update elapsed time for UI display
-        //    tick is 0-indexed from the start of THIS run, so we add
-        //    initialElapsedMs to account for time before this run.
-        const elapsedMs = initialElapsedMs + tick * this.periodMs;
+        //    tick is 0-indexed; when tick = n, (n+1) periods have elapsed.
+        const elapsedMs = initialElapsedMs + (tick + 1) * this.periodMs;
         playbackStore.getState()._tick(elapsedMs);
       });
   }
