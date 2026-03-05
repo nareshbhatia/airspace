@@ -16,7 +16,7 @@ interface FPSMeterProps {
 
 // Measures and displays frames per second (FPS) in real time
 export function FPSMeter({ className }: FPSMeterProps) {
-  const [fps, setFps] = useState(60);
+  const [fps, setFps] = useState<number>();
 
   useEffect(() => {
     let lastTime = performance.now();
@@ -61,9 +61,9 @@ export function FPSMeter({ className }: FPSMeterProps) {
 
   return (
     <MetricDisplay
-      value={fps.toString()}
+      value={fps !== undefined ? fps.toString() : '-'}
       unit="FPS"
-      severity={getFPSSeverity(fps)}
+      severity={fps !== undefined ? getFPSSeverity(fps) : 'info'}
       className={className}
     />
   );
