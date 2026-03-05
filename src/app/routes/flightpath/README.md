@@ -433,8 +433,10 @@ components or hooks.
 │  Exposes play / pause / reset commands                  │
 └────────────────────────▲────────────────────────────────┘
                          │
-              telemetry.json (recorded stream)
-              Frames for N drones at 10 Hz
+┌────────────────────────┴────────────────────────────────┐
+│                TelemetryGenerator                       │
+│  Generates drone telemetry for a wedge formation        │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -983,23 +985,24 @@ wrapping `useStore` from `zustand`.
 ```
 src/
   stores/
-    droneStore.ts         ← vanilla store + useDroneStore hook
-    playbackStore.ts      ← vanilla store + usePlaybackStore hook
+    droneStore.ts           ← vanilla store + useDroneStore hook
+    playbackStore.ts        ← vanilla store + usePlaybackStore hook
 
   services/
-    Service.ts            ← Service interface (onInit / onDestroy)
-    ServiceProvider.tsx   ← generic lifecycle provider
-    DroneService.ts       ← interface extending Service
-    DroneServiceImpl.ts   ← RxJS pipeline + Zustand bridge
-    DroneServiceContext.ts
-    DroneServiceProvider.tsx
+    Service.ts              ← Service interface (onInit / onDestroy)
+    ServiceProvider.tsx     ← generic lifecycle provider
+    DroneService.ts         ← interface extending Service
+    DroneServiceImpl.ts     ← RxJS pipeline + Zustand bridge
+    telemetry-generator.ts  ← generates telemetry for a wedge formation
 
-  gen/
-    telemetry.json
+  providers/
+    DroneServiceProvider/
+      DroneServiceContext.ts
+      DroneServiceProvider.tsx
 
   routes/
     flightpath/
-      FlightpathPage.tsx      ← layout shell, wraps DroneServiceProvider
+      FlightpathPage.tsx    ← layout shell, wraps DroneServiceProvider
       FlightpathSidebar.tsx
       FlightpathMap.tsx
       DroneCard.tsx
@@ -1012,91 +1015,8 @@ the Flightpath GCS versions, reusable for any future service.
 
 ## Part 15: DroneServiceImpl
 
-```typescript
-// DroneServiceImpl.ts — zero React imports
-import { interval, Subject } from 'rxjs';
-import { catchError, takeUntil } from 'rxjs/operators';
-import { droneStore } from '../stores/droneStore';
-import { playbackStore } from '../stores/playbackStore';
-import telemetryData from '../../../gen/telemetry.json';
-
-export class DroneServiceImpl implements DroneService {
-  // Single destroy signal — terminates all subscriptions in onDestroy
-  private readonly destroy$ = new Subject<void>();
-  private frameIndex = 0;
-  private readonly frames: TelemetryFrame[] = telemetryData;
-
-  onInit() {
-    this.startPlayback();
-  }
-
-  onDestroy() {
-    // One call — all subscriptions with takeUntil(this.destroy$) stop simultaneously
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private startPlayback() {
-    interval(100)
-      .pipe(
-        takeUntil(this.destroy$), // automatic cleanup — no manual unsubscribe needed
-        // In a mission-critical app, never let an unhandled error tear down the stream silently.
-        // Surface it, fail closed, and stop this pipeline explicitly.
-        catchError((error) => {
-          // TODO: replace console.error with structured logging / telemetry
-          // and update a dedicated "stream health" indicator in state.
-          // The key property is that we stop emitting frames on error instead of
-          // continuing in an undefined state.
-          // eslint-disable-next-line no-console
-          console.error('[DroneService] playback stream failed', error);
-          return EMPTY; // terminate this playback pipeline
-        }),
-      )
-      .subscribe((tick) => {
-        const elapsedMs = tick * 100;
-
-        while (
-          this.frameIndex < this.frames.length &&
-          this.frames[this.frameIndex].timestamp <= elapsedMs
-        ) {
-          const frame = this.frames[this.frameIndex++];
-
-          // THE BRIDGE: vanilla store accessed directly, no React involved
-          droneStore.getState()._updateDrone(frame.droneId, {
-            lat: frame.lat,
-            lng: frame.lng,
-            heading: frame.heading,
-            lastUpdatedAt: Date.now(),
-          });
-        }
-
-        playbackStore.getState()._tick(elapsedMs);
-      });
-  }
-
-  play() {
-    // Re-start the interval if not already running
-    // takeUntil will have stopped it on pause; startPlayback creates a new subscription
-    if (!playbackStore.getState().isPlaying) {
-      this.startPlayback();
-      playbackStore.getState().play();
-    }
-  }
-
-  pause() {
-    // Signal the destroy subject to stop the current interval
-    this.destroy$.next();
-    playbackStore.getState().pause();
-  }
-
-  reset() {
-    this.pause();
-    this.frameIndex = 0;
-    playbackStore.getState().reset(); // reset elapsedMs and related playback state
-    this.play(); // idempotent: starts a new interval only if not already playing
-  }
-}
-```
+Implement DroneServiceImpl to drive an infinite V-formation telemetry stream and
+bridge it to the Zustand stores that React components read from.
 
 Key points: `droneStore` and `playbackStore` are imported as vanilla objects,
 not hooks. `takeUntil(this.destroy$)` replaces manual subscription tracking.
@@ -1169,17 +1089,17 @@ data requires only a new `DroneServiceImpl` — no component changes.
 
 ## Part 18: Implementation Steps
 
-| Step                              | What to Build                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | What You Learn                                                                                                                                      |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Step 1** Telemetry Data         | Ask an AI to generate `telemetry.json`. Provide the prompt: _"Generate a JSON array of telemetry frames for 3 drones named alpha, bravo, and charlie flying distinct paths near Boston Logan Airport. Each frame has fields: droneId (string), timestamp (ms from 0), lat (WGS84), lng (WGS84), heading (degrees 0–360). Simulate 30 seconds at 10 Hz (300 frames per drone, 900 total), interleaved chronologically. Each drone should fly a realistic curved path — no sharp teleports. Return only the JSON array."_ Verify the output looks sensible by pasting the coordinates into geojson.io. | Prompting AI for structured data generation, validating coordinate data visually, understanding the telemetry frame schema before writing any code. |
-| **Step 2** Vanilla Stores         | Create `droneStore.ts` using `createStore` from `zustand/vanilla`. Export both the vanilla `droneStore` and the `useDroneStore` hook wrapper. Same pattern for `playbackStore`. Add `devtools` middleware to both.                                                                                                                                                                                                                                                                                                                                                                                   | Vanilla-first store pattern, the explicit separation of vanilla store from React hook.                                                              |
-| **Step 3** Service Infrastructure | Copy `Service.ts` and `ServiceProvider.tsx` from Flightpath GCS unchanged. Create `DroneService.ts` interface, `DroneServiceContext.ts`, `DroneServiceProvider.tsx` following the MAVLink pattern exactly.                                                                                                                                                                                                                                                                                                                                                                                           | Full Service pattern — interface, generic provider, Context delivery.                                                                               |
-| **Step 4** DroneServiceImpl       | Implement with `interval(100).pipe(takeUntil(this.destroy$))`. Import vanilla `droneStore` directly. Walk frames, push via `getState()`. Implement `onDestroy` with `destroy$.next()` + `complete()`. Verify in DevTools that `_updateDrone` fires 10 times per second.                                                                                                                                                                                                                                                                                                                              | `takeUntil` lifecycle pattern, vanilla store bridge, zero React imports discipline, DevTools verification.                                          |
-| **Step 5** Layout + Sidebar       | Wrap `FlightpathPage` in `DroneServiceProvider`. Two-panel layout. Sidebar subscribes to `drones` Map via `useDroneStore`, converts to array, renders `DroneCard` per drone with `shallow` selector. Wire playback **commands** to `useDroneService().play/pause/reset`; use `usePlaybackStore` to **read** `isPlaying` and `elapsedMs` for display.                                                                                                                                                                                                                                                 | Consuming `Map<string, DroneState>`, `shallow` selectors, selective re-renders.                                                                     |
-| **Step 6** Map + Drone Layer      | Render all drones as a Mapbox symbol layer. On each store change, convert Map to GeoJSON FeatureCollection, call `setData`. Custom SVG drone icon with `icon-rotate` from heading property.                                                                                                                                                                                                                                                                                                                                                                                                          | `useMapLayer` + `setData` at 10 Hz, data-driven rotation, GeoJSON from Map.                                                                         |
-| **Step 7** Drone Selection        | Click handler on symbol layer and sidebar cards. On select: feature-state highlight, sidebar highlight, `useFlyTo`. Deselect on background click.                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Feature-state in real-time context, sidebar-map sync, `useFlyTo`.                                                                                   |
-| **Step 8** Connection Status      | Derive `isActive` from `lastUpdatedAt` — Lost if no update in 2 seconds. Show colored indicator on each card.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Heartbeat detection from timestamp — the same pattern used in real GCS systems.                                                                     |
-| **Step 9** Polish                 | Status bar overlay. Verify no memory leaks on unmount using DevTools. Test pause/resume/reset. Confirm `DroneServiceImpl` has zero React imports. Add `distinctUntilChanged` to the playback pipeline and verify in DevTools that redundant frames are filtered.                                                                                                                                                                                                                                                                                                                                     | Cleanup verification, `distinctUntilChanged` effect visible in DevTools, full pipeline discipline.                                                  |
+| Step                              | What to Build                                                                                                                                                                                                                                                                                                                                        | What You Learn                                                                                             |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Step 1** Telemetry Data         | Create a telemetry information generator that generates telemetry for a wedge formation. Each frame has fields: droneId (string), timestamp (ms from 0), lat (WGS84), lng (WGS84), heading (degrees 0–360).                                                                                                                                          | Structured data generation, understanding the telemetry frame schema before writing any code.              |
+| **Step 2** Vanilla Stores         | Create `droneStore.ts` using `createStore` from `zustand/vanilla`. Export both the vanilla `droneStore` and the `useDroneStore` hook wrapper. Same pattern for `playbackStore`. Add `devtools` middleware to both.                                                                                                                                   | Vanilla-first store pattern, the explicit separation of vanilla store from React hook.                     |
+| **Step 3** Service Infrastructure | Copy `Service.ts` and `ServiceProvider.tsx` from Flightpath GCS unchanged. Create `DroneService.ts` interface, `DroneServiceContext.ts`, `DroneServiceProvider.tsx` following the MAVLink pattern exactly.                                                                                                                                           | Full Service pattern — interface, generic provider, Context delivery.                                      |
+| **Step 4** DroneServiceImpl       | Implement with `interval(100).pipe(takeUntil(this.destroy$))`. Import vanilla `droneStore` directly. Walk frames, push via `getState()`. Implement `onDestroy` with `destroy$.next()` + `complete()`. Verify in DevTools that `_updateDrone` fires 10 times per second.                                                                              | `takeUntil` lifecycle pattern, vanilla store bridge, zero React imports discipline, DevTools verification. |
+| **Step 5** Layout + Sidebar       | Wrap `FlightpathPage` in `DroneServiceProvider`. Two-panel layout. Sidebar subscribes to `drones` Map via `useDroneStore`, converts to array, renders `DroneCard` per drone with `shallow` selector. Wire playback **commands** to `useDroneService().play/pause/reset`; use `usePlaybackStore` to **read** `isPlaying` and `elapsedMs` for display. | Consuming `Map<string, DroneState>`, `shallow` selectors, selective re-renders.                            |
+| **Step 6** Map + Drone Layer      | Render all drones as a Mapbox symbol layer. On each store change, convert Map to GeoJSON FeatureCollection, call `setData`. Custom SVG drone icon with `icon-rotate` from heading property.                                                                                                                                                          | `useMapLayer` + `setData` at 10 Hz, data-driven rotation, GeoJSON from Map.                                |
+| **Step 7** Drone Selection        | Click handler on symbol layer and sidebar cards. On select: feature-state highlight, sidebar highlight, `useFlyTo`. Deselect on background click.                                                                                                                                                                                                    | Feature-state in real-time context, sidebar-map sync, `useFlyTo`.                                          |
+| **Step 8** Connection Status      | Derive `isActive` from `lastUpdatedAt` — Lost if no update in 2 seconds. Show colored indicator on each card.                                                                                                                                                                                                                                        | Heartbeat detection from timestamp — the same pattern used in real GCS systems.                            |
+| **Step 9** Polish                 | Status bar overlay. Verify no memory leaks on unmount using DevTools. Test pause/resume/reset. Confirm `DroneServiceImpl` has zero React imports. Add `distinctUntilChanged` to the playback pipeline and verify in DevTools that redundant frames are filtered.                                                                                     | Cleanup verification, `distinctUntilChanged` effect visible in DevTools, full pipeline discipline.         |
 
 ---
 

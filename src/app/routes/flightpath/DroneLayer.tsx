@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-import droneIconUrl from './assets/drone.svg?url';
 import { dronesToFeatureCollection } from './utils/dronesToGeoJSON';
+import droneIconUrl from '../../../assets/airplane.svg?url';
 import { useMap, useMapEvent, useMapLayer } from '../../../lib/mapbox';
 import { useDroneStore } from '../../../stores/droneStore';
 
@@ -10,7 +10,7 @@ import type { DataDrivenPropertyValueSpecification } from 'mapbox-gl';
 const DRONES_SOURCE_ID = 'drones';
 const DRONE_SYMBOL_LAYER_ID = 'drones-symbols';
 const DRONE_ICON_ID = 'drone-icon';
-const ICON_SIZE = 64;
+const ICON_SIZE = 24;
 
 /** Selected drone: full opacity; others slightly dimmed (feature-state). */
 const iconOpacityExpression: DataDrivenPropertyValueSpecification<number> = [

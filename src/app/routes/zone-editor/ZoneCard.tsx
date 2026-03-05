@@ -99,7 +99,7 @@ export function ZoneCard({
                 onDelete(zone.id);
               }}
             >
-              <Trash2 className="size-3.5" />
+              <Trash2 />
             </Button>
           </CardAction>
         </CardHeader>

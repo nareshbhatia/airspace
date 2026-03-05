@@ -9,7 +9,6 @@
     "dev": "vite",
     "fix": "run-s _lint:fix _format:fix",
     "gen:airports": "node scripts/generate-airports.mjs",
-    "gen:telemetry": "node scripts/generate-telemetry.mjs",
     "lint": "run-s _lint _format",
     "preview": "vite preview",
     "_format": "prettier --list-different '*.{js,ts,json,md}' 'src/**/*.{css,js,jsx,ts,tsx,json,md}' 'scripts/**/*.{mjs,ts}'",

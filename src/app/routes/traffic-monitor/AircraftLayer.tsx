@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
 // Vite: import SVG as URL for map.loadImage
-import airplaneIconUrl from './assets/airplane.svg?url';
 import { aircraftToFeatureCollection } from './utils/aircraftToGeoJSON';
+import airplaneIconUrl from '../../../assets/airplane.svg?url';
 import { useMap, useMapLayer, useMapEvent } from '../../../lib/mapbox';
 
 import type { Aircraft } from './types';
