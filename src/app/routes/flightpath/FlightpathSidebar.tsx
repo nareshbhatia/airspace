@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { Pause, Play, SkipBack } from 'lucide-react';
+import { CirclePause, CirclePlay, Rewind } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 import { DroneCard } from './DroneCard';
@@ -21,7 +21,6 @@ interface FlightpathSidebarProps {
 export function FlightpathSidebar({ className }: FlightpathSidebarProps) {
   const droneService = useDroneService();
   const isPlaying = usePlaybackStore((state) => state.isPlaying);
-  const isAtEnd = usePlaybackStore((state) => state.isAtEnd);
   const elapsedMs = usePlaybackStore((state) => state.elapsedMs);
   const droneIds = useDroneStore(
     useShallow((state) => Array.from(state.drones.keys())),
@@ -41,12 +40,6 @@ export function FlightpathSidebar({ className }: FlightpathSidebarProps) {
 
   const elapsedSec = Math.floor(elapsedMs / 1000);
 
-  const statusLabel = isAtEnd
-    ? 'Stream ended'
-    : isPlaying
-      ? 'Stream playing'
-      : 'Stream paused';
-
   return (
     <aside
       className={cn(
@@ -54,55 +47,28 @@ export function FlightpathSidebar({ className }: FlightpathSidebarProps) {
         className,
       )}
     >
-      <header className="shrink-0 border-border border-b px-3 py-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <h1 className="text-foreground text-sm font-semibold tracking-tight">
-              Flightpath
-            </h1>
-            <p
-              className="text-muted-foreground text-xs mt-0.5 flex items-center gap-1.5"
-              aria-label={statusLabel}
-            >
-              <span
-                className={cn(
-                  'size-2 shrink-0 rounded-full',
-                  isAtEnd && 'bg-destructive',
-                  !isAtEnd && isPlaying && 'bg-success animate-pulse',
-                  !isAtEnd && !isPlaying && 'bg-warning',
-                )}
-                aria-hidden
-              />
-              <span>
-                {isAtEnd ? 'Ended' : isPlaying ? 'Playing' : 'Paused'}
-              </span>
-              <span className="font-mono tabular-nums text-foreground/80">
-                {elapsedSec}s
-              </span>
-            </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
+      <header className="flex flex-col gap-2 border-b px-3 py-3">
+        <h1 className="font-semibold">Flightpath</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleReset}
-              aria-label="Reset to start"
-            >
-              <SkipBack className="size-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
+              variant="secondary"
+              size="icon"
               onClick={handlePlayPause}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? (
-                <Pause className="size-3.5" />
-              ) : (
-                <Play className="size-3.5" />
-              )}
+              {isPlaying ? <CirclePause /> : <CirclePlay />}
             </Button>
+            <p className="font-mono text-xs">{elapsedSec}s</p>
           </div>
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={handleReset}
+            aria-label="Reset to start"
+          >
+            <Rewind />
+          </Button>
         </div>
       </header>
 

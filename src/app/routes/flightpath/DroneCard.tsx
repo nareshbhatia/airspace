@@ -43,7 +43,7 @@ export function DroneCard({ droneId }: DroneCardProps) {
     <Card
       size="sm"
       className={cn(
-        'cursor-pointer transition-colors',
+        'cursor-pointer transition-colors shrink-0',
         isSelected && 'ring-2 ring-primary',
       )}
       onClick={handleClick}
