@@ -1,5 +1,6 @@
 import { HeaderBrand } from './HeaderBrand';
 import { ModeToggle } from './ModeToggle';
+import { FPSMeter } from '../simple/FPSMeter';
 import { SidebarTrigger } from '../ui/sidebar';
 
 export function AppHeader() {
@@ -17,6 +18,7 @@ export function AppHeader() {
 
       {/* Right Section */}
       <div className="flex items-center justify-end">
+        <FPSMeter />
         <ModeToggle />
       </div>
     </header>
