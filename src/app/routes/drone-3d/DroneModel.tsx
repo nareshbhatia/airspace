@@ -25,12 +25,16 @@ export function DroneModel() {
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
-    // delta is seconds since last frame — use it for frame-rate-independent motion
-    groupRef.current.rotation.y += delta * 0.5;
-
     // state.clock.elapsedTime is total time since scene started
     const t = state.clock.elapsedTime;
-    groupRef.current.position.y = Math.sin(t * 1.5) * 0.2;
+
+    // Hover using gentle sinusoidal Y oscillation
+    // time = t, frequency = 1.5, amplitude = 20
+    groupRef.current.position.y = Math.sin(t * 1.5) * 20;
+
+    // Slow yaw rotation
+    // delta is seconds since last frame — use it for frame-rate-independent motion
+    groupRef.current.rotation.y += delta * 0.3;
   });
 
   return (
