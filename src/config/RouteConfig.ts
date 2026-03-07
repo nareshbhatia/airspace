@@ -1,5 +1,6 @@
 import {
   Activity,
+  Axis3D,
   Compass,
   Layers,
   Map,
@@ -24,4 +25,5 @@ export const mainNavItems: NavItem[] = [
   { path: '/flightpath-ol', title: 'Flightpath (OpenLayers)', icon: Map },
   { path: '/zone-editor', title: 'Zone Editor', icon: Layers },
   { path: '/nyc-subway-stops', title: 'NYC Subway Stops', icon: Train },
+  { path: '/drone-3d', title: '3D Drone', icon: Axis3D },
 ];
