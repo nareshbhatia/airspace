@@ -1,4 +1,5 @@
 import { RootLayout } from './app/RootLayout';
+import { Drone3DPage } from './app/routes/drone-3d/Drone3DPage';
 import { FlightpathPage } from './app/routes/flightpath/FlightpathPage';
 import { FlightpathOLPage } from './app/routes/flightpath-ol/FlightpathOLPage';
 import { MarkPlacesPage } from './app/routes/mark-places/MarkPlacesPage';
@@ -20,6 +21,7 @@ const navElementByPath: Record<string, ReactNode> = {
   '/flightpath-ol': <FlightpathOLPage />,
   '/zone-editor': <ZoneEditorPage />,
   '/nyc-subway-stops': <NycSubwayStopsPage />,
+  '/drone-3d': <Drone3DPage />,
 };
 
 export const routes: RouteObject[] = [
