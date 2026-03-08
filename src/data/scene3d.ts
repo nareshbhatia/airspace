@@ -25,7 +25,7 @@ export const airspaceZones: AirspaceZone[] = [
     name: 'Restricted Zone (Clarendon St)',
     type: 'restricted',
     color: '#f97316',
-    opacity: 0.2,
+    opacity: 0.55,
     floorAltM: 0,
     ceilingAltM: 150,
     footprint: [
@@ -41,7 +41,7 @@ export const airspaceZones: AirspaceZone[] = [
     name: 'Advisory Zone (Trinity Place)',
     type: 'advisory',
     color: '#22c55e',
-    opacity: 0.15,
+    opacity: 0.55,
     floorAltM: 50,
     ceilingAltM: 200,
     footprint: [
@@ -57,7 +57,7 @@ export const airspaceZones: AirspaceZone[] = [
     name: 'Mission Boundary (Stuart St)',
     type: 'mission',
     color: '#3b82f6',
-    opacity: 0.12,
+    opacity: 0.55,
     floorAltM: 0,
     ceilingAltM: 120,
     footprint: [

@@ -8,12 +8,20 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  * @param beforeLayerId - If set, the layer is inserted before this id (zones
  * behind that layer). If omitted, the layer is added on top so zones are visible.
  */
+/**
+ * Layer id prefix for airspace zone volumes. One layer per zone so each can
+ * have its own opacity (fill-extrusion-opacity is not data-driven in Mapbox).
+ * Use this prefix to toggle all zone layers (e.g. in a layer visibility panel).
+ */
+export const AIRSPACE_ZONE_LAYER_ID_PREFIX = 'airspace-zone-volumes-';
+
 export function addAirspaceZones(
   map: MapboxMap,
   zones: AirspaceZone[],
   beforeLayerId?: string,
 ): void {
-  if (map.getLayer('airspace-zone-volumes')) return;
+  const firstLayerId = `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${zones[0]?.id ?? ''}`;
+  if (zones.length === 0 || map.getLayer(firstLayerId)) return;
 
   if (!map.getSource('airspace-zones')) {
     map.addSource('airspace-zones', {
@@ -27,7 +35,6 @@ export function addAirspaceZones(
             name: zone.name,
             type: zone.type,
             color: zone.color,
-            opacity: zone.opacity,
             floor: zone.floorAltM,
             ceiling: zone.ceilingAltM,
           },
@@ -40,22 +47,26 @@ export function addAirspaceZones(
     });
   }
 
-  const layer = {
-    id: 'airspace-zone-volumes',
-    type: 'fill-extrusion' as const,
+  const layerOptions = (zone: AirspaceZone): Parameters<MapboxMap['addLayer']>[0] => ({
+    id: `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${zone.id}`,
+    type: 'fill-extrusion',
     source: 'airspace-zones',
+    filter: ['==', ['get', 'id'], zone.id],
     paint: {
-      'fill-extrusion-color': ['get', 'color'] as [string, string],
-      'fill-extrusion-base': ['get', 'floor'] as [string, string],
-      'fill-extrusion-height': ['get', 'ceiling'] as [string, string],
-      'fill-extrusion-opacity': 0.55,
+      'fill-extrusion-color': zone.color,
+      'fill-extrusion-base': zone.floorAltM,
+      'fill-extrusion-height': zone.ceilingAltM,
+      'fill-extrusion-opacity': zone.opacity,
     },
-  };
+  });
 
-  if (beforeLayerId !== undefined && map.getLayer(beforeLayerId)) {
-    map.addLayer(layer as Parameters<MapboxMap['addLayer']>[0], beforeLayerId);
-  } else {
-    map.addLayer(layer as Parameters<MapboxMap['addLayer']>[0]);
+  for (let i = 0; i < zones.length; i++) {
+    const layer = layerOptions(zones[i]);
+    if (beforeLayerId !== undefined && map.getLayer(beforeLayerId)) {
+      map.addLayer(layer, beforeLayerId);
+    } else {
+      map.addLayer(layer);
+    }
   }
 }
 
