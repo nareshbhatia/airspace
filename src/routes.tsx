@@ -2,6 +2,7 @@ import { RootLayout } from './app/RootLayout';
 import { Drone3DPage } from './app/routes/drone-3d/Drone3DPage';
 import { FlightpathPage } from './app/routes/flightpath/FlightpathPage';
 import { FlightpathOLPage } from './app/routes/flightpath-ol/FlightpathOLPage';
+import { Mapbox3DScenePage } from './app/routes/mapbox-3d-scene/Mapbox3DScenePage';
 import { MarkPlacesPage } from './app/routes/mark-places/MarkPlacesPage';
 import { NavigatePage } from './app/routes/navigate/NavigatePage';
 import { NotFoundPage } from './app/routes/not-found/NotFoundPage';
@@ -20,6 +21,7 @@ const navElementByPath: Record<string, ReactNode> = {
   '/flightpath': <FlightpathPage />,
   '/flightpath-ol': <FlightpathOLPage />,
   '/zone-editor': <ZoneEditorPage />,
+  '/mapbox-3d-scene': <Mapbox3DScenePage />,
   '/nyc-subway-stops': <NycSubwayStopsPage />,
   '/drone-3d': <Drone3DPage />,
 };
