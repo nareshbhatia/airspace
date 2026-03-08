@@ -6,6 +6,8 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  * render on top. OSM building data is only present at zoom 14+.
  */
 export function addBuildings(map: MapboxMap): void {
+  if (map.getLayer('3d-buildings')) return;
+
   const layers = map.getStyle().layers;
   const firstSymbolLayer = layers?.find(
     (l) =>
@@ -18,7 +20,7 @@ export function addBuildings(map: MapboxMap): void {
       id: '3d-buildings',
       source: 'composite',
       'source-layer': 'building',
-      filter: ['==', 'extrude', 'true'],
+      filter: ['==', ['get', 'extrude'], 'true'],
       type: 'fill-extrusion',
       minzoom: 14,
       paint: {
