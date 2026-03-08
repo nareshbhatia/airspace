@@ -1,4 +1,63 @@
+import type { AirspaceZone } from './types/AirspaceZone';
 import type { Map as MapboxMap } from 'mapbox-gl';
+
+/**
+ * Adds airspace zone volumes as a fill-extrusion layer. Zones are translucent
+ * boxes with floor/ceiling altitude from data.
+ *
+ * @param beforeLayerId - If set, the layer is inserted before this id (zones
+ * behind that layer). If omitted, the layer is added on top so zones are visible.
+ */
+export function addAirspaceZones(
+  map: MapboxMap,
+  zones: AirspaceZone[],
+  beforeLayerId?: string,
+): void {
+  if (map.getLayer('airspace-zone-volumes')) return;
+
+  if (!map.getSource('airspace-zones')) {
+    map.addSource('airspace-zones', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: zones.map((zone) => ({
+          type: 'Feature',
+          properties: {
+            id: zone.id,
+            name: zone.name,
+            type: zone.type,
+            color: zone.color,
+            opacity: zone.opacity,
+            floor: zone.floorAltM,
+            ceiling: zone.ceilingAltM,
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [zone.footprint],
+          },
+        })),
+      },
+    });
+  }
+
+  const layer = {
+    id: 'airspace-zone-volumes',
+    type: 'fill-extrusion' as const,
+    source: 'airspace-zones',
+    paint: {
+      'fill-extrusion-color': ['get', 'color'] as [string, string],
+      'fill-extrusion-base': ['get', 'floor'] as [string, string],
+      'fill-extrusion-height': ['get', 'ceiling'] as [string, string],
+      'fill-extrusion-opacity': 0.55,
+    },
+  };
+
+  if (beforeLayerId !== undefined && map.getLayer(beforeLayerId)) {
+    map.addLayer(layer as Parameters<MapboxMap['addLayer']>[0], beforeLayerId);
+  } else {
+    map.addLayer(layer as Parameters<MapboxMap['addLayer']>[0]);
+  }
+}
 
 /**
  * Adds the 3D buildings fill-extrusion layer to the map using the composite
