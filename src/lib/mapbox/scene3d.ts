@@ -1,4 +1,74 @@
+import type { AirspaceZone } from './types/AirspaceZone';
 import type { Map as MapboxMap } from 'mapbox-gl';
+
+/**
+ * Adds airspace zone volumes as a fill-extrusion layer. Zones are translucent
+ * boxes with floor/ceiling altitude from data.
+ *
+ * @param beforeLayerId - If set, the layer is inserted before this id (zones
+ * behind that layer). If omitted, the layer is added on top so zones are visible.
+ */
+/**
+ * Layer id prefix for airspace zone volumes. One layer per zone so each can
+ * have its own opacity (fill-extrusion-opacity is not data-driven in Mapbox).
+ * Use this prefix to toggle all zone layers (e.g. in a layer visibility panel).
+ */
+export const AIRSPACE_ZONE_LAYER_ID_PREFIX = 'airspace-zone-volumes-';
+
+export function addAirspaceZones(
+  map: MapboxMap,
+  zones: AirspaceZone[],
+  beforeLayerId?: string,
+): void {
+  const firstLayerId = `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${zones[0]?.id ?? ''}`;
+  if (zones.length === 0 || map.getLayer(firstLayerId)) return;
+
+  if (!map.getSource('airspace-zones')) {
+    map.addSource('airspace-zones', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: zones.map((zone) => ({
+          type: 'Feature',
+          properties: {
+            id: zone.id,
+            name: zone.name,
+            type: zone.type,
+            color: zone.color,
+            floor: zone.floorAltM,
+            ceiling: zone.ceilingAltM,
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [zone.footprint],
+          },
+        })),
+      },
+    });
+  }
+
+  const layerOptions = (zone: AirspaceZone): Parameters<MapboxMap['addLayer']>[0] => ({
+    id: `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${zone.id}`,
+    type: 'fill-extrusion',
+    source: 'airspace-zones',
+    filter: ['==', ['get', 'id'], zone.id],
+    paint: {
+      'fill-extrusion-color': zone.color,
+      'fill-extrusion-base': zone.floorAltM,
+      'fill-extrusion-height': zone.ceilingAltM,
+      'fill-extrusion-opacity': zone.opacity,
+    },
+  });
+
+  for (let i = 0; i < zones.length; i++) {
+    const layer = layerOptions(zones[i]);
+    if (beforeLayerId !== undefined && map.getLayer(beforeLayerId)) {
+      map.addLayer(layer, beforeLayerId);
+    } else {
+      map.addLayer(layer);
+    }
+  }
+}
 
 /**
  * Adds the 3D buildings fill-extrusion layer to the map using the composite
