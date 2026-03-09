@@ -4,6 +4,7 @@
  */
 
 import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
+import type { UtilityPole } from '../lib/mapbox/types/UtilityPole';
 
 /** John Hancock Tower, Boston (200 Clarendon Street). [lng, lat]. */
 export const MAP_CENTER: [number, number] = [-71.0752, 42.3496];
@@ -67,5 +68,52 @@ export const airspaceZones: AirspaceZone[] = [
       [-71.0761, 42.34835],
       [-71.0761, 42.3482],
     ],
+  },
+];
+
+/**
+ * Five utility poles near John Hancock Tower for the 3D scene. Heights use
+ * inspection altitude; color by status (nominal=green, flagged=red, inspected=grey).
+ */
+export const utilityPoles: UtilityPole[] = [
+  {
+    id: 'p01547',
+    label: 'Pole 01547',
+    lng: -71.0755,
+    lat: 42.3498,
+    inspectionAltM: 35,
+    status: 'nominal',
+  },
+  {
+    id: 'p01561',
+    label: 'Pole 01561',
+    lng: -71.0749,
+    lat: 42.3495,
+    inspectionAltM: 35,
+    status: 'flagged',
+  },
+  {
+    id: 'p01562',
+    label: 'Pole 01562',
+    lng: -71.0758,
+    lat: 42.3489,
+    inspectionAltM: 30,
+    status: 'nominal',
+  },
+  {
+    id: 'p01563',
+    label: 'Pole 01563',
+    lng: -71.0745,
+    lat: 42.349,
+    inspectionAltM: 40,
+    status: 'inspected',
+  },
+  {
+    id: 'p01564',
+    label: 'Pole 01564',
+    lng: -71.076,
+    lat: 42.3494,
+    inspectionAltM: 35,
+    status: 'nominal',
   },
 ];
