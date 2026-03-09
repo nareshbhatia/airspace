@@ -4,6 +4,11 @@ import type { AirspaceZone } from '../types/AirspaceZone';
 import type { UtilityPole } from '../types/UtilityPole';
 import type { Map as MapboxMap } from 'mapbox-gl';
 
+/**
+ * Layer id prefix for airspace zone volumes. One layer per zone so each can
+ * have its own opacity (fill-extrusion-opacity is not data-driven in Mapbox).
+ * Use this prefix to toggle all zone layers (e.g. in a layer visibility panel).
+ */
 export const AIRSPACE_ZONE_LAYER_ID_PREFIX = 'airspace-zone-volumes-';
 
 /**
@@ -56,11 +61,6 @@ export function pointToCirclePolygon(
  *
  * @param beforeLayerId - If set, the layer is inserted before this id (zones
  * behind that layer). If omitted, the layer is added on top so zones are visible.
- */
-/**
- * Layer id prefix for airspace zone volumes. One layer per zone so each can
- * have its own opacity (fill-extrusion-opacity is not data-driven in Mapbox).
- * Use this prefix to toggle all zone layers (e.g. in a layer visibility panel).
  */
 export function addAirspaceZones(
   map: MapboxMap,
@@ -163,26 +163,28 @@ export function addBuildings(map: MapboxMap): void {
 export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
   if (map.getLayer('utility-pole-markers')) return;
 
-  map.addSource('utility-poles', {
-    type: 'geojson',
-    data: {
-      type: 'FeatureCollection',
-      features: poles.map((pole) => ({
-        type: 'Feature',
-        properties: {
-          id: pole.id,
-          label: pole.label,
-          status: pole.status,
-          color: UTILITY_POLE_STATUS_COLORS[pole.status],
-          inspectionAlt: pole.inspectionAltM,
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [pointToCirclePolygon(pole.lng, pole.lat)],
-        },
-      })),
-    },
-  });
+  if (!map.getSource('utility-poles')) {
+    map.addSource('utility-poles', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: poles.map((pole) => ({
+          type: 'Feature',
+          properties: {
+            id: pole.id,
+            label: pole.label,
+            status: pole.status,
+            color: UTILITY_POLE_STATUS_COLORS[pole.status],
+            inspectionAlt: pole.inspectionAltM,
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [pointToCirclePolygon(pole.lng, pole.lat)],
+          },
+        })),
+      },
+    });
+  }
 
   map.addLayer({
     id: 'utility-pole-markers',

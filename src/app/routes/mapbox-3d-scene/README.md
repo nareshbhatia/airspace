@@ -305,8 +305,7 @@ interface UtilityPole {
   label: string; // "Pole 01547"
   lng: number;
   lat: number;
-  heightM: number; // physical pole height
-  inspectionAltM: number; // drone inspection altitude
+  inspectionAltM: number; // drone inspection altitude; bar is drawn 0 → this value
   status: 'nominal' | 'flagged' | 'inspected';
 }
 
@@ -316,7 +315,6 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01547',
     lng: -71.042,
     lat: 42.362,
-    heightM: 12,
     inspectionAltM: 35,
     status: 'nominal',
   },
@@ -325,7 +323,6 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01561',
     lng: -71.038,
     lat: 42.365,
-    heightM: 12,
     inspectionAltM: 35,
     status: 'flagged',
   },
@@ -334,7 +331,6 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01562',
     lng: -71.033,
     lat: 42.36,
-    heightM: 10,
     inspectionAltM: 30,
     status: 'nominal',
   },
@@ -343,7 +339,6 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01563',
     lng: -71.028,
     lat: 42.368,
-    heightM: 14,
     inspectionAltM: 40,
     status: 'inspected',
   },
@@ -352,7 +347,6 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01564',
     lng: -71.022,
     lat: 42.355,
-    heightM: 12,
     inspectionAltM: 35,
     status: 'nominal',
   },

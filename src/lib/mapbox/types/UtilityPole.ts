@@ -3,7 +3,7 @@ export interface UtilityPole {
   label: string;
   lng: number;
   lat: number;
-  heightM: number;
+  /** Drone inspection altitude (m AGL). The 3D bar is drawn from 0 → this value. */
   inspectionAltM: number;
   status: 'nominal' | 'flagged' | 'inspected';
 }
