@@ -1,7 +1,16 @@
-import { airspaceZones, MAP_CENTER, MAP_VIEW } from '../../../data/scene3d';
+import {
+  airspaceZones,
+  MAP_CENTER,
+  MAP_VIEW,
+  utilityPoles,
+} from '../../../data/scene3d';
 import { ZoomControl } from '../../../lib/mapbox/controls/ZoomControl';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
-import { addAirspaceZones, addBuildings } from '../../../lib/mapbox/scene3d';
+import {
+  addAirspaceZones,
+  addBuildings,
+  addUtilityPoles,
+} from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
 
 /**
@@ -25,6 +34,7 @@ export function Mapbox3DScenePage() {
           onLoad={(map) => {
             addBuildings(map);
             addAirspaceZones(map, airspaceZones);
+            addUtilityPoles(map, utilityPoles);
           }}
           className="w-full h-full"
         >
