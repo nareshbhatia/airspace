@@ -244,11 +244,7 @@ export function createWaypointImage(map: MapboxMap, sequence: number): void {
   ctx.fillText(String(sequence), size / 2, size / 2);
 
   const imageData = ctx.getImageData(0, 0, size, size);
-  map.addImage(`waypoint-${sequence}`, {
-    width: size,
-    height: size,
-    data: imageData.data,
-  });
+  map.addImage(`waypoint-${sequence}`, imageData);
 }
 
 /**
