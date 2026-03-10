@@ -5,6 +5,7 @@
 
 import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
 import type { UtilityPole } from '../lib/mapbox/types/UtilityPole';
+import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 
 /** John Hancock Tower, Boston (200 Clarendon Street). [lng, lat]. */
 export const MAP_CENTER: [number, number] = [-71.0752, 42.3496];
@@ -117,3 +118,15 @@ export const utilityPoles: UtilityPole[] = [
     status: 'nominal',
   },
 ];
+
+/**
+ * Inspection route connecting the utility poles in sequence (1–5). Used for
+ * the route line and waypoint markers on the 3D scene page.
+ */
+export const inspectionRoute: Waypoint[] = utilityPoles.map((pole, index) => ({
+  sequence: index + 1,
+  lng: pole.lng,
+  lat: pole.lat,
+  altM: pole.inspectionAltM,
+  label: String(index + 1),
+}));

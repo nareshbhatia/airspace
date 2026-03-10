@@ -1,5 +1,6 @@
 import {
   airspaceZones,
+  inspectionRoute,
   MAP_CENTER,
   MAP_VIEW,
   utilityPoles,
@@ -9,6 +10,7 @@ import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import {
   addAirspaceZones,
   addBuildings,
+  addInspectionRoute,
   addUtilityPoles,
 } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
@@ -35,6 +37,7 @@ export function Mapbox3DScenePage() {
             addBuildings(map);
             addAirspaceZones(map, airspaceZones);
             addUtilityPoles(map, utilityPoles);
+            addInspectionRoute(map, inspectionRoute);
           }}
           className="w-full h-full"
         >
