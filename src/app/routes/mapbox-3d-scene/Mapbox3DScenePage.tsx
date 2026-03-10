@@ -1,3 +1,4 @@
+import { LayerTogglePanel } from './LayerTogglePanel';
 import {
   airspaceZones,
   inspectionRoute,
@@ -12,8 +13,32 @@ import {
   addBuildings,
   addInspectionRoute,
   addUtilityPoles,
+  AIRSPACE_ZONE_LAYER_ID_PREFIX,
 } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
+
+import type { LayerGroupConfig } from './LayerTogglePanel';
+
+const LAYER_GROUPS: LayerGroupConfig[] = [
+  { id: 'buildings', label: 'Buildings', layerIds: ['3d-buildings'] },
+  {
+    id: 'zones',
+    label: 'Airspace zones',
+    layerIds: airspaceZones.map(
+      (z) => `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${z.id}`,
+    ),
+  },
+  {
+    id: 'poles',
+    label: 'Utility poles',
+    layerIds: ['utility-pole-markers', 'utility-pole-labels'],
+  },
+  {
+    id: 'route',
+    label: 'Route',
+    layerIds: ['route-casing', 'route-line', 'waypoint-markers'],
+  },
+];
 
 /**
  * Mapbox 3D Scene page for viewing a 3D map scene.
@@ -41,7 +66,13 @@ export function Mapbox3DScenePage() {
           }}
           className="w-full h-full"
         >
-          <ZoomControl />
+          <div className="absolute right-3 top-3 z-10 flex flex-col gap-3">
+            <ZoomControl
+              position="top-right"
+              className="relative top-0 right-0"
+            />
+            <LayerTogglePanel layerGroups={LAYER_GROUPS} />
+          </div>
         </MapProvider>
       </div>
     </div>

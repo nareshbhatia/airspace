@@ -13,6 +13,20 @@ import type { Map as MapboxMap } from 'mapbox-gl';
 export const AIRSPACE_ZONE_LAYER_ID_PREFIX = 'airspace-zone-volumes-';
 
 /**
+ * Sets a layer's visibility via layout property. Use when toggling layer groups
+ * in a layer visibility panel. Safe to call for missing layers (no-op).
+ */
+export function toggleLayer(
+  map: MapboxMap,
+  layerId: string,
+  visible: boolean,
+): void {
+  if (map.getLayer(layerId)) {
+    map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+  }
+}
+
+/**
  * Returns a closed polygon ring (five [lng, lat] points) for a square centered
  * on the given point. Used to create small fill-extrusion footprints from
  * point data.
