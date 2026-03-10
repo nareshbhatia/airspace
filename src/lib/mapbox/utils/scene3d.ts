@@ -2,6 +2,7 @@ import { UTILITY_POLE_STATUS_COLORS } from '../types/UtilityPole';
 
 import type { AirspaceZone } from '../types/AirspaceZone';
 import type { UtilityPole } from '../types/UtilityPole';
+import type { Waypoint } from '../types/Waypoint';
 import type { Map as MapboxMap } from 'mapbox-gl';
 
 /**
@@ -212,6 +213,119 @@ export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
       'text-color': '#ffffff',
       'text-halo-color': '#000000',
       'text-halo-width': 1,
+    },
+  });
+}
+
+/**
+ * Registers a single waypoint badge image with the map: a canvas-drawn circle
+ * with the sequence number, for use in the waypoint symbol layer.
+ */
+export function createWaypointImage(map: MapboxMap, sequence: number): void {
+  const size = 28;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#1d4ed8';
+  ctx.font = `bold ${size * 0.45}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(sequence), size / 2, size / 2);
+
+  const imageData = ctx.getImageData(0, 0, size, size);
+  map.addImage(`waypoint-${sequence}`, {
+    width: size,
+    height: size,
+    data: imageData.data,
+  });
+}
+
+/**
+ * Adds the inspection route line (with casing) and waypoint symbol markers to
+ * the map. Call after addUtilityPoles so the route renders above poles.
+ */
+export function addInspectionRoute(
+  map: MapboxMap,
+  waypoints: Waypoint[],
+): void {
+  if (map.getLayer('route-line') || map.getSource('inspection-route')) return;
+  if (waypoints.length < 2) return;
+
+  const coordinates = waypoints.map(
+    (wp) => [wp.lng, wp.lat] as [number, number],
+  );
+
+  map.addSource('inspection-route', {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates,
+      },
+    },
+  });
+
+  map.addLayer({
+    id: 'route-casing',
+    type: 'line',
+    source: 'inspection-route',
+    paint: {
+      'line-color': '#1d4ed8',
+      'line-width': 5,
+      'line-opacity': 0.8,
+    },
+  });
+
+  map.addLayer({
+    id: 'route-line',
+    type: 'line',
+    source: 'inspection-route',
+    paint: {
+      'line-color': '#3b82f6',
+      'line-width': 3,
+      'line-opacity': 1,
+    },
+  });
+
+  waypoints.forEach((wp) => createWaypointImage(map, wp.sequence));
+
+  map.addSource('waypoints', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: waypoints.map((wp) => ({
+        type: 'Feature' as const,
+        properties: { sequence: wp.sequence, label: wp.label },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [wp.lng, wp.lat],
+        },
+      })),
+    },
+  });
+
+  map.addLayer({
+    id: 'waypoint-markers',
+    type: 'symbol',
+    source: 'waypoints',
+    layout: {
+      'icon-image': ['concat', 'waypoint-', ['get', 'sequence']],
+      'icon-size': 1,
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
     },
   });
 }
