@@ -14,13 +14,19 @@ import {
   addInspectionRoute,
   addUtilityPoles,
   AIRSPACE_ZONE_LAYER_ID_PREFIX,
+  BUILDINGS_LAYER_ID,
+  ROUTE_CASING_LAYER_ID,
+  ROUTE_LINE_LAYER_ID,
+  UTILITY_POLE_LABELS_LAYER_ID,
+  UTILITY_POLE_MARKERS_LAYER_ID,
+  WAYPOINT_MARKERS_LAYER_ID,
 } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
 
 import type { LayerGroupConfig } from './LayerTogglePanel';
 
 const LAYER_GROUPS: LayerGroupConfig[] = [
-  { id: 'buildings', label: 'Buildings', layerIds: ['3d-buildings'] },
+  { id: 'buildings', label: 'Buildings', layerIds: [BUILDINGS_LAYER_ID] },
   {
     id: 'zones',
     label: 'Airspace zones',
@@ -31,12 +37,16 @@ const LAYER_GROUPS: LayerGroupConfig[] = [
   {
     id: 'poles',
     label: 'Utility poles',
-    layerIds: ['utility-pole-markers', 'utility-pole-labels'],
+    layerIds: [UTILITY_POLE_MARKERS_LAYER_ID, UTILITY_POLE_LABELS_LAYER_ID],
   },
   {
     id: 'route',
     label: 'Route',
-    layerIds: ['route-casing', 'route-line', 'waypoint-markers'],
+    layerIds: [
+      ROUTE_CASING_LAYER_ID,
+      ROUTE_LINE_LAYER_ID,
+      WAYPOINT_MARKERS_LAYER_ID,
+    ],
   },
 ];
 

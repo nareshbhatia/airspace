@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import {
   Card,
@@ -49,11 +49,6 @@ export function LayerTogglePanel({
     [map, layerGroups],
   );
 
-  const initialVisible = useMemo(
-    () => Object.fromEntries(layerGroups.map((g) => [g.id, true])),
-    [layerGroups],
-  );
-
   if (!map) return null;
 
   return (
@@ -72,7 +67,7 @@ export function LayerTogglePanel({
               <input
                 type="checkbox"
                 id={`layer-toggle-${group.id}`}
-                checked={visible[group.id] ?? initialVisible[group.id] ?? true}
+                checked={visible[group.id]}
                 onChange={(e) => handleChange(group.id, e.target.checked)}
                 className="h-4 w-4 rounded border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 aria-label={`Toggle ${group.label}`}

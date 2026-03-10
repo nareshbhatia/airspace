@@ -12,6 +12,24 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  */
 export const AIRSPACE_ZONE_LAYER_ID_PREFIX = 'airspace-zone-volumes-';
 
+/** Layer ID for the 3D buildings fill-extrusion layer (composite source). */
+export const BUILDINGS_LAYER_ID = '3d-buildings';
+
+/** Layer ID for utility pole fill-extrusion markers. */
+export const UTILITY_POLE_MARKERS_LAYER_ID = 'utility-pole-markers';
+
+/** Layer ID for utility pole label symbols. */
+export const UTILITY_POLE_LABELS_LAYER_ID = 'utility-pole-labels';
+
+/** Layer ID for the inspection route line casing. */
+export const ROUTE_CASING_LAYER_ID = 'route-casing';
+
+/** Layer ID for the inspection route line. */
+export const ROUTE_LINE_LAYER_ID = 'route-line';
+
+/** Layer ID for waypoint symbol markers on the inspection route. */
+export const WAYPOINT_MARKERS_LAYER_ID = 'waypoint-markers';
+
 /**
  * Sets a layer's visibility via layout property. Use when toggling layer groups
  * in a layer visibility panel. Safe to call for missing layers (no-op).
@@ -140,7 +158,7 @@ export function addAirspaceZones(
  * render on top. OSM building data is only present at zoom 14+.
  */
 export function addBuildings(map: MapboxMap): void {
-  if (map.getLayer('3d-buildings')) return;
+  if (map.getLayer(BUILDINGS_LAYER_ID)) return;
 
   const layers = map.getStyle().layers;
   const firstSymbolLayer = layers?.find(
@@ -151,7 +169,7 @@ export function addBuildings(map: MapboxMap): void {
 
   map.addLayer(
     {
-      id: '3d-buildings',
+      id: BUILDINGS_LAYER_ID,
       source: 'composite',
       'source-layer': 'building',
       filter: ['==', ['get', 'extrude'], 'true'],
@@ -176,7 +194,7 @@ export function addBuildings(map: MapboxMap): void {
  * color by status. Labels show the pole label at the base.
  */
 export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
-  if (map.getLayer('utility-pole-markers')) return;
+  if (map.getLayer(UTILITY_POLE_MARKERS_LAYER_ID)) return;
 
   if (!map.getSource('utility-poles')) {
     map.addSource('utility-poles', {
@@ -202,7 +220,7 @@ export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
   }
 
   map.addLayer({
-    id: 'utility-pole-markers',
+    id: UTILITY_POLE_MARKERS_LAYER_ID,
     type: 'fill-extrusion',
     source: 'utility-poles',
     paint: {
@@ -214,7 +232,7 @@ export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
   });
 
   map.addLayer({
-    id: 'utility-pole-labels',
+    id: UTILITY_POLE_LABELS_LAYER_ID,
     type: 'symbol',
     source: 'utility-poles',
     layout: {
@@ -269,7 +287,8 @@ export function addInspectionRoute(
   map: MapboxMap,
   waypoints: Waypoint[],
 ): void {
-  if (map.getLayer('route-line') || map.getSource('inspection-route')) return;
+  if (map.getLayer(ROUTE_LINE_LAYER_ID) || map.getSource('inspection-route'))
+    return;
   if (waypoints.length < 2) return;
 
   const coordinates = waypoints.map(
@@ -289,7 +308,7 @@ export function addInspectionRoute(
   });
 
   map.addLayer({
-    id: 'route-casing',
+    id: ROUTE_CASING_LAYER_ID,
     type: 'line',
     source: 'inspection-route',
     paint: {
@@ -300,7 +319,7 @@ export function addInspectionRoute(
   });
 
   map.addLayer({
-    id: 'route-line',
+    id: ROUTE_LINE_LAYER_ID,
     type: 'line',
     source: 'inspection-route',
     paint: {
@@ -328,7 +347,7 @@ export function addInspectionRoute(
   });
 
   map.addLayer({
-    id: 'waypoint-markers',
+    id: WAYPOINT_MARKERS_LAYER_ID,
     type: 'symbol',
     source: 'waypoints',
     layout: {
