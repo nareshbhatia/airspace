@@ -1,6 +1,7 @@
 import {
   Activity,
   Axis3D,
+  Box,
   Compass,
   Globe,
   Layers,
@@ -26,6 +27,7 @@ export const mainNavItems: NavItem[] = [
   { path: '/flightpath-ol', title: 'Flightpath (OpenLayers)', icon: Map },
   { path: '/zone-editor', title: 'Zone Editor', icon: Layers },
   { path: '/mapbox-3d-scene', title: 'Mapbox 3D Scene', icon: Globe },
+  { path: '/mapbox-plus-threejs', title: 'Mapbox + Three.js', icon: Box },
   { path: '/nyc-subway-stops', title: 'NYC Subway Stops', icon: Train },
   { path: '/drone-3d', title: '3D Drone', icon: Axis3D },
 ];

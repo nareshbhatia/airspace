@@ -154,8 +154,10 @@ export function addAirspaceZones(
 
 /**
  * Adds the 3D buildings fill-extrusion layer to the map using the composite
- * source. Inserts the layer below the first symbol layer so labels and POIs
- * render on top. OSM building data is only present at zoom 14+.
+ * source. Building footprints, heights, and coordinates come from Mapbox’s
+ * composite tiles (OSM-derived); this layer only references that source.
+ * Inserts the layer below the first symbol layer so labels and POIs render on
+ * top. OSM building data is only present at zoom 14+.
  */
 export function addBuildings(map: MapboxMap): void {
   if (map.getLayer(BUILDINGS_LAYER_ID)) return;
