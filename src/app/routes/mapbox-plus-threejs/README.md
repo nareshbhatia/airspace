@@ -85,9 +85,25 @@ runs on its own, producing a visible result before moving to the next.
 - Concept: Mapbox uses a Web Mercator coordinate system internally.
   `MercatorCoordinate.fromLngLat()` converts `[lng, lat, altMeters]` to
   normalized Mercator values in [0,1]. The Mercator `z` value represents
-  altitude in Mercator units. These values are scaled by the world size
-  (`tileSize * scale`) and offset from the map center to produce Three.js world
-  coordinates.
+  altitude in Mercator units. While you _can_ place meshes directly in raw
+  Mercator coordinates, that often produces tiny mesh scales (e.g. ~3e-8) and
+  fragile float precision / frustum culling behavior in Three.js.
+
+  A more robust approach (used by Mapbox's custom-layer examples) is to keep
+  your Three.js scene in **meter space near the origin** and bake the
+  georeferencing into the camera each frame:
+  - Pick a single **reference point** (lng/lat/alt) as the scene origin.
+  - Convert that origin to Mercator and compute
+    `meterInMercatorCoordinateUnits()`.
+  - Build a model transform:
+    `translation(originMerc) * scale(meterScale, -meterScale, meterScale)`. The
+    negative Y flips Three.js's Y-up into Mapbox's Mercator Y-south convention.
+  - Set `camera.projectionMatrix = mapboxMatrix * modelTransform` in `render()`.
+
+  With this pattern, meshes use stable meter offsets from the origin
+  (tens/hundreds of meters), and the camera matrix handles mapping into Mapbox's
+  coordinate space.
+
 - Task: Create a helper function `lngLatAltToWorld(lng, lat, altMeters, map)`
   that returns a `THREE.Vector3`. Place cubes at several known lat/lng positions
   and confirm they track the map correctly as you interact with it.
@@ -99,11 +115,24 @@ runs on its own, producing a visible result before moving to the next.
   black). `AmbientLight` provides uniform illumination; `DirectionalLight`
   simulates sunlight. `BoxGeometry` and `CylinderGeometry` create the basic
   shapes for assets.
-- Task: Add lights to the scene. Create several boxes (representing
-  building-like assets) and cylinders (representing vertical markers like
-  utility poles) at geographic positions around the map center using
-  `MeshStandardMaterial` with distinct colors. Observe realistic shading as you
-  rotate the map.
+
+  Mapbox and Three.js also share a single depth buffer. Since Mapbox renders
+  first, its depth values can occlude your custom layer. A simple way to ensure
+  your objects are visible while debugging is to clear the depth buffer before
+  rendering Three.js content
+  (`gl.clearDepth(1.0); gl.clear(gl.DEPTH_BUFFER_BIT)`). (Later steps will make
+  this conditional so we preserve correct occlusion in true 3D perspective
+  mode.)
+
+  Finally, call `map.triggerRepaint()` after your Three.js render so Mapbox
+  keeps invoking your layer's `render()` callback as the map view changes.
+
+- Task: Add lights to the scene. Create cylinders (representing vertical markers
+  like utility poles) for the `utilityPoles` in `src/data/scene3d.ts` at their
+  geographic positions. Use `inspectionAltM` as the cylinder height (AGL,
+  i.e. the cylinder runs from 0 → `inspectionAltM` above ground) and use
+  `MeshStandardMaterial` with distinct colors (or an unlit material while
+  debugging). Observe realistic shading as you rotate the map.
 
 **Step 7 -- The Depth Buffer**
 

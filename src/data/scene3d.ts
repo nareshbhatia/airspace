@@ -82,7 +82,7 @@ export const utilityPoles: UtilityPole[] = [
     label: 'Pole 01547',
     lng: -71.0755,
     lat: 42.3498,
-    inspectionAltM: 35,
+    inspectionAltM: 10,
     status: 'nominal',
   },
   {
@@ -90,7 +90,7 @@ export const utilityPoles: UtilityPole[] = [
     label: 'Pole 01561',
     lng: -71.0749,
     lat: 42.3495,
-    inspectionAltM: 35,
+    inspectionAltM: 25,
     status: 'flagged',
   },
   {
@@ -106,7 +106,7 @@ export const utilityPoles: UtilityPole[] = [
     label: 'Pole 01563',
     lng: -71.0745,
     lat: 42.349,
-    inspectionAltM: 40,
+    inspectionAltM: 35,
     status: 'inspected',
   },
   {
@@ -114,7 +114,7 @@ export const utilityPoles: UtilityPole[] = [
     label: 'Pole 01564',
     lng: -71.076,
     lat: 42.3494,
-    inspectionAltM: 35,
+    inspectionAltM: 40,
     status: 'nominal',
   },
 ];
