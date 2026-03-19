@@ -50,9 +50,6 @@ export function MapboxPlusThreeJsPage() {
       mapRef.current = map;
       addBuildings(map);
       layerRef.current = addThreeJsCustomLayer(map);
-      if (layerRef.current) {
-        layerRef.current.setProjectionMode(projectionMode);
-      }
       applyProjectionMode(map, projectionMode);
     },
     [applyProjectionMode, projectionMode],

@@ -10,8 +10,8 @@ import type { Map as MapboxMap } from 'mapbox-gl';
 export function addThreeJsCustomLayer(
   map: MapboxMap,
 ): ThreeJsCustomLayer | undefined {
+  if (map.getLayer('threejs-layer')) return undefined;
   const layer = new ThreeJsCustomLayer();
-  if (map.getLayer(layer.id)) return undefined;
   map.addLayer(layer);
   return layer;
 }
