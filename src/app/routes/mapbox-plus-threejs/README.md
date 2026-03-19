@@ -129,8 +129,8 @@ runs on its own, producing a visible result before moving to the next.
 
 - Task: Add lights to the scene. Create cylinders (representing vertical markers
   like utility poles) for the `utilityPoles` in `src/data/scene3d.ts` at their
-  geographic positions. Use `inspectionAltM` as the cylinder height (AGL,
-  i.e. the cylinder runs from 0 → `inspectionAltM` above ground) and use
+  geographic positions. Use `inspectionAltM` as the cylinder height (AGL, i.e.
+  the cylinder runs from 0 → `inspectionAltM` above ground) and use
   `MeshStandardMaterial` with distinct colors (or an unlit material while
   debugging). Observe realistic shading as you rotate the map.
 

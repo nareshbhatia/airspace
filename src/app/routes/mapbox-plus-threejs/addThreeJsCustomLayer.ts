@@ -1,6 +1,6 @@
-import type { Map as MapboxMap } from 'mapbox-gl';
-
 import { ThreeJsCustomLayer } from './ThreeJsCustomLayer';
+
+import type { Map as MapboxMap } from 'mapbox-gl';
 
 /**
  * Adds the Three.js Mapbox custom layer (if not already present).
@@ -12,4 +12,3 @@ export function addThreeJsCustomLayer(map: MapboxMap): void {
   if (map.getLayer(layer.id)) return;
   map.addLayer(layer);
 }
-

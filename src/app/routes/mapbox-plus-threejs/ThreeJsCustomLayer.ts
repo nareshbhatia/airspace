@@ -15,6 +15,7 @@ import {
 import { utilityPoles } from '../../../data/scene3d';
 
 import type { Map as MapboxMap } from 'mapbox-gl';
+import type { BufferGeometry, Material } from 'three';
 
 /**
  * Mapbox custom layer that renders Three.js content in the map's WebGL pipeline.
@@ -70,6 +71,8 @@ export class ThreeJsCustomLayer {
 
     // Use the first pole's position as the scene origin in MercatorCoordinate space.
     const refPole = utilityPoles[0];
+    if (!refPole) return; // no poles to render
+
     const originMerc = MercatorCoordinate.fromLngLat(
       [refPole.lng, refPole.lat],
       0,
@@ -90,9 +93,16 @@ export class ThreeJsCustomLayer {
       const merc = MercatorCoordinate.fromLngLat([pole.lng, pole.lat], 0);
       const poleHeightM = pole.inspectionAltM;
 
-      // Position is offset from scene origin, converted from Mercator back to meters.
+      // Position is an offset from the scene origin, converted from Mercator
+      // units back into Three.js "meters near origin" coordinates.
+      //
+      // Note: `render()` applies `scale(new Vector3(scale, -scale, scale))` in
+      // the model transform, so Three.js local Y is negated before being
+      // translated into Mercator space. To land at the correct
+      // `MercatorCoordinate.y` (where Y increases south), we invert the Mercator
+      // Y delta here.
       const offsetXm = (merc.x - originMerc.x) / originScale;
-      const offsetYm = (merc.y - originMerc.y) / originScale;
+      const offsetYm = (originMerc.y - merc.y) / originScale;
 
       const material = new MeshStandardMaterial({
         color: statusColors[pole.status] ?? 0xffffff,
@@ -168,6 +178,19 @@ export class ThreeJsCustomLayer {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRemove(_map: MapboxMap, _gl: WebGL2RenderingContext): void {
+    // Three.js does not garbage-collect GPU resources automatically
+    // Traversing the scene and dispose each object before clearing the private fields
+    this._scene?.traverse((obj) => {
+      if (obj instanceof Mesh) {
+        (obj.geometry as BufferGeometry).dispose();
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach((m) => m.dispose());
+        } else {
+          (obj.material as Material).dispose();
+        }
+      }
+    });
+
     this._renderer?.dispose();
     this._map = undefined;
     this._scene = undefined;
