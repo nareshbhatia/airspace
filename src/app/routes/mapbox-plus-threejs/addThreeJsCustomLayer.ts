@@ -7,8 +7,11 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  * This keeps the page component symmetrical with other layer helpers
  * like `addBuildings(map)`.
  */
-export function addThreeJsCustomLayer(map: MapboxMap): void {
+export function addThreeJsCustomLayer(
+  map: MapboxMap,
+): ThreeJsCustomLayer | undefined {
+  if (map.getLayer('threejs-layer')) return undefined;
   const layer = new ThreeJsCustomLayer();
-  if (map.getLayer(layer.id)) return;
   map.addLayer(layer);
+  return layer;
 }

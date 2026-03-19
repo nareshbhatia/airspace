@@ -134,23 +134,7 @@ runs on its own, producing a visible result before moving to the next.
   `MeshStandardMaterial` with distinct colors (or an unlit material while
   debugging). Observe realistic shading as you rotate the map.
 
-**Step 7 -- The Depth Buffer**
-
-- Concept: Mapbox and Three.js share a single depth buffer. Mapbox’s 3D
-  buildings write depth values first; Three.js fragments then depth-test against
-  those values. As a result, Three.js objects should be hidden or partially
-  occluded by buildings when they overlap in screen space. If you clear the
-  depth buffer, the poles will render on top of buildings because their
-  depth-test no longer compares against Mapbox’s depth.
-- Task: Use the existing utility poles (already rendered in the Three.js custom
-  layer) to demonstrate mutual depth occlusion with Mapbox 3D buildings. Confirm
-  that, in perspective 3D mode, poles are correctly occluded by buildings when
-  they partially overlap. Add a temporary toggle button that clears the Three.js
-  depth buffer right before rendering the poles so you can visually verify the
-  difference: with depth cleared, poles always appear on top of buildings;
-  without clearing, occlusion should match the building depth.
-
-**Step 8 -- 2D/3D Projection Toggle and Orthographic Depth Fix**
+**Step 7 -- 2D/3D Projection Toggle and Orthographic Depth Fix**
 
 - Concept: Mapbox supports switching between perspective and orthographic
   projection at runtime via

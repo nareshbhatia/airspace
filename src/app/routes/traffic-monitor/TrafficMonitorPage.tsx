@@ -7,7 +7,7 @@ import { TrafficMonitorSidebar } from './TrafficMonitorSidebar';
 import { useTrafficData } from './useTrafficData';
 import { computeBoundingBox } from './utils/boundingBox';
 import { airportById } from '../../../gen/airports';
-import { MapProvider, ZoomControl } from '../../../lib/mapbox';
+import { MapPanel, MapProvider, ZoomLevelDisplay } from '../../../lib/mapbox';
 
 const DEFAULT_RADIUS_MILES = 2;
 
@@ -74,7 +74,9 @@ export function TrafficMonitorPage() {
           zoom={13}
           className="w-full h-full"
         >
-          <ZoomControl />
+          <MapPanel className="absolute right-3 top-3 z-10">
+            <ZoomLevelDisplay />
+          </MapPanel>
           <TrafficMonitorMapFit boundingBox={boundingBox} />
           <SearchAreaLayer boundingBox={boundingBox} />
           <AircraftLayer

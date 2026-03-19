@@ -1,5 +1,6 @@
 export { MapProvider } from './providers/MapProvider';
-export { ZoomControl } from './controls/ZoomControl';
+export { MapPanel } from './controls/MapPanel';
+export { ZoomLevelDisplay } from './controls/ZoomLevelDisplay';
 export { useMap } from './hooks/useMap';
 export { useControl } from './hooks/useControl';
 export { useDraw } from './hooks/useDraw';

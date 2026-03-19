@@ -18,6 +18,8 @@ import { UTILITY_POLE_RADIUS_M } from '../../../lib/mapbox/types/UtilityPole';
 import type { Map as MapboxMap } from 'mapbox-gl';
 import type { BufferGeometry, Material } from 'three';
 
+export type ProjectionMode = 'perspective' | 'orthographic';
+
 /**
  * Mapbox custom layer that renders Three.js content in the map's WebGL pipeline.
  *
@@ -50,6 +52,12 @@ export class ThreeJsCustomLayer {
   private _originMerc: MercatorCoordinate | undefined;
 
   private _originScale = 1;
+
+  private _projectionMode: ProjectionMode = 'perspective';
+
+  setProjectionMode(mode: ProjectionMode): void {
+    this._projectionMode = mode;
+  }
 
   onAdd(map: MapboxMap, gl: WebGL2RenderingContext): void {
     this._map = map;
@@ -141,7 +149,7 @@ export class ThreeJsCustomLayer {
     this._renderer = renderer;
   }
 
-  render(gl: WebGL2RenderingContext, matrix: number[]): void {
+  render(_gl: WebGL2RenderingContext, matrix: number[]): void {
     if (
       !this._map ||
       !this._camera ||
@@ -166,10 +174,11 @@ export class ThreeJsCustomLayer {
 
     this._renderer.resetState();
 
-    // Mapbox renders first and writes to the shared depth buffer. Clearing depth
-    // ensures our custom content isn't rejected by the depth test while debugging.
-    gl.clearDepth(1.0);
-    gl.clear(gl.DEPTH_BUFFER_BIT);
+    // In orthographic mode, clear Mapbox depth before Three.js render so map
+    // surface/tile depth does not incorrectly occlude custom content.
+    if (this._projectionMode === 'orthographic') {
+      this._renderer.clearDepth();
+    }
 
     this._renderer.render(this._scene, this._camera);
     this._map.triggerRepaint();
