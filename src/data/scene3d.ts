@@ -7,6 +7,9 @@ import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
 import type { UtilityPole } from '../lib/mapbox/types/UtilityPole';
 import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 
+/** Utility pole radius in meters. */
+export const UTILITY_POLE_RADIUS_M = 0.5;
+
 /** John Hancock Tower, Boston (200 Clarendon Street). [lng, lat]. */
 export const MAP_CENTER: [number, number] = [-71.0752, 42.3496];
 

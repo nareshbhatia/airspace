@@ -76,7 +76,7 @@ export function pointToSquarePolygon(
 export function pointToCirclePolygon(
   lng: number,
   lat: number,
-  radiusMeters = 2,
+  radiusMeters = UTILITY_POLE_RADIUS_M,
   segments = 16,
 ): [number, number][] {
   const dLatPerM = 1 / 111_320;
