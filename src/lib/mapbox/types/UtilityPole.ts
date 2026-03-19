@@ -9,7 +9,7 @@ export interface UtilityPole {
 }
 
 /** Utility pole radius in meters (used for cylindrical footprints/meshes). */
-export const UTILITY_POLE_RADIUS_M = 0.5;
+export const UTILITY_POLE_RADIUS_M = 1.0;
 
 export const UTILITY_POLE_STATUS_COLORS: Record<UtilityPole['status'], string> =
   {
