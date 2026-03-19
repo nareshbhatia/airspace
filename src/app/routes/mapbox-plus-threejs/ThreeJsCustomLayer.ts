@@ -12,7 +12,7 @@ import {
   WebGLRenderer,
 } from 'three';
 
-import { utilityPoles } from '../../../data/scene3d';
+import { UTILITY_POLE_RADIUS_M, utilityPoles } from '../../../data/scene3d';
 
 import type { Map as MapboxMap } from 'mapbox-gl';
 import type { BufferGeometry, Material } from 'three';
@@ -81,7 +81,7 @@ export class ThreeJsCustomLayer {
     this._originMerc = originMerc;
     this._originScale = originScale;
 
-    const poleRadiusM = 0.3;
+    const poleRadiusM = UTILITY_POLE_RADIUS_M;
 
     const statusColors: Record<string, number> = {
       nominal: 0x22c55e,

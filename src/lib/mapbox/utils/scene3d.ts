@@ -1,5 +1,7 @@
 import { UTILITY_POLE_STATUS_COLORS } from '../types/UtilityPole';
 
+import { UTILITY_POLE_RADIUS_M } from '../../../data/scene3d';
+
 import type { AirspaceZone } from '../types/AirspaceZone';
 import type { UtilityPole } from '../types/UtilityPole';
 import type { Waypoint } from '../types/Waypoint';
@@ -73,7 +75,7 @@ export function pointToSquarePolygon(
 export function pointToCirclePolygon(
   lng: number,
   lat: number,
-  radiusMeters = 2,
+  radiusMeters = UTILITY_POLE_RADIUS_M,
   segments = 16,
 ): [number, number][] {
   const dLatPerM = 1 / 111_320;
