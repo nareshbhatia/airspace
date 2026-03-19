@@ -1,7 +1,7 @@
 import { DroneLayer } from './DroneLayer';
 import { FlightpathFlyToSelected } from './FlightpathFlyToSelected';
 import { airportById } from '../../../gen/airports';
-import { MapProvider, ZoomControl } from '../../../lib/mapbox';
+import { MapPanel, MapProvider, ZoomLevelDisplay } from '../../../lib/mapbox';
 import { cn } from '../../../utils/cn';
 
 interface FlightpathMapProps {
@@ -23,7 +23,9 @@ export function FlightpathMap({ className }: FlightpathMapProps) {
       >
         <DroneLayer />
         <FlightpathFlyToSelected />
-        <ZoomControl />
+        <MapPanel className="absolute right-3 top-3 z-10">
+          <ZoomLevelDisplay />
+        </MapPanel>
       </MapProvider>
     </div>
   );

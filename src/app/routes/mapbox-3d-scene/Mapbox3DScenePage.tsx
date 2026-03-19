@@ -6,7 +6,8 @@ import {
   MAP_VIEW,
   utilityPoles,
 } from '../../../data/scene3d';
-import { ZoomControl } from '../../../lib/mapbox/controls/ZoomControl';
+import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
+import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import {
   addAirspaceZones,
@@ -76,12 +77,11 @@ export function Mapbox3DScenePage() {
           }}
           className="w-full h-full"
         >
-          <div className="absolute right-3 top-3 z-10 flex flex-col gap-3">
-            <ZoomControl
-              position="top-right"
-              className="relative top-0 right-0"
-            />
+          <div className="absolute right-3 top-3 z-10 flex flex-row items-start gap-3">
             <LayerTogglePanel layerGroups={LAYER_GROUPS} />
+            <MapPanel>
+              <ZoomLevelDisplay />
+            </MapPanel>
           </div>
         </MapProvider>
       </div>
