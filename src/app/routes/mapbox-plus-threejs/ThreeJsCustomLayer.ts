@@ -13,6 +13,7 @@ import {
 } from 'three';
 
 import { utilityPoles } from '../../../data/scene3d';
+import { UTILITY_POLE_RADIUS_M } from '../../../lib/mapbox/types/UtilityPole';
 
 import type { Map as MapboxMap } from 'mapbox-gl';
 import type { BufferGeometry, Material } from 'three';
@@ -81,8 +82,6 @@ export class ThreeJsCustomLayer {
     this._originMerc = originMerc;
     this._originScale = originScale;
 
-    const poleRadiusM = 0.3;
-
     const statusColors: Record<string, number> = {
       nominal: 0x22c55e,
       flagged: 0xef4444,
@@ -108,8 +107,8 @@ export class ThreeJsCustomLayer {
         color: statusColors[pole.status] ?? 0xffffff,
       });
       const poleGeometry = new CylinderGeometry(
-        poleRadiusM,
-        poleRadiusM,
+        UTILITY_POLE_RADIUS_M,
+        UTILITY_POLE_RADIUS_M,
         poleHeightM,
         12,
       );

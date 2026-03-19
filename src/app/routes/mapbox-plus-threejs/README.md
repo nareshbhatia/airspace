@@ -136,20 +136,19 @@ runs on its own, producing a visible result before moving to the next.
 
 **Step 7 -- The Depth Buffer**
 
-- Concept: Mapbox and Three.js share a single depth buffer. When Mapbox renders
-  its 3D buildings, it writes depth values. When Three.js renders in the same
-  frame, the GPU compares each Three.js fragment's depth against the buffer --
-  fragments behind already-rendered Mapbox geometry are discarded (depth test).
-  This is correct behavior in 3D perspective mode (a Three.js box behind a
-  building is properly hidden). The near/far clipping planes control how
-  z-distances map to the [0,1] depth range -- if Mapbox and Three.js use
-  different near/far values, the same 3D point maps to different depth values,
-  causing incorrect occlusion.
-- Task: Position a Three.js box so it partially overlaps with a Mapbox 3D
-  building. Observe correct mutual occlusion. Add a temporary toggle button that
-  calls `renderer.clearDepth()` before the Three.js render to demonstrate the
-  difference: with depth cleared, Three.js content always renders on top of
-  Mapbox content. (Step 8 replaces this with the final 2D/3D projection toggle.)
+- Concept: Mapbox and Three.js share a single depth buffer. Mapbox’s 3D
+  buildings write depth values first; Three.js fragments then depth-test against
+  those values. As a result, Three.js objects should be hidden or partially
+  occluded by buildings when they overlap in screen space. If you clear the
+  depth buffer, the poles will render on top of buildings because their
+  depth-test no longer compares against Mapbox’s depth.
+- Task: Use the existing utility poles (already rendered in the Three.js custom
+  layer) to demonstrate mutual depth occlusion with Mapbox 3D buildings. Confirm
+  that, in perspective 3D mode, poles are correctly occluded by buildings when
+  they partially overlap. Add a temporary toggle button that clears the Three.js
+  depth buffer right before rendering the poles so you can visually verify the
+  difference: with depth cleared, poles always appear on top of buildings;
+  without clearing, occlusion should match the building depth.
 
 **Step 8 -- 2D/3D Projection Toggle and Orthographic Depth Fix**
 

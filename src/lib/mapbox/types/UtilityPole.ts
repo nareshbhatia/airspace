@@ -8,6 +8,9 @@ export interface UtilityPole {
   status: 'nominal' | 'flagged' | 'inspected';
 }
 
+/** Utility pole radius in meters (used for cylindrical footprints/meshes). */
+export const UTILITY_POLE_RADIUS_M = 0.5;
+
 export const UTILITY_POLE_STATUS_COLORS: Record<UtilityPole['status'], string> =
   {
     nominal: '#22c55e',

@@ -1,4 +1,7 @@
-import { UTILITY_POLE_STATUS_COLORS } from '../types/UtilityPole';
+import {
+  UTILITY_POLE_RADIUS_M,
+  UTILITY_POLE_STATUS_COLORS,
+} from '../types/UtilityPole';
 
 import type { AirspaceZone } from '../types/AirspaceZone';
 import type { UtilityPole } from '../types/UtilityPole';
@@ -214,7 +217,9 @@ export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
           },
           geometry: {
             type: 'Polygon',
-            coordinates: [pointToCirclePolygon(pole.lng, pole.lat)],
+            coordinates: [
+              pointToCirclePolygon(pole.lng, pole.lat, UTILITY_POLE_RADIUS_M),
+            ],
           },
         })),
       },
