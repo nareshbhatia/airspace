@@ -1,6 +1,5 @@
-import { UTILITY_POLE_STATUS_COLORS } from '../types/UtilityPole';
-
 import { UTILITY_POLE_RADIUS_M } from '../../../data/scene3d';
+import { UTILITY_POLE_STATUS_COLORS } from '../types/UtilityPole';
 
 import type { AirspaceZone } from '../types/AirspaceZone';
 import type { UtilityPole } from '../types/UtilityPole';
