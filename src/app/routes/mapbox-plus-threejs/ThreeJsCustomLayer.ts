@@ -30,11 +30,12 @@ export class ThreeJsCustomLayer {
 
   private readonly _scene: Scene;
 
-  private readonly _originMerc: MercatorCoordinate;
+  /** Baked once: origin Mercator + meter scale does not change for this layer. */
+  private readonly _modelTransform: Matrix4;
 
   constructor(scene: Scene, originMerc: MercatorCoordinate) {
     this._scene = scene;
-    this._originMerc = originMerc;
+    this._modelTransform = computeModelTransform(originMerc);
   }
 
   onAdd(map: MapboxMap, gl: WebGL2RenderingContext): void {
@@ -53,9 +54,8 @@ export class ThreeJsCustomLayer {
   render(_gl: WebGL2RenderingContext, matrix: number[]): void {
     if (!this._map || !this._camera || !this._renderer) return;
 
-    const modelTransform = computeModelTransform(this._originMerc);
     const m = new Matrix4().fromArray(matrix);
-    this._camera.projectionMatrix = m.multiply(modelTransform);
+    this._camera.projectionMatrix = m.multiply(this._modelTransform);
 
     this._renderer.resetState();
     this._renderer.render(this._scene, this._camera);
