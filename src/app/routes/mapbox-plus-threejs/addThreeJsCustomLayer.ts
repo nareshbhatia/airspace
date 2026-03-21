@@ -1,4 +1,6 @@
+import { buildPoleScene } from './buildPoleScene';
 import { ThreeJsCustomLayer } from './ThreeJsCustomLayer';
+import { utilityPoles } from '../../../data/scene3d';
 
 import type { Map as MapboxMap } from 'mapbox-gl';
 
@@ -10,8 +12,16 @@ import type { Map as MapboxMap } from 'mapbox-gl';
 export function addThreeJsCustomLayer(
   map: MapboxMap,
 ): ThreeJsCustomLayer | undefined {
+  // Check if the layer is already added
   if (map.getLayer('threejs-layer')) return undefined;
-  const layer = new ThreeJsCustomLayer();
+
+  // Build the scene
+  const built = buildPoleScene(utilityPoles);
+  if (!built) return undefined;
+
+  // Create the layer
+  const { scene, originMerc } = built;
+  const layer = new ThreeJsCustomLayer(scene, originMerc);
   map.addLayer(layer);
   return layer;
 }

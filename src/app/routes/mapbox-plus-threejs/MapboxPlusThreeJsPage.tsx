@@ -9,8 +9,9 @@ import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import { addBuildings } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
 
-import type { ProjectionMode, ThreeJsCustomLayer } from './ThreeJsCustomLayer';
 import type { Map as MapboxMap } from 'mapbox-gl';
+
+type ProjectionMode = 'perspective' | 'orthographic';
 
 /**
  * Mapbox + Three.js page: pitched satellite map with Mapbox 3D buildings
@@ -21,7 +22,6 @@ export function MapboxPlusThreeJsPage() {
   const [projectionMode, setProjectionMode] =
     useState<ProjectionMode>('perspective');
   const mapRef = useRef<MapboxMap | undefined>(undefined);
-  const layerRef = useRef<ThreeJsCustomLayer | undefined>(undefined);
 
   const applyProjectionMode = useCallback(
     (map: MapboxMap, mode: ProjectionMode) => {
@@ -31,7 +31,6 @@ export function MapboxPlusThreeJsPage() {
       } else {
         map.easeTo({ pitch: MAP_VIEW.pitch, duration: 300 });
       }
-      layerRef.current?.setProjectionMode(mode);
     },
     [],
   );
@@ -49,7 +48,7 @@ export function MapboxPlusThreeJsPage() {
     (map: MapboxMap) => {
       mapRef.current = map;
       addBuildings(map);
-      layerRef.current = addThreeJsCustomLayer(map);
+      addThreeJsCustomLayer(map);
       applyProjectionMode(map, projectionMode);
     },
     [applyProjectionMode, projectionMode],
