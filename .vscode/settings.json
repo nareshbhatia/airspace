@@ -25,6 +25,7 @@
     "mapboxgl",
     "maptiler",
     "mavlink",
+    "merc",
     "metalness",
     "minzoom",
     "moveend",
