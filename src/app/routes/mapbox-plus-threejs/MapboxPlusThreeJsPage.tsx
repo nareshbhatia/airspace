@@ -2,16 +2,33 @@ import { useCallback, useRef, useState } from 'react';
 
 import { addThreeJsCustomLayer } from './addThreeJsCustomLayer';
 import { Button } from '../../../components/ui/button';
-import { MAP_CENTER, MAP_VIEW } from '../../../data/scene3d';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../../../components/ui/tooltip';
+import { MAP_CENTER, MAP_VIEW } from '../../../data/scene3d-rural';
 import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
 import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import { addBuildings } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
 
+import type {
+  CameraSyncStrategy,
+  ProjectionMode,
+  ThreeJsCustomLayer,
+} from './ThreeJsCustomLayer';
 import type { Map as MapboxMap } from 'mapbox-gl';
 
-type ProjectionMode = 'perspective' | 'orthographic';
+const MAX_ORTHO_CONTENT_HEIGHT_M = 20;
+
+const STRATEGY_TOGGLE_TOOLTIP: Record<CameraSyncStrategy, string> = {
+  'mapbox-matrix':
+    'Click to switch to near-clip-offset mode: in 2D (orthographic), Mapbox uses setNearClipOffset so tall Three.js poles are less likely to clip. Three.js still uses Mapbox’s render matrix.',
+  'near-clip-offset':
+    'Click to switch to default mapbox-matrix mode: Three.js uses only Mapbox’s per-frame matrix; near-clip offset is cleared in 3D.',
+};
 
 /**
  * Mapbox + Three.js page: pitched satellite map with Mapbox 3D buildings
@@ -21,10 +38,14 @@ type ProjectionMode = 'perspective' | 'orthographic';
 export function MapboxPlusThreeJsPage() {
   const [projectionMode, setProjectionMode] =
     useState<ProjectionMode>('perspective');
+  const [syncStrategy, setSyncStrategy] =
+    useState<CameraSyncStrategy>('mapbox-matrix');
   const mapRef = useRef<MapboxMap | undefined>(undefined);
+  const layerRef = useRef<ThreeJsCustomLayer | undefined>(undefined);
 
   const applyProjectionMode = useCallback(
     (map: MapboxMap, mode: ProjectionMode) => {
+      layerRef.current?.setProjectionMode(mode);
       map.setCamera({ 'camera-projection': mode });
       if (mode === 'orthographic') {
         map.easeTo({ pitch: 0, duration: 300 });
@@ -44,15 +65,45 @@ export function MapboxPlusThreeJsPage() {
     applyProjectionMode(map, nextMode);
   }, [applyProjectionMode, projectionMode]);
 
+  const replaceThreeLayer = useCallback(
+    (
+      map: MapboxMap,
+      strategy: CameraSyncStrategy,
+      mode: ProjectionMode,
+    ): ThreeJsCustomLayer | undefined => {
+      if (map.getLayer('threejs-layer')) {
+        map.removeLayer('threejs-layer');
+      }
+      const layer = addThreeJsCustomLayer(map, {
+        strategy,
+        projectionMode: mode,
+        maxOrthoContentHeightM: MAX_ORTHO_CONTENT_HEIGHT_M,
+      });
+      layer?.setProjectionMode(mode);
+      return layer;
+    },
+    [],
+  );
+
   const handleMapLoad = useCallback(
     (map: MapboxMap) => {
       mapRef.current = map;
       addBuildings(map);
-      addThreeJsCustomLayer(map);
+      layerRef.current = replaceThreeLayer(map, syncStrategy, projectionMode);
       applyProjectionMode(map, projectionMode);
     },
-    [applyProjectionMode, projectionMode],
+    [applyProjectionMode, projectionMode, replaceThreeLayer, syncStrategy],
   );
+
+  const handleStrategyToggle = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const nextStrategy: CameraSyncStrategy =
+      syncStrategy === 'mapbox-matrix' ? 'near-clip-offset' : 'mapbox-matrix';
+    setSyncStrategy(nextStrategy);
+    layerRef.current = replaceThreeLayer(map, nextStrategy, projectionMode);
+    applyProjectionMode(map, projectionMode);
+  }, [applyProjectionMode, projectionMode, replaceThreeLayer, syncStrategy]);
 
   return (
     <div
@@ -86,6 +137,26 @@ export function MapboxPlusThreeJsPage() {
             >
               {projectionMode === 'perspective' ? '2D' : '3D'}
             </Button>
+            <Tooltip>
+              <TooltipTrigger
+                delay={400}
+                render={
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-lg"
+                    onClick={handleStrategyToggle}
+                    aria-label={STRATEGY_TOGGLE_TOOLTIP[syncStrategy]}
+                    className="px-2 text-xs font-semibold"
+                  >
+                    {syncStrategy === 'mapbox-matrix' ? 'NC' : 'MX'}
+                  </Button>
+                }
+              />
+              <TooltipContent side="bottom" align="end" className="max-w-xs">
+                {STRATEGY_TOGGLE_TOOLTIP[syncStrategy]}
+              </TooltipContent>
+            </Tooltip>
           </MapPanel>
         </MapProvider>
       </div>
