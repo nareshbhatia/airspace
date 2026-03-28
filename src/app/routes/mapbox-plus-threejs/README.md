@@ -7,67 +7,123 @@ side by side: **Mapbox-native 3D buildings** (using the built-in
 `fill-extrusion` layer) and **Three.js 3D assets** (utility poles as cylinders
 via a Mapbox custom layer). The page includes a **2D/3D toggle** that switches
 Mapbox’s camera between **perspective** (3D) and **orthographic** (2D)
-projection so you can see both renderers behave under the same projection
-matrix.
+projection so you can compare behavior. The page also offers a **strategy
+toggle** (**MX** vs **CS**) between two independent Three.js integration paths.
 
 By the end, we should understand: how Mapbox’s custom layer API works, how
 Three.js shares Mapbox’s WebGL context, how geographic coordinates become
-Three.js positions with a baked **model transform**, how the **shared depth
-buffer** occludes Mapbox buildings against Three.js meshes, and why **Mapbox GL
-JS ≥ 3.20.0** matters for orthographic mode.
+Three.js positions via **Mapbox’s `matrix`** and **`modelTransform`**, how the
+**shared depth buffer** affects occlusion, and why **Mapbox GL JS ≥ 3.20.0**
+matters for orthographic mode.
 
 The steps are structured so we build incrementally — each step compiles and runs
 on its own, producing a visible result before moving to the next.
 
-## Architecture (custom layer + Three.js)
+## Architecture: two strategies (shared projection; differ on near-clip)
 
-Mapbox invokes your custom layer’s `render(gl, matrix)` each frame with a
-**view–projection matrix** already in clip space for the current camera
-(perspective or orthographic). This implementation does **not** sync a separate
-Three.js camera from `map.transform`. Instead, it keeps scene geometry in
-**meters near a local origin**, then each frame sets:
+The page registers **one** custom layer at a time, chosen by the **CS / MX**
+toggle (label = the strategy you switch **to** on click):
 
-`camera.projectionMatrix = mapboxMatrix * modelTransform`
+| Strategy                       | Layer class                    | Uses `render(gl, matrix)` for Three.js?                                                                                |
+| ------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **mapbox-matrix** (MX default) | `ThreeJsCustomLayer`           | **Yes** — `projectionMatrix = matrix × modelTransform`                                                                 |
+| **camera-sync** (CS)           | `ThreeJsCameraSyncCustomLayer` | **Yes** — same `projectionMatrix = matrix × modelTransform`; additionally **`setNearClipOffset`** in orthographic mode |
 
-where `modelTransform` translates to a reference `MercatorCoordinate` and scales
-meters into Mercator units (with a **negative Y scale** so Three.js Y-up maps to
-Mapbox’s Mercator Y-south convention). Three.js uses that single matrix for both
-projection modes, so poles stay aligned when toggling 2D/3D.
+Pole geometry is built once in **`buildPoleScene`**: lights on the `Scene` root,
+all pole meshes under a **`Group`** (`polesGroup`). Both strategies attach
+**`polesGroup`** to the **`Scene`** root (meter-space offsets; fixed
+**`modelTransform`** from `mercatorUtils`). The standalone **`CameraSync`**
+module is a Threebox-style **reference** for manual matrices and is **not**
+wired into the active CS layer (see [`CameraSync.ts`](CameraSync.ts) file
+comment).
 
-**Depth buffer:** Mapbox and Three.js use the **same** WebGL depth buffer (the
-custom layer uses `renderingMode: '3d'`). That allows **correct occlusion**: a
-Mapbox building that is closer in depth can hide part of a pole, and vice versa.
-Earlier Mapbox GL JS versions had an orthographic bug where the effective near
-plane could clip custom-layer content at high zoom; that is **fixed in 3.20+**
-([mapbox/mapbox-gl-js#13619](https://github.com/mapbox/mapbox-gl-js/issues/13619)).
-This project pins **`mapbox-gl` `^3.20.0`** so that fix is always available. We
-**do not** clear the depth buffer before Three.js draws — clearing would discard
-Mapbox’s depth and break building-vs-pole occlusion.
+**Depth buffer:** Both layers use `renderingMode: '3d'`, so Mapbox and Three.js
+share one depth buffer. Occlusion between fill-extrusion buildings and poles
+depends on how closely Three.js clip space matches Mapbox’s for that frame.
+**Mapbox GL JS ≥ 3.20.0** improves orthographic behavior
+([#13619](https://github.com/mapbox/mapbox-gl-js/issues/13619)); this repo pins
+`mapbox-gl` `^3.20.0`. Do **not** clear the depth buffer before Three.js draws.
 
-**Render settings:** `WebGLRenderer` is created with Mapbox’s canvas and
-context, `autoClear` stays **false** (Three.js must not wipe Mapbox’s color
-buffer), and `resetState()` runs before each Three.js draw because Mapbox may
-leave GL state dirty. Pole meshes use `frustumCulled = false` because with the
-baked matrix approach, Three.js frustum culling can be unreliable.
+**Render settings:** Shared: `WebGLRenderer` on Mapbox’s canvas/context,
+`autoClear: false`, `resetState()` before `render`, `triggerRepaint()` after,
+`frustumCulled = false` on poles.
 
-## Orthographic mode (2D / 3D toggle)
+---
 
-The toggle calls `map.setCamera({ 'camera-projection': mode })` with
-`'orthographic'` or `'perspective'`. In orthographic mode the page also eases
-pitch to **0** for a map-like top-down view; in perspective mode it restores the
-configured pitch. Three.js content does **not** switch to a separate
-`OrthographicCamera` — it continues to use Mapbox’s **`matrix`** argument, which
-already encodes the active projection.
+## Strategy A — mapbox-matrix (`ThreeJsCustomLayer`)
+
+### Three.js camera and near / far
+
+- The Three.js object is a plain `THREE.Camera` at **default** position and
+  orientation (never updated from `map.transform`).
+- You do **not** set numeric `near` / `far` on a `PerspectiveCamera`.
+  **Effective** near and far clipping come **entirely** from Mapbox’s per-frame
+  **`matrix`** passed into `render()`, after right-multiplying the fixed
+  **`modelTransform`** (Mercator origin + meter scale, including negative Y for
+  Mercator south).
+- So: only **`modelTransform`** is a fixed constant for the layer; **near/far
+  are not** fixed Three.js constants — they change whenever Mapbox’s internal
+  projection changes (zoom, pitch, bearing, projection mode).
+
+### Mapbox side
+
+- Mapbox computes view–projection for the basemap and supplies the **same**
+  matrix to the custom layer. This path does **not** call
+  `map.setNearClipOffset` from the layer.
+
+---
+
+## Strategy B — camera-sync (`ThreeJsCameraSyncCustomLayer`)
+
+Uses the **same** Three.js projection as **mapbox-matrix**:
+**`camera.projectionMatrix = matrix × modelTransform`** (Mapbox’s per-frame
+`matrix` from `render()` plus the fixed geospatial **`modelTransform`** from
+`mercatorUtils`). A plain **`THREE.Camera`** at default pose; effective near/far
+come from Mapbox’s matrix, not from manual `PerspectiveCamera` settings.
+
+### Mapbox side — `setNearClipOffset` (orthographic only)
+
+Mapbox still draws tiles and buildings with **its own** internal projection. In
+orthographic mode, Mapbox’s effective near plane can clip tall 3D content. The
+**camera-sync** path calls the experimental **`map.setNearClipOffset`** API:
+
+- **Orthographic:** negative offset ≈
+  **`maxOrthoContentHeightM × pixelsPerMeter`** (see `getPixelsPerMeter` in
+  `mercatorUtils.ts`).
+- **Perspective:** **`setNearClipOffset(0)`** to restore Mapbox defaults.
+
+Typings: `getNearClipOffset` / `setNearClipOffset` are on **`Map`** in recent
+`mapbox-gl` releases (marked experimental in JSDoc). Layer **`onRemove`** resets
+offset to `0`.
+
+**Reference:** [`CameraSync.ts`](CameraSync.ts) ports Threebox-style manual
+projection + world matrices from **`map.transform`**; it is **not** used by the
+current CS layer because meter-space **`polesGroup`** content did not match that
+world space (poles vanished / clipped). A future integration would need the
+scene graph and matrices aligned end-to-end.
+
+---
+
+## Orthographic mode (2D / 3D toggle) — page behavior
+
+The **2D / 3D** button calls `map.setCamera({ 'camera-projection': mode })` and
+eases pitch (**0** in 2D, `MAP_VIEW.pitch` in 3D). The active custom layer’s
+**`setProjectionMode`** is called so **camera-sync** can apply or clear
+**`setNearClipOffset`** when switching to or from orthographic projection. For
+**mapbox-matrix**, that callback is a no-op.
 
 ## File layout
 
-| File                        | Responsibility                                                                               |
-| --------------------------- | -------------------------------------------------------------------------------------------- |
-| `mercatorUtils.ts`          | Pure math: Mercator ↔ local meter offsets, `computeModelTransform` for the camera matrix.    |
-| `buildPoleScene.ts`         | Scene **content**: lights, cylinders, materials, mesh placement from `UtilityPole[]`.        |
-| `ThreeJsCustomLayer.ts`     | Custom layer **infrastructure**: renderer/camera lifecycle, `render` / `onRemove`, disposal. |
-| `addThreeJsCustomLayer.ts`  | Wires `buildPoleScene` + `ThreeJsCustomLayer` and registers the layer on the map.            |
-| `MapboxPlusThreeJsPage.tsx` | React page: map setup, buildings, layer registration, projection toggle.                     |
+| File                              | Responsibility                                                                   |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| `threeJsMapLayerTypes.ts`         | `ProjectionMode`, `CameraSyncStrategy`, `ThreeJsMapCustomLayer` interface.       |
+| `mercatorUtils.ts`                | Mercator ↔ local meters, `computeModelTransform`, `getPixelsPerMeter`.           |
+| `buildPoleScene.ts`               | Lights on scene; pole meshes in `polesGroup` (not necessarily scene root).       |
+| `ThreeJsCustomLayer.ts`           | **mapbox-matrix** layer only.                                                    |
+| `CameraSync.ts`                   | Reference: Threebox-style manual matrices from `map.transform` (unwired).        |
+| `ThreeJsCameraSyncCustomLayer.ts` | **camera-sync** layer: matrix × `modelTransform` + `setNearClipOffset` in ortho. |
+| `addThreeJsCustomLayer.ts`        | Factory: picks layer class; always `scene.add(polesGroup)`.                      |
+| `MapboxPlusThreeJsPage.tsx`       | Map, buildings, 2D/3D + CS/MX toggles, replaces layer when strategy changes.     |
 
 ## General guidelines
 
@@ -180,22 +236,27 @@ already encodes the active projection.
   `MeshStandardMaterial` with distinct colors (or an unlit material while
   debugging). Observe realistic shading as you rotate the map.
 
-**Step 7 -- 2D/3D Projection Toggle**
+**Step 7 -- 2D/3D Toggle and Dual Camera Strategies (MX / CS)**
 
-- Concept: Mapbox supports switching between perspective and orthographic
-  projection at runtime via
-  `map.setCamera({"camera-projection": "orthographic"})`. In perspective mode,
-  the camera has a field of view and objects farther away appear smaller. In
-  orthographic mode, parallel lines stay parallel; combined with pitch 0, the
-  view reads as 2D. Three.js continues to use the **`matrix`** from
-  `render(gl, matrix)` in both modes — no separate Three.js orthographic camera
-  is required.
+- Concept: Mapbox switches projection with
+  `map.setCamera({ "camera-projection": "orthographic" | "perspective" })`. The
+  page eases pitch for a 2D-style vs pitched 3D view.
 
-- Task: Add a 2D/3D toggle button. When switching to 2D: set orthographic
-  projection and ease pitch to 0. When switching to 3D: restore perspective and
-  the map’s configured pitch. Verify poles and buildings occlude each other
-  sensibly in both modes (requires Mapbox GL JS **≥ 3.20.0** for orthographic
-  depth behavior).
+- **Two implementations** (see **Architecture** and strategy sections above):
+  - **mapbox-matrix (MX):** `camera.projectionMatrix = matrix × modelTransform`;
+    Three.js near/far follow Mapbox’s `matrix`; no `setNearClipOffset`.
+  - **camera-sync (CS):** same **`matrix × modelTransform`** projection as MX;
+    **`setNearClipOffset`** in orthographic mode for tall content (see Strategy
+    B).
+
+- **Implemented UI:** **2D / 3D** — action label on the button. **CS / MX** —
+  action label (switch to camera-sync vs mapbox-matrix). Changing strategy
+  removes and re-adds the custom layer.
+
+- Task: Compare MX vs CS while panning, zooming, and toggling 2D/3D. In
+  orthographic mode, CS should show fewer near-plane clipping artifacts on tall
+  poles thanks to **`setNearClipOffset`**; perspective behavior should match MX
+  for projection (both use Mapbox’s `matrix`).
 
 ## Key Files to Modify/Create
 
@@ -203,10 +264,17 @@ already encodes the active projection.
 - `src/routes.tsx` -- add route mapping
 - `src/app/routes/mapbox-plus-threejs/MapboxPlusThreeJsPage.tsx` -- main page
   component
+- `src/app/routes/mapbox-plus-threejs/threeJsMapLayerTypes.ts` -- strategy types
+  and shared layer interface
 - `src/app/routes/mapbox-plus-threejs/mercatorUtils.ts` -- Mercator / model
   transform helpers
 - `src/app/routes/mapbox-plus-threejs/buildPoleScene.ts` -- pole scene content
-- `src/app/routes/mapbox-plus-threejs/ThreeJsCustomLayer.ts` -- custom layer
-  lifecycle and render loop
-- `src/app/routes/mapbox-plus-threejs/addThreeJsCustomLayer.ts` -- compose scene
-  - layer registration
+  (`polesGroup`)
+- `src/app/routes/mapbox-plus-threejs/ThreeJsCustomLayer.ts` -- mapbox-matrix
+  custom layer
+- `src/app/routes/mapbox-plus-threejs/CameraSync.ts` -- Threebox-style camera
+  sync
+- `src/app/routes/mapbox-plus-threejs/ThreeJsCameraSyncCustomLayer.ts` --
+  camera-sync custom layer
+- `src/app/routes/mapbox-plus-threejs/addThreeJsCustomLayer.ts` -- factory +
+  layer registration

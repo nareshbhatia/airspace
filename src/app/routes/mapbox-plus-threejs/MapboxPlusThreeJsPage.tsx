@@ -17,17 +17,17 @@ import { cn } from '../../../utils/cn';
 import type {
   CameraSyncStrategy,
   ProjectionMode,
-  ThreeJsCustomLayer,
-} from './ThreeJsCustomLayer';
+  ThreeJsMapCustomLayer,
+} from './threeJsMapLayerTypes';
 import type { Map as MapboxMap } from 'mapbox-gl';
 
 const MAX_ORTHO_CONTENT_HEIGHT_M = 20;
 
 const STRATEGY_TOGGLE_TOOLTIP: Record<CameraSyncStrategy, string> = {
   'mapbox-matrix':
-    'Click to switch to near-clip-offset mode: in 2D (orthographic), Mapbox uses setNearClipOffset so tall Three.js poles are less likely to clip. Three.js still uses Mapbox’s render matrix.',
-  'near-clip-offset':
-    'Click to switch to default mapbox-matrix mode: Three.js uses only Mapbox’s per-frame matrix; near-clip offset is cleared in 3D.',
+    'Click to switch to camera-sync mode: same Mapbox matrix × modelTransform projection as MX, plus experimental setNearClipOffset in 2D (orthographic) to reduce clipping of tall content.',
+  'camera-sync':
+    'Click to switch to mapbox-matrix mode: Mapbox matrix × modelTransform only; no setNearClipOffset.',
 };
 
 /**
@@ -41,7 +41,7 @@ export function MapboxPlusThreeJsPage() {
   const [syncStrategy, setSyncStrategy] =
     useState<CameraSyncStrategy>('mapbox-matrix');
   const mapRef = useRef<MapboxMap | undefined>(undefined);
-  const layerRef = useRef<ThreeJsCustomLayer | undefined>(undefined);
+  const layerRef = useRef<ThreeJsMapCustomLayer | undefined>(undefined);
 
   const applyProjectionMode = useCallback(
     (map: MapboxMap, mode: ProjectionMode) => {
@@ -70,7 +70,7 @@ export function MapboxPlusThreeJsPage() {
       map: MapboxMap,
       strategy: CameraSyncStrategy,
       mode: ProjectionMode,
-    ): ThreeJsCustomLayer | undefined => {
+    ): ThreeJsMapCustomLayer | undefined => {
       if (map.getLayer('threejs-layer')) {
         map.removeLayer('threejs-layer');
       }
@@ -79,7 +79,6 @@ export function MapboxPlusThreeJsPage() {
         projectionMode: mode,
         maxOrthoContentHeightM: MAX_ORTHO_CONTENT_HEIGHT_M,
       });
-      layer?.setProjectionMode(mode);
       return layer;
     },
     [],
@@ -99,7 +98,7 @@ export function MapboxPlusThreeJsPage() {
     const map = mapRef.current;
     if (!map) return;
     const nextStrategy: CameraSyncStrategy =
-      syncStrategy === 'mapbox-matrix' ? 'near-clip-offset' : 'mapbox-matrix';
+      syncStrategy === 'mapbox-matrix' ? 'camera-sync' : 'mapbox-matrix';
     setSyncStrategy(nextStrategy);
     layerRef.current = replaceThreeLayer(map, nextStrategy, projectionMode);
     applyProjectionMode(map, projectionMode);
@@ -149,7 +148,7 @@ export function MapboxPlusThreeJsPage() {
                     aria-label={STRATEGY_TOGGLE_TOOLTIP[syncStrategy]}
                     className="px-2 text-xs font-semibold"
                   >
-                    {syncStrategy === 'mapbox-matrix' ? 'NC' : 'MX'}
+                    {syncStrategy === 'mapbox-matrix' ? 'CS' : 'MX'}
                   </Button>
                 }
               />

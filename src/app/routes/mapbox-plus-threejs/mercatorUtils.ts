@@ -1,6 +1,10 @@
 import { MercatorCoordinate } from 'mapbox-gl';
 import { Matrix4, Vector3 } from 'three';
 
+import type { Map as MapboxMap } from 'mapbox-gl';
+
+const EARTH_CIRCUMFERENCE_M = 40075016.68557849;
+
 /**
  * Converts a geographic position to a local Three.js XY offset (meters) relative
  * to a Mercator origin and scale.
@@ -25,4 +29,22 @@ export function computeModelTransform(originMerc: MercatorCoordinate): Matrix4 {
   return new Matrix4()
     .makeTranslation(originMerc.x, originMerc.y, originMerc.z)
     .scale(new Vector3(scale, -scale, scale));
+}
+
+/**
+ * Pixels per meter at the map center latitude (for experimental near-clip offset).
+ */
+export function getPixelsPerMeter(map: MapboxMap): number {
+  const t = map.transform;
+  const tileSize = t.tileSize;
+  const scale = t.scale;
+  const lat = t.center.lat;
+  if (Number.isNaN(lat)) {
+    return 1;
+  }
+  const worldSize = tileSize * scale;
+  const metersPerMercatorUnitAtLat =
+    EARTH_CIRCUMFERENCE_M * Math.cos((lat * Math.PI) / 180);
+  const mercatorUnitsPerMeter = 1 / metersPerMercatorUnitAtLat;
+  return mercatorUnitsPerMeter * worldSize;
 }

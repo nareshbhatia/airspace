@@ -16,13 +16,13 @@ export const MAP_VIEW = {
 
 /**
  * Five utility poles laid out in a straight line.
- * Heights increase by 2m starting at 2m.
+ * Heights span from 2m to 30m to test near-clip behavior at different altitudes.
  */
 export const utilityPoles: UtilityPole[] = [
   {
     id: 'r001',
     label: 'Rural Pole 001',
-    lng: -100.551560,
+    lng: -100.55156,
     lat: 42.8728,
     inspectionAltM: 2,
     status: 'nominal',

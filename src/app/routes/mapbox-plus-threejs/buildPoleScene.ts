@@ -3,6 +3,7 @@ import {
   AmbientLight,
   CylinderGeometry,
   DirectionalLight,
+  Group,
   Mesh,
   MeshStandardMaterial,
   Scene,
@@ -19,11 +20,14 @@ import type { UtilityPole } from '../../../lib/mapbox/types/UtilityPole';
  */
 export function buildPoleScene(
   poles: UtilityPole[],
-): { scene: Scene; originMerc: MercatorCoordinate } | undefined {
+):
+  | { scene: Scene; polesGroup: Group; originMerc: MercatorCoordinate }
+  | undefined {
   const refPole = poles[0];
   if (!refPole) return undefined;
 
   const scene = new Scene();
+  const polesGroup = new Group();
 
   scene.add(new AmbientLight(0xffffff, 0.6));
   const sun = new DirectionalLight(0xffffff, 0.9);
@@ -65,8 +69,8 @@ export function buildPoleScene(
     mesh.rotation.x = Math.PI / 2;
     mesh.frustumCulled = false;
 
-    scene.add(mesh);
+    polesGroup.add(mesh);
   }
 
-  return { scene, originMerc };
+  return { scene, polesGroup, originMerc };
 }
