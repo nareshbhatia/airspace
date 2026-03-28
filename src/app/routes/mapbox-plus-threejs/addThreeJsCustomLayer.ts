@@ -1,8 +1,20 @@
 import { buildPoleScene } from './buildPoleScene';
+import { ThreeJsCameraSyncCustomLayer } from './ThreeJsCameraSyncCustomLayer';
 import { ThreeJsCustomLayer } from './ThreeJsCustomLayer';
-import { utilityPoles } from '../../../data/scene3d';
+import { utilityPoles } from '../../../data/scene3d-rural';
 
+import type {
+  CameraSyncStrategy,
+  ProjectionMode,
+  ThreeJsMapCustomLayer,
+} from './threeJsMapLayerTypes';
 import type { Map as MapboxMap } from 'mapbox-gl';
+
+interface AddThreeJsCustomLayerOptions {
+  strategy?: CameraSyncStrategy;
+  projectionMode?: ProjectionMode;
+  maxOrthoContentHeightM?: number;
+}
 
 /**
  * Adds the Three.js Mapbox custom layer (if not already present).
@@ -11,16 +23,27 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  */
 export function addThreeJsCustomLayer(
   map: MapboxMap,
-): ThreeJsCustomLayer | undefined {
-  // Check if the layer is already added
+  options?: AddThreeJsCustomLayerOptions,
+): ThreeJsMapCustomLayer | undefined {
   if (map.getLayer('threejs-layer')) return undefined;
 
-  // Build the scene
   const built = buildPoleScene(utilityPoles);
   if (!built) return undefined;
 
-  // Create the layer
-  const { scene, originMerc } = built;
+  const { scene, polesGroup, originMerc } = built;
+  const strategy = options?.strategy ?? 'mapbox-matrix';
+
+  scene.add(polesGroup);
+
+  if (strategy === 'camera-sync') {
+    const layer = new ThreeJsCameraSyncCustomLayer(scene, originMerc, {
+      projectionMode: options?.projectionMode,
+      maxOrthoContentHeightM: options?.maxOrthoContentHeightM,
+    });
+    map.addLayer(layer);
+    return layer;
+  }
+
   const layer = new ThreeJsCustomLayer(scene, originMerc);
   map.addLayer(layer);
   return layer;

@@ -1,7 +1,7 @@
 import { MercatorCoordinate } from 'mapbox-gl';
 import { Camera, Matrix4, Mesh, Scene, WebGLRenderer } from 'three';
 
-import { computeModelTransform } from './mercatorUtils';
+import { computeModelTransform, getPixelsPerMeter } from './mercatorUtils';
 
 import type {
   ProjectionMode,
@@ -10,11 +10,21 @@ import type {
 import type { Map as MapboxMap } from 'mapbox-gl';
 import type { BufferGeometry, Material } from 'three';
 
+interface ThreeJsCameraSyncCustomLayerOptions {
+  projectionMode?: ProjectionMode;
+  maxOrthoContentHeightM?: number;
+}
+
 /**
- * Mapbox custom layer that renders Three.js using Mapbox's per-frame `matrix`
- * from `render(gl, matrix)` (add-3d-model style).
+ * Custom layer labeled "camera-sync": uses the same **projection** path as
+ * {@link ThreeJsCustomLayer} (`projectionMatrix = matrix × modelTransform`) so
+ * pole geometry matches Mapbox. Additionally applies experimental
+ * `map.setNearClipOffset` in **orthographic** mode to reduce clipping of tall
+ * content (see Mapbox docs). The standalone {@link CameraSync} module is a
+ * Threebox-style reference port for manual matrices; it is not wired here until
+ * the coordinate pipeline matches our meter-space meshes.
  */
-export class ThreeJsCustomLayer implements ThreeJsMapCustomLayer {
+export class ThreeJsCameraSyncCustomLayer implements ThreeJsMapCustomLayer {
   readonly id = 'threejs-layer';
 
   readonly type = 'custom' as const;
@@ -29,17 +39,25 @@ export class ThreeJsCustomLayer implements ThreeJsMapCustomLayer {
 
   private readonly _scene: Scene;
 
-  /** Baked once: origin Mercator + meter scale does not change for this layer. */
   private readonly _modelTransform: Matrix4;
 
-  constructor(scene: Scene, originMerc: MercatorCoordinate) {
+  private _projectionMode: ProjectionMode;
+
+  private readonly _maxOrthoContentHeightM: number;
+
+  constructor(
+    scene: Scene,
+    originMerc: MercatorCoordinate,
+    options?: ThreeJsCameraSyncCustomLayerOptions,
+  ) {
     this._scene = scene;
     this._modelTransform = computeModelTransform(originMerc);
+    this._projectionMode = options?.projectionMode ?? 'perspective';
+    this._maxOrthoContentHeightM = options?.maxOrthoContentHeightM ?? 1000;
   }
 
-  /** No-op for this layer; projection follows Mapbox `matrix` only. */
-  setProjectionMode(_mode: ProjectionMode): void {
-    void _mode;
+  setProjectionMode(mode: ProjectionMode): void {
+    this._projectionMode = mode;
   }
 
   onAdd(map: MapboxMap, gl: WebGL2RenderingContext): void {
@@ -61,13 +79,31 @@ export class ThreeJsCustomLayer implements ThreeJsMapCustomLayer {
     const m = new Matrix4().fromArray(matrix);
     this._camera.projectionMatrix = m.multiply(this._modelTransform);
 
+    this.applyNearClipOffset();
+
     this._renderer.resetState();
     this._renderer.render(this._scene, this._camera);
     this._map.triggerRepaint();
   }
 
+  private applyNearClipOffset(): void {
+    const map = this._map;
+    if (!map) return;
+
+    if (this._projectionMode !== 'orthographic') {
+      map.setNearClipOffset(0);
+      return;
+    }
+
+    const pixelsPerMeter = getPixelsPerMeter(map);
+    const offset = -(this._maxOrthoContentHeightM * pixelsPerMeter);
+    map.setNearClipOffset(offset);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRemove(_map: MapboxMap, _gl: WebGL2RenderingContext): void {
+    this._map?.setNearClipOffset(0);
+
     this._scene.traverse((obj) => {
       if (obj instanceof Mesh) {
         (obj.geometry as BufferGeometry).dispose();
