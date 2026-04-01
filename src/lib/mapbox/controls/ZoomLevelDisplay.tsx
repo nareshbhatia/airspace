@@ -31,10 +31,8 @@ export function ZoomLevelDisplay({ className }: ZoomLevelDisplayProps) {
 
   return (
     <Field orientation="horizontal" className={className}>
-      <FieldLabel htmlFor="zoom-level-display">Zoom</FieldLabel>
-      <Badge id="zoom-level-display" variant="outline">
-        {Math.round(zoom)}
-      </Badge>
+      <FieldLabel>Zoom</FieldLabel>
+      <Badge variant="outline">{Math.round(zoom)}</Badge>
     </Field>
   );
 }

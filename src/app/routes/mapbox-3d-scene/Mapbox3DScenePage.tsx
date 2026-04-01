@@ -26,9 +26,7 @@ const LAYER_GROUPS: LayerGroupConfig[] = [
   {
     id: 'zones',
     label: 'Airspace zones',
-    layerIds: scene.zones.map(
-      (z) => `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${z.id}`,
-    ),
+    layerIds: scene.zones.map((z) => `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${z.id}`),
   },
   {
     id: 'poles',

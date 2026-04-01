@@ -14,38 +14,39 @@ import { UTILITY_POLE_RADIUS_M } from '../../../lib/mapbox/types/UtilityPole';
 
 import type { UtilityPole } from '../../../lib/mapbox/types/UtilityPole';
 
+const statusColors: Record<string, number> = {
+  nominal: 0x22c55e,
+  flagged: 0xef4444,
+  inspected: 0x9ca3af,
+};
+
 /**
- * Builds a Three.js scene with lit utility pole cylinders at geographic positions.
+ * Builds a Three.js scene with lit utility poles at geographic positions.
  * Returns undefined when there are no poles (nothing to anchor an origin).
  */
-export function buildPoleScene(
+export function buildPolesScene(
   poles: UtilityPole[],
-):
-  | { scene: Scene; polesGroup: Group; originMerc: MercatorCoordinate }
-  | undefined {
+): { polesScene: Scene; originMerc: MercatorCoordinate } | undefined {
   const refPole = poles[0];
   if (!refPole) return undefined;
 
-  const scene = new Scene();
+  const polesScene = new Scene();
   const polesGroup = new Group();
 
-  scene.add(new AmbientLight(0xffffff, 0.6));
+  // Add lights
+  polesScene.add(new AmbientLight(0xffffff, 0.6));
   const sun = new DirectionalLight(0xffffff, 0.9);
   sun.position.set(50, 100, 50);
-  scene.add(sun);
+  polesScene.add(sun);
 
+  // Calculate origin Mercator coordinate and scale
   const originMerc = MercatorCoordinate.fromLngLat(
     [refPole.lng, refPole.lat],
     0,
   );
   const originScale = originMerc.meterInMercatorCoordinateUnits();
 
-  const statusColors: Record<string, number> = {
-    nominal: 0x22c55e,
-    flagged: 0xef4444,
-    inspected: 0x9ca3af,
-  };
-
+  // Build each pole as a separate mesh and add it to the polesGroup
   for (const pole of poles) {
     const { x: offsetXm, y: offsetYm } = mercatorToLocalPosition(
       [pole.lng, pole.lat],
@@ -72,5 +73,8 @@ export function buildPoleScene(
     polesGroup.add(mesh);
   }
 
-  return { scene, polesGroup, originMerc };
+  // Add the polesGroup to the polesScene
+  polesScene.add(polesGroup);
+
+  return { polesScene, originMerc };
 }

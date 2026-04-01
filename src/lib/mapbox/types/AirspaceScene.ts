@@ -1,13 +1,12 @@
-import type { MapProviderProps } from '../providers/MapProvider';
-
 import type { AirspaceZone } from './AirspaceZone';
 import type { UtilityPole } from './UtilityPole';
 import type { Waypoint } from './Waypoint';
+import type { MapProviderProps } from '../providers/MapProvider';
 
 /** Map init props suitable for serialized scene data (no React-only props). */
-export type AirspaceSceneMapProvider = Omit<
+export type AirspaceSceneMapProvider = Pick<
   MapProviderProps,
-  'children' | 'onLoad' | 'onError'
+  'center' | 'zoom' | 'pitch' | 'bearing'
 >;
 
 export interface AirspaceScene {
