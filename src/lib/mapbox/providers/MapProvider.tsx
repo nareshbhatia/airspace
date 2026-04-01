@@ -14,7 +14,7 @@ function getInitialMapError(): string | undefined {
   return MAPBOX_TOKEN ? undefined : 'VITE_MAPBOX_TOKEN is not set';
 }
 
-interface MapProviderProps {
+export interface MapProviderProps {
   style?: string;
   center?: LngLatLike;
   zoom?: number;
@@ -24,7 +24,7 @@ interface MapProviderProps {
   onLoad?: (map: mapboxgl.Map) => void;
   /** Called when a runtime map error occurs (e.g. tile load failure). Use for logging/monitoring; does not replace the map. */
   onError?: (error: Error) => void;
-  enable3D?: boolean;
+  enableTerrain?: boolean;
   mapOptions?: Omit<
     mapboxgl.MapboxOptions,
     'container' | 'style' | 'center' | 'zoom' | 'pitch' | 'bearing'
@@ -42,7 +42,7 @@ interface MapProviderProps {
  * is ready). Displays a fallback message when `VITE_MAPBOX_TOKEN` is missing,
  * map creation fails, or a runtime map error occurs.
  *
- * @param style - Mapbox style URL (default: `'mapbox://styles/mapbox/outdoors-v12'`).
+ * @param style - Mapbox style URL (default: `'mapbox://styles/mapbox/standard'`).
  * @param center - Initial map center as `[lng, lat]`.
  * @param zoom - Initial zoom level (default: `12`).
  * @param pitch - Initial pitch in degrees (default: `0`).
@@ -50,19 +50,19 @@ interface MapProviderProps {
  * @param className - Additional CSS classes for the map wrapper.
  * @param onLoad - Callback fired once the map has loaded. Does not need to be memoized (useEffectEvent keeps latest).
  * @param onError - Optional. Called when a runtime map error occurs (e.g. tile failure). Use for logging/monitoring. Does not need to be memoized.
- * @param enable3D - When `true`, adds a DEM source and enables 3-D terrain.
+ * @param enableTerrain - When `true`, adds a DEM source and enables terrain.
  * @param mapOptions - Extra `MapboxOptions` forwarded to the constructor (container/style/camera props are excluded).
  * @param children - React nodes rendered on top of the map (controls, overlays, etc.).
  *
  * @example
  * ```tsx
- * <MapProvider center={[-122.4, 37.8]} zoom={10} enable3D>
+ * <MapProvider center={[-122.4, 37.8]} zoom={10} enableTerrain>
  *   <FlightLayer />
  * </MapProvider>
  * ```
  */
 export function MapProvider({
-  style = 'mapbox://styles/mapbox/outdoors-v12',
+  style = 'mapbox://styles/mapbox/standard',
   center,
   zoom = 12,
   pitch = 0,
@@ -70,7 +70,7 @@ export function MapProvider({
   className,
   onLoad,
   onError,
-  enable3D = false,
+  enableTerrain = false,
   mapOptions,
   children,
 }: MapProviderProps) {
@@ -91,7 +91,7 @@ export function MapProvider({
   const value = useMemo<MapContextValue>(() => ({ map }), [map]);
 
   // Create the map once on mount with initial props. We use an empty dependency array
-  // on purpose: adding style, center, zoom, pitch, bearing, mapOptions, or enable3D
+  // on purpose: adding style, center, zoom, pitch, bearing, or mapOptions
   // would cause the effect to re-run and destroy/recreate the map whenever those
   // props change. We only want a single map instance with the initial configuration.
   useEffect(() => {
@@ -117,20 +117,6 @@ export function MapProvider({
 
       mapInstance.on('load', () => {
         if (!mapInstance) return;
-        if (enable3D) {
-          if (!mapInstance.getSource('mapbox-dem')) {
-            mapInstance.addSource('mapbox-dem', {
-              type: 'raster-dem',
-              url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-              tileSize: 512,
-              maxzoom: 14,
-            });
-          }
-          mapInstance.setTerrain({
-            source: 'mapbox-dem',
-            exaggeration: 1.5,
-          });
-        }
         mapInstance.on('error', (e) => {
           onErrorEvent(e.error);
         });
@@ -149,6 +135,39 @@ export function MapProvider({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once with initial props
   }, []);
+
+  // Keep terrain in sync with the latest prop and style lifecycle.
+  useEffect(() => {
+    if (!map) return;
+
+    const applyTerrain = () => {
+      if (enableTerrain) {
+        if (!map.getSource('mapbox-dem')) {
+          map.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            tileSize: 512,
+            maxzoom: 14,
+          });
+        }
+        map.setTerrain({
+          source: 'mapbox-dem',
+          exaggeration: 1.5,
+        });
+      } else {
+        map.setTerrain(null);
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      applyTerrain();
+    }
+
+    map.on('style.load', applyTerrain);
+    return () => {
+      map.off('style.load', applyTerrain);
+    };
+  }, [map, enableTerrain]);
 
   // Handle map resize manually to account for window resize + container resize
   useEffect(() => {

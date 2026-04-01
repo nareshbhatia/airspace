@@ -7,7 +7,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '../../../components/ui/tooltip';
-import { MAP_CENTER, MAP_VIEW } from '../../../data/scene3d-rural';
+import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
+import { scene } from '../../../data/scene3d-nebraska';
 import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
 import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
@@ -50,7 +51,7 @@ export function MapboxPlusThreeJsPage() {
       if (mode === 'orthographic') {
         map.easeTo({ pitch: 0, duration: 300 });
       } else {
-        map.easeTo({ pitch: MAP_VIEW.pitch, duration: 300 });
+        map.easeTo({ pitch: scene.mapProvider.pitch, duration: 300 });
       }
     },
     [],
@@ -112,14 +113,11 @@ export function MapboxPlusThreeJsPage() {
     >
       <div className="min-h-0 flex-1 w-full">
         <MapProvider
-          style="mapbox://styles/mapbox/satellite-streets-v12"
-          center={MAP_CENTER}
-          zoom={MAP_VIEW.zoom}
-          pitch={MAP_VIEW.pitch}
-          bearing={MAP_VIEW.bearing}
+          {...scene.mapProvider}
+          style={MAPBOX_STANDARD_SATELLITE_STYLE}
+          className="w-full h-full"
           mapOptions={{ antialias: true }}
           onLoad={handleMapLoad}
-          className="w-full h-full"
         >
           <MapPanel className="absolute right-3 top-3 z-10">
             <ZoomLevelDisplay />

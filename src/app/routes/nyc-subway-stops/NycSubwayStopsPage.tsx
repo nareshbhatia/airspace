@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StationInfoCard } from './StationInfoCard';
 import { SubwayRoutesLayer } from './SubwayRoutesLayer';
 import { SubwayStopsLayer } from './SubwayStopsLayer';
+import { MAPBOX_DARK_STYLE } from '../../../config/MapConfig';
 import { MapProvider } from '../../../lib/mapbox';
 
 import type { Station } from './types/Station';
@@ -99,7 +100,7 @@ export function NycSubwayStopsPage() {
         </div>
       )}
       <MapProvider
-        style="mapbox://styles/mapbox/light-v11"
+        style={MAPBOX_DARK_STYLE}
         center={[-73.92, 40.74]}
         zoom={11}
         className="w-full h-full"

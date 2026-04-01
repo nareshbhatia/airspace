@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { cn } from '../../../utils/cn';
+import { Badge } from '../../../components/ui/badge';
+import { Field, FieldLabel } from '../../../components/ui/field';
 import { useMap } from '../hooks/useMap';
 import { useMapEvent } from '../hooks/useMapEvent';
 
@@ -29,14 +30,11 @@ export function ZoomLevelDisplay({ className }: ZoomLevelDisplayProps) {
   if (!map) return null;
 
   return (
-    <div
-      aria-label="Current zoom level"
-      className={cn(
-        'inline-flex size-8 items-center justify-center rounded-md border border-input bg-background text-sm font-medium',
-        className,
-      )}
-    >
-      {Math.round(zoom)}
-    </div>
+    <Field orientation="horizontal" className={className}>
+      <FieldLabel htmlFor="zoom-level-display">Zoom</FieldLabel>
+      <Badge id="zoom-level-display" variant="outline">
+        {Math.round(zoom)}
+      </Badge>
+    </Field>
   );
 }

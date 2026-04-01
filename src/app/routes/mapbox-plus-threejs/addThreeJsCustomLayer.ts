@@ -1,7 +1,7 @@
 import { buildPoleScene } from './buildPoleScene';
 import { ThreeJsCameraSyncCustomLayer } from './ThreeJsCameraSyncCustomLayer';
 import { ThreeJsCustomLayer } from './ThreeJsCustomLayer';
-import { utilityPoles } from '../../../data/scene3d-rural';
+import { scene } from '../../../data/scene3d-nebraska';
 
 import type {
   CameraSyncStrategy,
@@ -27,7 +27,7 @@ export function addThreeJsCustomLayer(
 ): ThreeJsMapCustomLayer | undefined {
   if (map.getLayer('threejs-layer')) return undefined;
 
-  const built = buildPoleScene(utilityPoles);
+  const built = buildPoleScene(scene.poles);
   if (!built) return undefined;
 
   const { scene, polesGroup, originMerc } = built;

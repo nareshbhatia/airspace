@@ -1,11 +1,6 @@
 import { LayerTogglePanel } from './LayerTogglePanel';
-import {
-  airspaceZones,
-  inspectionRoute,
-  MAP_CENTER,
-  MAP_VIEW,
-  utilityPoles,
-} from '../../../data/scene3d';
+import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
+import { scene } from '../../../data/scene3d-john-hancock';
 import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
 import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
@@ -31,7 +26,7 @@ const LAYER_GROUPS: LayerGroupConfig[] = [
   {
     id: 'zones',
     label: 'Airspace zones',
-    layerIds: airspaceZones.map(
+    layerIds: scene.zones.map(
       (z) => `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${z.id}`,
     ),
   },
@@ -63,19 +58,16 @@ export function Mapbox3DScenePage() {
     >
       <div className="min-h-0 flex-1 w-full">
         <MapProvider
-          style="mapbox://styles/mapbox/satellite-streets-v12"
-          center={MAP_CENTER}
-          zoom={MAP_VIEW.zoom}
-          pitch={MAP_VIEW.pitch}
-          bearing={MAP_VIEW.bearing}
+          {...scene.mapProvider}
+          style={MAPBOX_STANDARD_SATELLITE_STYLE}
+          className="w-full h-full"
           mapOptions={{ antialias: true }}
           onLoad={(map) => {
             addBuildings(map);
-            addAirspaceZones(map, airspaceZones);
-            addUtilityPoles(map, utilityPoles);
-            addInspectionRoute(map, inspectionRoute);
+            addAirspaceZones(map, scene.zones);
+            addUtilityPoles(map, scene.poles);
+            addInspectionRoute(map, scene.inspectionRoute);
           }}
-          className="w-full h-full"
         >
           <div className="absolute right-3 top-3 z-10 flex flex-row items-start gap-3">
             <LayerTogglePanel layerGroups={LAYER_GROUPS} />
