@@ -1,15 +1,15 @@
-import { scene as sceneFortCollins } from './scene3d-fort-collins';
-import { scene as sceneJohnHancock } from './scene3d-john-hancock';
-import { scene as sceneNebraska } from './scene3d-nebraska';
-import { scene as sceneSanMateo } from './scene3d-san-mateo';
+import { scene as sceneBoston } from './scene3d-boston-ma';
+import { scene as sceneFortCollins } from './scene3d-fort-collins-co';
+import { scene as sceneSanMateo } from './scene3d-san-mateo-ca';
+import { scene as sceneValentine } from './scene3d-valentine-ne';
 
 import type { AirspaceScene } from '../lib/mapbox/types/AirspaceScene';
 
 export const scenes: AirspaceScene[] = [
-  sceneJohnHancock,
+  sceneBoston,
   sceneFortCollins,
   sceneSanMateo,
-  sceneNebraska,
+  sceneValentine,
 ];
 
 export const DEFAULT_SCENE = sceneFortCollins;

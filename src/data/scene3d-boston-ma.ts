@@ -124,7 +124,7 @@ export const scene: AirspaceScene = {
     center,
     zoom: 18,
     pitch: 55,
-    bearing: -20,
+    bearing: 0,
   },
   zones,
   poles,

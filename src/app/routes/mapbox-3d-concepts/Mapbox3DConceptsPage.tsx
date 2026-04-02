@@ -1,12 +1,16 @@
 import { useState } from 'react';
 
-import { SceneSelector } from '../../../components/simple/SceneSelector';
-import { TerrainSwitch } from '../../../components/simple/TerrainSwitch';
 import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
 import { DEFAULT_SCENE, scenes } from '../../../data/scenes';
-import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
-import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
-import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
+import {
+  BearingDisplay,
+  MapPanel,
+  MapProvider,
+  PitchDisplay,
+  SceneSelector,
+  TerrainSwitch,
+  ZoomLevelDisplay,
+} from '../../../lib/mapbox';
 import { cn } from '../../../utils/cn';
 
 /**
@@ -33,6 +37,8 @@ export function Mapbox3DConceptsPage() {
         >
           <MapPanel className="absolute right-3 top-3 z-10">
             <ZoomLevelDisplay />
+            <PitchDisplay />
+            <BearingDisplay />
             <TerrainSwitch
               isTerrainEnabled={isTerrainEnabled}
               onTerrainEnabledChange={setIsTerrainEnabled}

@@ -8,9 +8,9 @@ import {
   TooltipTrigger,
 } from '../../../components/ui/tooltip';
 import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
-import { scene } from '../../../data/scene3d-nebraska';
-import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
-import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
+import { scene } from '../../../data/scene3d-valentine-ne';
+import { MapPanel } from '../../../lib/mapbox/components/MapPanel';
+import { ZoomLevelDisplay } from '../../../lib/mapbox/components/ZoomLevelDisplay';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import { addBuildings } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';

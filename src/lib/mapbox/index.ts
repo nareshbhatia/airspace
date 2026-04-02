@@ -1,6 +1,10 @@
 export { MapProvider } from './providers/MapProvider';
-export { MapPanel } from './controls/MapPanel';
-export { ZoomLevelDisplay } from './controls/ZoomLevelDisplay';
+export { MapPanel } from './components/MapPanel';
+export { ZoomLevelDisplay } from './components/ZoomLevelDisplay';
+export { PitchDisplay } from './components/PitchDisplay';
+export { BearingDisplay } from './components/BearingDisplay';
+export { SceneSelector } from './components/SceneSelector';
+export { TerrainSwitch } from './components/TerrainSwitch';
 export { useMap } from './hooks/useMap';
 export { useControl } from './hooks/useControl';
 export { useDraw } from './hooks/useDraw';

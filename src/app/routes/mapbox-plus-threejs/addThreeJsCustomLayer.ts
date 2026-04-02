@@ -1,7 +1,7 @@
 import { buildPolesScene } from './buildPolesScene';
 import { ThreeJsCameraSyncCustomLayer } from './ThreeJsCameraSyncCustomLayer';
 import { ThreeJsCustomLayer } from './ThreeJsCustomLayer';
-import { scene } from '../../../data/scene3d-nebraska';
+import { scene } from '../../../data/scene3d-valentine-ne';
 
 import type {
   CameraSyncStrategy,
