@@ -33,7 +33,7 @@ export function SceneSelector({
     >
       <SelectTrigger
         size="sm"
-        className={cn('min-w-36 mt-1', className)}
+        className={cn('w-full mt-1', className)}
         aria-label="Scene"
       >
         <SelectValue />
