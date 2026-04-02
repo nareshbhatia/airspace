@@ -15,21 +15,22 @@ export function useMapPitch3dToggle(is3dEnabled: boolean): void {
 
   // Snapshot of min/max pitch before we force 0/0 in 2D mode,
   // so we can restore custom Map limits when 3D is on again.
-  const intrinsicRef = useRef<{ min: number; max: number } | undefined>(
-    undefined,
-  );
+  const intrinsicRef = useRef<{ min: number; max: number } | null>(null);
 
   useEffect(() => {
     if (!map) return;
 
-    if (intrinsicRef.current === undefined) {
+    if (intrinsicRef.current == null) {
       intrinsicRef.current = {
         min: map.getMinPitch(),
         max: map.getMaxPitch(),
       };
     }
 
-    const { min: iMin, max: iMax } = intrinsicRef.current;
+    const { min: iMin, max: iMax } = intrinsicRef.current ?? {
+      min: 0,
+      max: 0,
+    };
 
     if (is3dEnabled) {
       map.setMinPitch(iMin);
