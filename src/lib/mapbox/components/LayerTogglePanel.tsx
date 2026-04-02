@@ -6,19 +6,21 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card';
-import { Label } from '../../../components/ui/label';
-import { useMap } from '../../../lib/mapbox/hooks/useMap';
-import { toggleLayer } from '../../../lib/mapbox/utils/scene3d';
+import { Checkbox } from '../../../components/ui/checkbox';
+import { Field, FieldLabel } from '../../../components/ui/field';
 import { cn } from '../../../utils/cn';
+import { useMap } from '../hooks/useMap';
+import { toggleLayer } from '../utils/scene3d';
 
-export interface LayerGroupConfig {
+// A group of layers that can be toggled together
+export interface LayerGroup {
   id: string;
   label: string;
   layerIds: string[];
 }
 
 interface LayerTogglePanelProps {
-  layerGroups: LayerGroupConfig[];
+  layerGroups: LayerGroup[];
   className?: string;
 }
 
@@ -36,14 +38,20 @@ export function LayerTogglePanel({
     Object.fromEntries(layerGroups.map((g) => [g.id, true])),
   );
 
+  // Handle checkbox change for a layer group
   const handleChange = useCallback(
     (groupId: string, checked: boolean) => {
       if (!map) return;
+
       const group = layerGroups.find((g) => g.id === groupId);
       if (!group) return;
+
+      // Toggle each layer in the group
       for (const layerId of group.layerIds) {
         toggleLayer(map, layerId, checked);
       }
+
+      // Update the visible state for the group
       setVisible((prev) => ({ ...prev, [groupId]: checked }));
     },
     [map, layerGroups],
@@ -51,9 +59,10 @@ export function LayerTogglePanel({
 
   if (!map) return null;
 
+  // Match border radius of the card to the MapPanel
   return (
-    <Card size="sm" className={cn('w-fit min-w-40', className)}>
-      <CardHeader className="pb-2">
+    <Card size="sm" className={cn('rounded-md', className)}>
+      <CardHeader>
         <CardTitle>Layers</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2 pt-0">
@@ -63,21 +72,21 @@ export function LayerTogglePanel({
           aria-label="Layer visibility"
         >
           {layerGroups.map((group) => (
-            <li key={group.id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={`layer-toggle-${group.id}`}
-                checked={visible[group.id]}
-                onChange={(e) => handleChange(group.id, e.target.checked)}
-                className="h-4 w-4 rounded border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                aria-label={`Toggle ${group.label}`}
-              />
-              <Label
-                htmlFor={`layer-toggle-${group.id}`}
-                className="cursor-pointer text-foreground font-normal"
-              >
-                {group.label}
-              </Label>
+            <li key={group.id}>
+              <Field orientation="horizontal">
+                <Checkbox
+                  id={`layer-toggle-${group.id}`}
+                  checked={visible[group.id]}
+                  onCheckedChange={(checked) => handleChange(group.id, checked)}
+                  aria-label={`Toggle ${group.label}`}
+                />
+                <FieldLabel
+                  htmlFor={`layer-toggle-${group.id}`}
+                  className="cursor-pointer text-foreground font-normal"
+                >
+                  {group.label}
+                </FieldLabel>
+              </Field>
             </li>
           ))}
         </ul>

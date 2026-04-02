@@ -37,7 +37,7 @@ function Mapbox3DConceptsPanel({
   useMapPitch3dToggle(is3dEnabled);
 
   return (
-    <MapPanel className="absolute right-3 top-3 z-10">
+    <MapPanel>
       <ZoomLevelDisplay />
       <PitchDisplay />
       <BearingDisplay />
@@ -81,14 +81,16 @@ export function Mapbox3DConceptsPage() {
           mapOptions={{ antialias: true }}
           enableTerrain={isTerrainEnabled}
         >
-          <Mapbox3DConceptsPanel
-            isTerrainEnabled={isTerrainEnabled}
-            onTerrainEnabledChange={setIsTerrainEnabled}
-            is3dEnabled={is3dEnabled}
-            on3dEnabledChange={setIs3dEnabled}
-            scene={scene}
-            onSceneChange={setScene}
-          />
+          <div className="absolute right-3 top-3 z-10 flex flex-col gap-2 min-w-40">
+            <Mapbox3DConceptsPanel
+              isTerrainEnabled={isTerrainEnabled}
+              onTerrainEnabledChange={setIsTerrainEnabled}
+              is3dEnabled={is3dEnabled}
+              on3dEnabledChange={setIs3dEnabled}
+              scene={scene}
+              onSceneChange={setScene}
+            />
+          </div>
         </MapProvider>
       </div>
     </div>

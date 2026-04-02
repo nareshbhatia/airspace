@@ -34,8 +34,7 @@ export const ROUTE_LINE_LAYER_ID = 'route-line';
 export const WAYPOINT_MARKERS_LAYER_ID = 'waypoint-markers';
 
 /**
- * Sets a layer's visibility via layout property. Use when toggling layer groups
- * in a layer visibility panel. Safe to call for missing layers (no-op).
+ * Sets a layer's visibility. Safe to call for missing layers (no-op).
  */
 export function toggleLayer(
   map: MapboxMap,
