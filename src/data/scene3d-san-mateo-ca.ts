@@ -98,8 +98,8 @@ export const scene: AirspaceScene = {
   mapProvider: {
     center,
     zoom: 19,
-    pitch: 20,
-    bearing: 45,
+    pitch: 5,
+    bearing: 40,
   },
   zones: [],
   poles,

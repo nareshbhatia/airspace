@@ -1,8 +1,8 @@
 import { LayerTogglePanel } from './LayerTogglePanel';
 import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
-import { scene } from '../../../data/scene3d-john-hancock';
-import { MapPanel } from '../../../lib/mapbox/controls/MapPanel';
-import { ZoomLevelDisplay } from '../../../lib/mapbox/controls/ZoomLevelDisplay';
+import { scene } from '../../../data/scene3d-boston-ma';
+import { MapPanel } from '../../../lib/mapbox/components/MapPanel';
+import { ZoomLevelDisplay } from '../../../lib/mapbox/components/ZoomLevelDisplay';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import {
   addAirspaceZones,

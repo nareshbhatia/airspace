@@ -1,13 +1,13 @@
-import { cn } from '../../utils/cn';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from '../../../components/ui/select';
+import { cn } from '../../../utils/cn';
 
-import type { AirspaceScene } from '../../lib/mapbox/types/AirspaceScene';
+import type { AirspaceScene } from '../types/AirspaceScene';
 
 interface SceneSelectorProps {
   scenes: readonly AirspaceScene[];
