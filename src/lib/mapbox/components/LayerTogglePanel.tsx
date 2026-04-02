@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   Card,
@@ -34,9 +34,16 @@ export function LayerTogglePanel({
   className,
 }: LayerTogglePanelProps) {
   const { map } = useMap();
-  const [visible, setVisible] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(layerGroups.map((g) => [g.id, true])),
-  );
+  /** User toggles per group id; omitted ids default to visible in `visible` below. */
+  const [groupToggles, setGroupToggles] = useState<Record<string, boolean>>({});
+
+  const visible = useMemo(() => {
+    const v: Record<string, boolean> = {};
+    for (const g of layerGroups) {
+      v[g.id] = groupToggles[g.id] ?? true;
+    }
+    return v;
+  }, [layerGroups, groupToggles]);
 
   // Handle checkbox change for a layer group
   const handleChange = useCallback(
@@ -51,8 +58,7 @@ export function LayerTogglePanel({
         toggleLayer(map, layerId, checked);
       }
 
-      // Update the visible state for the group
-      setVisible((prev) => ({ ...prev, [groupId]: checked }));
+      setGroupToggles((prev) => ({ ...prev, [groupId]: checked }));
     },
     [map, layerGroups],
   );
@@ -76,7 +82,7 @@ export function LayerTogglePanel({
               <Field orientation="horizontal">
                 <Checkbox
                   id={`layer-toggle-${group.id}`}
-                  checked={visible[group.id]}
+                  checked={visible[group.id] ?? true}
                   onCheckedChange={(checked) => handleChange(group.id, checked)}
                   aria-label={`Toggle ${group.label}`}
                 />
