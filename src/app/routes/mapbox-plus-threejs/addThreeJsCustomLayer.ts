@@ -1,7 +1,7 @@
-import { buildPoleScene } from './buildPoleScene';
+import { buildPolesScene } from './buildPolesScene';
 import { ThreeJsCameraSyncCustomLayer } from './ThreeJsCameraSyncCustomLayer';
 import { ThreeJsCustomLayer } from './ThreeJsCustomLayer';
-import { utilityPoles } from '../../../data/scene3d-rural';
+import { scene } from '../../../data/scene3d-nebraska';
 
 import type {
   CameraSyncStrategy,
@@ -27,16 +27,14 @@ export function addThreeJsCustomLayer(
 ): ThreeJsMapCustomLayer | undefined {
   if (map.getLayer('threejs-layer')) return undefined;
 
-  const built = buildPoleScene(utilityPoles);
+  const built = buildPolesScene(scene.poles);
   if (!built) return undefined;
 
-  const { scene, polesGroup, originMerc } = built;
+  const { polesScene, originMerc } = built;
   const strategy = options?.strategy ?? 'mapbox-matrix';
 
-  scene.add(polesGroup);
-
   if (strategy === 'camera-sync') {
-    const layer = new ThreeJsCameraSyncCustomLayer(scene, originMerc, {
+    const layer = new ThreeJsCameraSyncCustomLayer(polesScene, originMerc, {
       projectionMode: options?.projectionMode,
       maxOrthoContentHeightM: options?.maxOrthoContentHeightM,
     });
@@ -44,7 +42,7 @@ export function addThreeJsCustomLayer(
     return layer;
   }
 
-  const layer = new ThreeJsCustomLayer(scene, originMerc);
+  const layer = new ThreeJsCustomLayer(polesScene, originMerc);
   map.addLayer(layer);
   return layer;
 }

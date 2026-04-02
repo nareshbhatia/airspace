@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 
 import { PlacesList } from './PlacesList';
 import { PlacesView } from './PlacesView';
+import { MAPBOX_STANDARD_STYLE } from '../../../config/MapConfig';
 import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
@@ -46,7 +47,7 @@ export function MarkPlacesPage() {
       </aside>
       <div className="relative min-w-0 flex-1">
         <MapProvider
-          style="mapbox://styles/mapbox/standard"
+          style={MAPBOX_STANDARD_STYLE}
           center={airportById.get('BOS')?.coordinates}
           zoom={12}
           className="w-full h-full"

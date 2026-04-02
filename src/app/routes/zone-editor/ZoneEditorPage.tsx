@@ -6,6 +6,7 @@ import { ZoneEditorDrawBridge } from './ZoneEditorDrawBridge';
 import { ZoneEditorMapFit } from './ZoneEditorMapFit';
 import { ZoneEditorSidebar } from './ZoneEditorSidebar';
 import { ZoneEditorZonesLayer } from './ZoneEditorZonesLayer';
+import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
 import { airportById } from '../../../gen/airports';
 import { MapProvider } from '../../../lib/mapbox';
 
@@ -273,7 +274,7 @@ export function ZoneEditorPage() {
       />
       <div className="relative min-w-0 flex-1">
         <MapProvider
-          style="mapbox://styles/mapbox/satellite-streets-v12"
+          style={MAPBOX_STANDARD_SATELLITE_STYLE}
           center={airportById.get('BOS')?.coordinates}
           zoom={12}
           className="w-full h-full"

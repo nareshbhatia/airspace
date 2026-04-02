@@ -26,6 +26,7 @@ export const mainNavItems: NavItem[] = [
   { path: '/flightpath', title: 'Flightpath', icon: Plane },
   { path: '/flightpath-ol', title: 'Flightpath (OpenLayers)', icon: Map },
   { path: '/zone-editor', title: 'Zone Editor', icon: Layers },
+  { path: '/mapbox-3d-concepts', title: 'Mapbox 3D Concepts', icon: Globe },
   { path: '/mapbox-3d-scene', title: 'Mapbox 3D Scene', icon: Globe },
   { path: '/mapbox-plus-threejs', title: 'Mapbox + Three.js', icon: Box },
   { path: '/nyc-subway-stops', title: 'NYC Subway Stops', icon: Train },

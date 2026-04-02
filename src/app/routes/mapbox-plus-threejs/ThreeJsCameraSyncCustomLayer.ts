@@ -16,13 +16,19 @@ interface ThreeJsCameraSyncCustomLayerOptions {
 }
 
 /**
- * Custom layer labeled "camera-sync": uses the same **projection** path as
- * {@link ThreeJsCustomLayer} (`projectionMatrix = matrix × modelTransform`) so
- * pole geometry matches Mapbox. Additionally applies experimental
- * `map.setNearClipOffset` in **orthographic** mode to reduce clipping of tall
- * content (see Mapbox docs). The standalone {@link CameraSync} module is a
- * Threebox-style reference port for manual matrices; it is not wired here until
- * the coordinate pipeline matches our meter-space meshes.
+ * UI strategy **camera-sync** (CS): same Three.js **projection** as
+ * {@link ThreeJsCustomLayer} — `projectionMatrix = matrix × modelTransform` from
+ * `render(gl, matrix)` plus `computeModelTransform(originMerc)`. Does **not** use
+ * Threebox-style manual camera/world matrices.
+ *
+ * Additionally, in **orthographic** projection only, calls Mapbox’s experimental
+ * `map.setNearClipOffset` (offset from `maxOrthoContentHeightM` and
+ * {@link getPixelsPerMeter}) so the map’s near plane is less aggressive on tall
+ * content; perspective mode resets the offset to `0`. See Mapbox GL JS JSDoc on
+ * `setNearClipOffset`.
+ *
+ * The {@link CameraSync} module in this folder is a Threebox reference port only;
+ * it is not imported or used by this class.
  */
 export class ThreeJsCameraSyncCustomLayer implements ThreeJsMapCustomLayer {
   readonly id = 'threejs-layer';

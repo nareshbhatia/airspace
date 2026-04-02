@@ -1,27 +1,19 @@
 /**
- * Sample data for the Mapbox 3D Scene page: map center, view config,
- * airspace zones, utility poles, and waypoints. John Hancock Tower area, Boston.
+ * John Hancock Tower (200 Clarendon Street)
+ * 200 Clarendon St, Boston, MA 02116
  */
 
+import type { AirspaceScene } from '../lib/mapbox/types/AirspaceScene';
 import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
 import type { UtilityPole } from '../lib/mapbox/types/UtilityPole';
 import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 
-/** John Hancock Tower, Boston (200 Clarendon Street). [lng, lat]. */
-export const MAP_CENTER: [number, number] = [-71.0752, 42.3496];
-
-/** Initial map view for the 3D scene page. */
-export const MAP_VIEW = {
-  zoom: 17,
-  pitch: 55,
-  bearing: -20,
-} as const;
+const center: [number, number] = [-71.07512263099572, 42.34942291272112];
 
 /**
- * Three airspace zones, one block each on streets around John Hancock Tower
- * (Boston): Clarendon St, Trinity Place, Stuart St. Heights per README spec.
+ * Three zones around John Hancock Tower
  */
-export const airspaceZones: AirspaceZone[] = [
+const zones: AirspaceZone[] = [
   {
     id: 'restricted-clarendon',
     name: 'Restricted Zone (Clarendon St)',
@@ -73,10 +65,9 @@ export const airspaceZones: AirspaceZone[] = [
 ];
 
 /**
- * Five utility poles near John Hancock Tower for the 3D scene. Heights use
- * inspection altitude; color by status (nominal=green, flagged=red, inspected=grey).
+ * 5 utility poles near John Hancock Tower
  */
-export const utilityPoles: UtilityPole[] = [
+const poles: UtilityPole[] = [
   {
     id: 'p01547',
     label: 'Pole 01547',
@@ -119,14 +110,23 @@ export const utilityPoles: UtilityPole[] = [
   },
 ];
 
-/**
- * Inspection route connecting the utility poles in sequence (1–5). Used for
- * the route line and waypoint markers on the 3D scene page.
- */
-export const inspectionRoute: Waypoint[] = utilityPoles.map((pole, index) => ({
+const inspectionRoute: Waypoint[] = poles.map((pole, index) => ({
   sequence: index + 1,
   lng: pole.lng,
   lat: pole.lat,
   altM: pole.inspectionAltM,
   label: String(index + 1),
 }));
+
+export const scene: AirspaceScene = {
+  name: 'Boston, MA',
+  mapProvider: {
+    center,
+    zoom: 18,
+    pitch: 55,
+    bearing: -20,
+  },
+  zones,
+  poles,
+  inspectionRoute,
+};
