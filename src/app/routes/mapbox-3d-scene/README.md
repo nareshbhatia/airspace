@@ -29,8 +29,8 @@ types:
 | Satellite imagery     | Raster tiles (built-in) | Mapbox satellite                 |
 | 3D buildings          | `fill-extrusion`        | Mapbox `composite` vector source |
 | Airspace zone volumes | `fill-extrusion`        | Custom GeoJSON                   |
-| Utility pole markers  | `fill-extrusion`        | Custom GeoJSON                   |
-| Inspection route      | `line`                  | Custom GeoJSON                   |
+| Pole markers          | `fill-extrusion`        | Custom GeoJSON                   |
+| Route                 | `line`                  | Custom GeoJSON                   |
 | Waypoint markers      | `symbol`                | Custom GeoJSON                   |
 | Drone marker          | `symbol`                | Custom GeoJSON                   |
 
@@ -50,7 +50,7 @@ buildings and zones.
 const map = new mapboxgl.Map({
   container,
   style: 'mapbox://styles/mapbox/satellite-streets-v12', // satellite base
-  center: [-71.05, 42.36], // Boston area — matching the asset locations
+  center: [-71.05, 42.36], // Boston area
   zoom: 15,
   pitch: 50, // 0 = top-down, 90 = horizon
   bearing: -20, // degrees clockwise from north
@@ -264,11 +264,11 @@ volumes, which define altitude ranges, not ground-up extrusions.
 
 ---
 
-## Part 4: Utility Pole Asset Markers
+## Part 4: Pole Markers
 
 Vertical bars at each asset location are an effective way to convey both
-position and status at a glance. The bar height represents the drone's
-inspection altitude for that asset; color represents status.
+position and status at a glance. The bar height represents the pole top for that
+asset; color represents status.
 
 These are `fill-extrusion` layers on small polygon footprints — one tiny
 rectangle per asset. The rectangle is just large enough to be clickable (~3-5
@@ -300,22 +300,22 @@ function pointToSquarePolygon(
 ### Sample Pole Data
 
 ```typescript
-interface UtilityPole {
+interface Pole {
   id: string;
   label: string; // "Pole 01547"
   lng: number;
   lat: number;
-  inspectionAltM: number; // drone inspection altitude; bar is drawn 0 → this value
+  poleTopM: number; // bar is drawn 0 → this value
   status: 'nominal' | 'flagged' | 'inspected';
 }
 
-const utilityPoles: UtilityPole[] = [
+const poles: Pole[] = [
   {
     id: 'p01547',
     label: 'Pole 01547',
     lng: -71.042,
     lat: 42.362,
-    inspectionAltM: 35,
+    poleTopM: 35,
     status: 'nominal',
   },
   {
@@ -323,7 +323,7 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01561',
     lng: -71.038,
     lat: 42.365,
-    inspectionAltM: 35,
+    poleTopM: 35,
     status: 'flagged',
   },
   {
@@ -331,7 +331,7 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01562',
     lng: -71.033,
     lat: 42.36,
-    inspectionAltM: 30,
+    poleTopM: 30,
     status: 'nominal',
   },
   {
@@ -339,7 +339,7 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01563',
     lng: -71.028,
     lat: 42.368,
-    inspectionAltM: 40,
+    poleTopM: 40,
     status: 'inspected',
   },
   {
@@ -347,7 +347,7 @@ const utilityPoles: UtilityPole[] = [
     label: 'Pole 01564',
     lng: -71.022,
     lat: 42.355,
-    inspectionAltM: 35,
+    poleTopM: 35,
     status: 'nominal',
   },
 ];
@@ -362,8 +362,8 @@ const STATUS_COLORS = {
 ### Adding the Pole Layer
 
 ```typescript
-function addUtilityPoles(map: mapboxgl.Map, poles: UtilityPole[]) {
-  map.addSource('utility-poles', {
+function addPoles(map: mapboxgl.Map, poles: Pole[]) {
+  map.addSource('poles', {
     type: 'geojson',
     data: {
       type: 'FeatureCollection',
@@ -374,7 +374,7 @@ function addUtilityPoles(map: mapboxgl.Map, poles: UtilityPole[]) {
           label: pole.label,
           status: pole.status,
           color: STATUS_COLORS[pole.status],
-          inspectionAlt: pole.inspectionAltM,
+          poleTop: pole.poleTopM,
         },
         geometry: {
           type: 'Polygon',
@@ -385,12 +385,12 @@ function addUtilityPoles(map: mapboxgl.Map, poles: UtilityPole[]) {
   });
 
   map.addLayer({
-    id: 'utility-pole-markers',
+    id: 'pole-markers',
     type: 'fill-extrusion',
-    source: 'utility-poles',
+    source: 'poles',
     paint: {
       'fill-extrusion-color': ['get', 'color'],
-      'fill-extrusion-height': ['get', 'inspectionAlt'],
+      'fill-extrusion-height': ['get', 'poleTop'],
       'fill-extrusion-base': 0,
       'fill-extrusion-opacity': 0.9,
     },
@@ -406,9 +406,9 @@ the base of each pole:
 
 ```typescript
 map.addLayer({
-  id: 'utility-pole-labels',
+  id: 'pole-labels',
   type: 'symbol',
-  source: 'utility-poles',
+  source: 'poles',
   layout: {
     'text-field': ['get', 'label'],
     'text-size': 11,
@@ -425,10 +425,10 @@ map.addLayer({
 
 ---
 
-## Part 5: Inspection Route and Waypoint Markers
+## Part 5: Route and Waypoint Markers
 
 A numbered waypoint route shows the planned sequence of locations a drone will
-visit during an inspection mission.
+visit during a mission.
 
 ### Route Data
 
@@ -441,8 +441,8 @@ interface Waypoint {
   label: string;
 }
 
-// Route connecting the utility poles in inspection sequence
-const inspectionRoute: Waypoint[] = [
+// Route connecting the poles in sequence
+const route: Waypoint[] = [
   { sequence: 1, lng: -71.042, lat: 42.362, altM: 35, label: '1' },
   { sequence: 2, lng: -71.038, lat: 42.365, altM: 35, label: '2' },
   { sequence: 3, lng: -71.033, lat: 42.36, altM: 30, label: '3' },
@@ -454,11 +454,11 @@ const inspectionRoute: Waypoint[] = [
 ### Route Line
 
 ```typescript
-function addInspectionRoute(map: mapboxgl.Map, waypoints: Waypoint[]) {
+function addRoute(map: mapboxgl.Map, waypoints: Waypoint[]) {
   const coordinates = waypoints.map(wp => [wp.lng, wp.lat])
 
   // Route line source
-  map.addSource('inspection-route', {
+  map.addSource('route', {
     type: 'geojson',
     data: {
       type: 'Feature',
@@ -474,7 +474,7 @@ function addInspectionRoute(map: mapboxgl.Map, waypoints: Waypoint[]) {
   map.addLayer({
     id:     'route-casing',
     type:   'line',
-    source: 'inspection-route',
+    source: 'route',
     paint: {
       'line-color': '#1d4ed8',
       'line-width': 5,
@@ -486,7 +486,7 @@ function addInspectionRoute(map: mapboxgl.Map, waypoints: Waypoint[]) {
   map.addLayer({
     id:     'route-line',
     type:   'line',
-    source: 'inspection-route',
+    source: 'route',
     paint: {
       'line-color': '#3b82f6',
       'line-width': 3,
@@ -580,13 +580,13 @@ addAirspaceZones(map, airspaceZones);
 addBuildings(map);
 
 // 3. Pole markers — above buildings, they should poke through building volumes
-addUtilityPoles(map, utilityPoles);
+addPoles(map, poles);
 
 // 4. Route line — above everything except symbols
-addInspectionRoute(map, inspectionRoute);
+addRoute(map, route);
 
 // 5. Waypoint markers and pole labels — symbol layers, always on top
-// (already added inside addInspectionRoute and addUtilityPoles)
+// (already added inside addRoute and addPoles)
 ```
 
 **Why zones before buildings?** A restricted zone that covers a city block
@@ -627,12 +627,12 @@ function toggleLayer(map: mapboxgl.Map, layerId: string, visible: boolean) {
 ```
 src/
   data/
-    scene3d.ts              ← AirspaceZone[], UtilityPole[], Waypoint[] sample data
+    scene3d.ts              ← AirspaceZone[], Pole[], Waypoint[] sample data
 
   lib/
     mapbox/
-      scene3d.ts            ← addBuildings, addAirspaceZones, addUtilityPoles,
-                               addInspectionRoute, createWaypointImage
+      scene3d.ts            ← addBuildings, addAirspaceZones, addPoles,
+                               addRoute, createWaypointImage
 
   routes/
     scene3d/
@@ -645,14 +645,14 @@ src/
 
 ## Part 9: Implementation Steps
 
-| Step                            | What to Build                                                                                                                                                                                                          | What You Learn                                                                                                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Step 1** Camera               | Create `Scene3DPage` with a Mapbox map initialized at `pitch: 50, bearing: -20, antialias: true`, satellite-streets style, centered on Boston at zoom 15. Verify the pitched satellite view renders correctly.         | Pitch, bearing, antialias. The visual impact of these three parameters. Satellite style vs streets style in 3D.                                                             |
-| **Step 2** 3D buildings         | Add the `fill-extrusion` buildings layer using the `composite` source. Find the first symbol layer and insert buildings below it. Adjust `fill-extrusion-opacity` and `ambient-occlusion-intensity`.                   | The `composite` source and `building` layer. `fill-extrusion` fundamentals. Layer insertion order relative to symbol layers. The `ambient-occlusion` properties.            |
-| **Step 3** Airspace zones       | Add 3 zone volumes from `scene3d.ts`. Experiment with `fill-extrusion-base` and `fill-extrusion-height` — try a zone from 0→120m vs 50→200m and observe the visual difference. Adjust `opacity` between 0.10 and 0.30. | Floor/ceiling altitude model for airspace. `['get', property]` expressions for data-driven paint. How opacity creates the translucent box visual.                           |
-| **Step 4** Utility pole markers | Add 5 pole markers using `pointToSquarePolygon`. Set heights to `inspectionAltM`. Color by status. Add the label symbol layer.                                                                                         | Generating polygon geometry from point data. `fill-extrusion` as a vertical marker technique. Symbol layers for labels on the same source.                                  |
-| **Step 5** Route + waypoints    | Add the route line with casing. Register waypoint images using canvas. Add the waypoint symbol layer.                                                                                                                  | `LineString` GeoJSON. Line casing technique (two lines, different widths). Dynamic image registration with `addImage`. `['concat', ...]` expression for dynamic icon names. |
-| **Step 6** Layer toggle panel   | Add `LayerTogglePanel` as a map overlay. Each checkbox calls `toggleLayer` for its group. Verify each layer toggles independently.                                                                                     | `setLayoutProperty` for runtime visibility control. The value of seeing each layer in isolation — this makes the composition legible.                                       |
+| Step                          | What to Build                                                                                                                                                                                                          | What You Learn                                                                                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Step 1** Camera             | Create `Scene3DPage` with a Mapbox map initialized at `pitch: 50, bearing: -20, antialias: true`, satellite-streets style, centered on Boston at zoom 15. Verify the pitched satellite view renders correctly.         | Pitch, bearing, antialias. The visual impact of these three parameters. Satellite style vs streets style in 3D.                                                             |
+| **Step 2** 3D buildings       | Add the `fill-extrusion` buildings layer using the `composite` source. Find the first symbol layer and insert buildings below it. Adjust `fill-extrusion-opacity` and `ambient-occlusion-intensity`.                   | The `composite` source and `building` layer. `fill-extrusion` fundamentals. Layer insertion order relative to symbol layers. The `ambient-occlusion` properties.            |
+| **Step 3** Zones              | Add 3 zone volumes from `scene3d.ts`. Experiment with `fill-extrusion-base` and `fill-extrusion-height` — try a zone from 0→120m vs 50→200m and observe the visual difference. Adjust `opacity` between 0.10 and 0.30. | Floor/ceiling altitude model for airspace. `['get', property]` expressions for data-driven paint. How opacity creates the translucent box visual.                           |
+| **Step 4** Pole markers       | Add 5 pole markers using `pointToSquarePolygon`. Set heights to `poleTopM`. Color by status. Add the label symbol layer.                                                                                               | Generating polygon geometry from point data. `fill-extrusion` as a vertical marker technique. Symbol layers for labels on the same source.                                  |
+| **Step 5** Route + waypoints  | Add the route line with casing. Register waypoint images using canvas. Add the waypoint symbol layer.                                                                                                                  | `LineString` GeoJSON. Line casing technique (two lines, different widths). Dynamic image registration with `addImage`. `['concat', ...]` expression for dynamic icon names. |
+| **Step 6** Layer toggle panel | Add `LayerTogglePanel` as a map overlay. Each checkbox calls `toggleLayer` for its group. Verify each layer toggles independently.                                                                                     | `setLayoutProperty` for runtime visibility control. The value of seeing each layer in isolation — this makes the composition legible.                                       |
 
 ---
 
@@ -664,11 +664,11 @@ src/
 3. Three airspace zone volumes render as translucent colored boxes at distinct
    altitude ranges — one orange at ground level, one green floating above 50m,
    one blue mission boundary.
-4. Five utility pole markers render as colored vertical bars, heights
-   proportional to inspection altitude, color-coded by status.
+4. Five pole markers render as colored vertical bars, heights proportional to
+   pole top, color-coded by status.
 5. Pole labels ("Pole 01547") appear at the base of each marker.
-6. Inspection route renders as a blue line with numbered circular waypoint
-   badges at each stop.
+6. Route renders as a blue line with numbered circular waypoint badges at each
+   stop.
 7. Layer toggle panel correctly shows/hides each layer group independently.
 8. The visual result is a recognizable 3D operator scene: pitched satellite
    base, extruded buildings, floating zone volumes, vertical asset markers, and

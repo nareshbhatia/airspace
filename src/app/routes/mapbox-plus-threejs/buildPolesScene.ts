@@ -10,9 +10,9 @@ import {
 } from 'three';
 
 import { mercatorToLocalPosition } from './mercatorUtils';
-import { UTILITY_POLE_RADIUS_M } from '../../../lib/mapbox/types/UtilityPole';
+import { POLE_RADIUS_M } from '../../../lib/mapbox/types/Pole';
 
-import type { UtilityPole } from '../../../lib/mapbox/types/UtilityPole';
+import type { Pole } from '../../../lib/mapbox/types/Pole';
 
 const statusColors: Record<string, number> = {
   nominal: 0x22c55e,
@@ -21,11 +21,11 @@ const statusColors: Record<string, number> = {
 };
 
 /**
- * Builds a Three.js scene with lit utility poles at geographic positions.
+ * Builds a Three.js scene with lit poles at geographic positions.
  * Returns undefined when there are no poles (nothing to anchor an origin).
  */
 export function buildPolesScene(
-  poles: UtilityPole[],
+  poles: Pole[],
 ): { polesScene: Scene; originMerc: MercatorCoordinate } | undefined {
   const refPole = poles[0];
   if (!refPole) return undefined;
@@ -53,14 +53,14 @@ export function buildPolesScene(
       originMerc,
       originScale,
     );
-    const poleHeightM = pole.inspectionAltM;
+    const poleHeightM = pole.poleTopM;
 
     const material = new MeshStandardMaterial({
       color: statusColors[pole.status] ?? 0xffffff,
     });
     const poleGeometry = new CylinderGeometry(
-      UTILITY_POLE_RADIUS_M,
-      UTILITY_POLE_RADIUS_M,
+      POLE_RADIUS_M,
+      POLE_RADIUS_M,
       poleHeightM,
       12,
     );

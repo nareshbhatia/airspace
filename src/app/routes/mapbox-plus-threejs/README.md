@@ -4,8 +4,8 @@
 
 Build a page that renders a pitched satellite map with two kinds of 3D content
 side by side: **Mapbox-native 3D buildings** (using the built-in
-`fill-extrusion` layer) and **Three.js 3D assets** (utility poles as cylinders
-via a Mapbox custom layer). The page includes a **2D/3D toggle** that switches
+`fill-extrusion` layer) and **Three.js 3D assets** (poles as cylinders via a
+Mapbox custom layer). The page includes a **2D/3D toggle** that switches
 Mapbox’s camera between **perspective** (3D) and **orthographic** (2D)
 projection so you can compare behavior. The page also offers a **strategy
 toggle** (**MX** vs **CS**) between two independent Three.js integration paths.
@@ -230,11 +230,11 @@ eases pitch (**0** in 2D, `MAP_VIEW.pitch` in 3D). The active custom layer’s
   invoking your layer's `render()` callback as the map view changes.
 
 - Task: Add lights to the scene. Create cylinders (representing vertical markers
-  like utility poles) for the `utilityPoles` in `src/data/scene3d.ts` at their
-  geographic positions. Use `inspectionAltM` as the cylinder height (AGL, i.e.
-  the cylinder runs from 0 → `inspectionAltM` above ground) and use
-  `MeshStandardMaterial` with distinct colors (or an unlit material while
-  debugging). Observe realistic shading as you rotate the map.
+  like poles) for the `poles` in `src/data/scene3d.ts` at their geographic
+  positions. Use `poleTopM` as the cylinder height (AGL, i.e. the cylinder runs
+  from 0 → `poleTopM` above ground) and use `MeshStandardMaterial` with distinct
+  colors (or an unlit material while debugging). Observe realistic shading as
+  you rotate the map.
 
 **Step 7 -- 2D/3D Toggle and Dual Camera Strategies (MX / CS)**
 

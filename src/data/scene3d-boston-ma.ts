@@ -5,7 +5,7 @@
 
 import type { AirspaceScene } from '../lib/mapbox/types/AirspaceScene';
 import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
-import type { UtilityPole } from '../lib/mapbox/types/UtilityPole';
+import type { Pole } from '../lib/mapbox/types/Pole';
 import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 
 const center: [number, number] = [-71.07512263099572, 42.34942291272112];
@@ -65,15 +65,15 @@ const zones: AirspaceZone[] = [
 ];
 
 /**
- * 5 utility poles near John Hancock Tower
+ * 5 poles near John Hancock Tower
  */
-const poles: UtilityPole[] = [
+const poles: Pole[] = [
   {
     id: 'p01547',
     label: 'Pole 01547',
     lng: -71.0755,
     lat: 42.3498,
-    inspectionAltM: 10,
+    poleTopM: 10,
     status: 'nominal',
   },
   {
@@ -81,7 +81,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 01561',
     lng: -71.0749,
     lat: 42.3495,
-    inspectionAltM: 25,
+    poleTopM: 25,
     status: 'flagged',
   },
   {
@@ -89,7 +89,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 01562',
     lng: -71.0758,
     lat: 42.3489,
-    inspectionAltM: 30,
+    poleTopM: 30,
     status: 'nominal',
   },
   {
@@ -97,7 +97,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 01563',
     lng: -71.0745,
     lat: 42.349,
-    inspectionAltM: 35,
+    poleTopM: 35,
     status: 'inspected',
   },
   {
@@ -105,16 +105,16 @@ const poles: UtilityPole[] = [
     label: 'Pole 01564',
     lng: -71.076,
     lat: 42.3494,
-    inspectionAltM: 40,
+    poleTopM: 40,
     status: 'nominal',
   },
 ];
 
-const inspectionRoute: Waypoint[] = poles.map((pole, index) => ({
+const route: Waypoint[] = poles.map((pole, index) => ({
   sequence: index + 1,
   lng: pole.lng,
   lat: pole.lat,
-  altM: pole.inspectionAltM,
+  altM: pole.poleTopM,
   label: String(index + 1),
 }));
 
@@ -128,5 +128,5 @@ export const scene: AirspaceScene = {
   },
   zones,
   poles,
-  inspectionRoute,
+  route: route,
 };

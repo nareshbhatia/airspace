@@ -15,13 +15,13 @@ import { useMapPitch3dToggle } from '../../../lib/mapbox/hooks/useMapPitch3dTogg
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import {
   addAirspaceZones,
-  addInspectionRoute,
-  addUtilityPoles,
+  addRoute,
+  addPoles,
   AIRSPACE_ZONE_LAYER_ID_PREFIX,
   ROUTE_CASING_LAYER_ID,
   ROUTE_LINE_LAYER_ID,
-  UTILITY_POLE_LABELS_LAYER_ID,
-  UTILITY_POLE_MARKERS_LAYER_ID,
+  POLE_LABELS_LAYER_ID,
+  POLE_MARKERS_LAYER_ID,
   WAYPOINT_MARKERS_LAYER_ID,
 } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
@@ -33,15 +33,15 @@ function getLayerGroupsForScene(scene: AirspaceScene): LayerGroup[] {
   return [
     {
       id: 'zones',
-      label: 'Airspace zones',
+      label: 'Zones',
       layerIds: scene.zones.map(
         (z) => `${AIRSPACE_ZONE_LAYER_ID_PREFIX}${z.id}`,
       ),
     },
     {
       id: 'poles',
-      label: 'Utility poles',
-      layerIds: [UTILITY_POLE_MARKERS_LAYER_ID, UTILITY_POLE_LABELS_LAYER_ID],
+      label: 'Poles',
+      layerIds: [POLE_MARKERS_LAYER_ID, POLE_LABELS_LAYER_ID],
     },
     {
       id: 'route',
@@ -125,8 +125,8 @@ export function Mapbox3DScenePage() {
           mapOptions={{ antialias: true }}
           onLoad={(map) => {
             addAirspaceZones(map, scene.zones);
-            addUtilityPoles(map, scene.poles);
-            addInspectionRoute(map, scene.inspectionRoute);
+            addPoles(map, scene.poles);
+            addRoute(map, scene.route);
           }}
         >
           <Mapbox3DSceneOverlay

@@ -1,5 +1,5 @@
 import type { AirspaceZone } from './AirspaceZone';
-import type { UtilityPole } from './UtilityPole';
+import type { Pole } from './Pole';
 import type { Waypoint } from './Waypoint';
 import type { MapProviderProps } from '../providers/MapProvider';
 
@@ -13,6 +13,6 @@ export interface AirspaceScene {
   name: string;
   mapProvider: AirspaceSceneMapProvider;
   zones: AirspaceZone[];
-  poles: UtilityPole[];
-  inspectionRoute: Waypoint[];
+  poles: Pole[];
+  route: Waypoint[];
 }

@@ -1,10 +1,7 @@
-import {
-  UTILITY_POLE_RADIUS_M,
-  UTILITY_POLE_STATUS_COLORS,
-} from '../types/UtilityPole';
+import { POLE_RADIUS_M, POLE_STATUS_COLORS } from '../types/Pole';
 
 import type { AirspaceZone } from '../types/AirspaceZone';
-import type { UtilityPole } from '../types/UtilityPole';
+import type { Pole } from '../types/Pole';
 import type { Waypoint } from '../types/Waypoint';
 import type { Map as MapboxMap } from 'mapbox-gl';
 
@@ -18,19 +15,19 @@ export const AIRSPACE_ZONE_LAYER_ID_PREFIX = 'airspace-zone-volumes-';
 /** Layer ID for the 3D buildings fill-extrusion layer (composite source). */
 export const BUILDINGS_LAYER_ID = '3d-buildings';
 
-/** Layer ID for utility pole fill-extrusion markers. */
-export const UTILITY_POLE_MARKERS_LAYER_ID = 'utility-pole-markers';
+/** Layer ID for pole fill-extrusion markers. */
+export const POLE_MARKERS_LAYER_ID = 'pole-markers';
 
-/** Layer ID for utility pole label symbols. */
-export const UTILITY_POLE_LABELS_LAYER_ID = 'utility-pole-labels';
+/** Layer ID for pole label symbols. */
+export const POLE_LABELS_LAYER_ID = 'pole-labels';
 
-/** Layer ID for the inspection route line casing. */
+/** Layer ID for the route line casing. */
 export const ROUTE_CASING_LAYER_ID = 'route-casing';
 
-/** Layer ID for the inspection route line. */
+/** Layer ID for the route line. */
 export const ROUTE_LINE_LAYER_ID = 'route-line';
 
-/** Layer ID for waypoint symbol markers on the inspection route. */
+/** Layer ID for waypoint symbol markers on the route. */
 export const WAYPOINT_MARKERS_LAYER_ID = 'waypoint-markers';
 
 /**
@@ -69,13 +66,13 @@ export function pointToSquarePolygon(
 
 /**
  * Returns a closed polygon ring approximating a circle centered on the point.
- * Used for cylindrical fill-extrusions (e.g. utility poles). More segments
+ * Used for cylindrical fill-extrusions (e.g. poles). More segments
  * yield a smoother cylinder.
  */
 export function pointToCirclePolygon(
   lng: number,
   lat: number,
-  radiusMeters = UTILITY_POLE_RADIUS_M,
+  radiusMeters = POLE_RADIUS_M,
   segments = 16,
 ): [number, number][] {
   const dLatPerM = 1 / 111_320;
@@ -193,15 +190,15 @@ export function addBuildings(map: MapboxMap): void {
 }
 
 /**
- * Adds utility pole markers (fill-extrusion) and labels (symbol) to the map.
- * Each pole is a cylindrical vertical bar with height = inspectionAltM and
+ * Adds pole markers (fill-extrusion) and labels (symbol) to the map.
+ * Each pole is a cylindrical vertical bar with height = poleTopM and
  * color by status. Labels show the pole label at the base.
  */
-export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
-  if (map.getLayer(UTILITY_POLE_MARKERS_LAYER_ID)) return;
+export function addPoles(map: MapboxMap, poles: Pole[]): void {
+  if (map.getLayer(POLE_MARKERS_LAYER_ID)) return;
 
-  if (!map.getSource('utility-poles')) {
-    map.addSource('utility-poles', {
+  if (!map.getSource('poles')) {
+    map.addSource('poles', {
       type: 'geojson',
       data: {
         type: 'FeatureCollection',
@@ -211,13 +208,13 @@ export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
             id: pole.id,
             label: pole.label,
             status: pole.status,
-            color: UTILITY_POLE_STATUS_COLORS[pole.status],
-            inspectionAlt: pole.inspectionAltM,
+            color: POLE_STATUS_COLORS[pole.status],
+            poleTop: pole.poleTopM,
           },
           geometry: {
             type: 'Polygon',
             coordinates: [
-              pointToCirclePolygon(pole.lng, pole.lat, UTILITY_POLE_RADIUS_M),
+              pointToCirclePolygon(pole.lng, pole.lat, POLE_RADIUS_M),
             ],
           },
         })),
@@ -226,21 +223,21 @@ export function addUtilityPoles(map: MapboxMap, poles: UtilityPole[]): void {
   }
 
   map.addLayer({
-    id: UTILITY_POLE_MARKERS_LAYER_ID,
+    id: POLE_MARKERS_LAYER_ID,
     type: 'fill-extrusion',
-    source: 'utility-poles',
+    source: 'poles',
     paint: {
       'fill-extrusion-color': ['get', 'color'],
-      'fill-extrusion-height': ['get', 'inspectionAlt'],
+      'fill-extrusion-height': ['get', 'poleTop'],
       'fill-extrusion-base': 0,
       'fill-extrusion-opacity': 0.9,
     },
   });
 
   map.addLayer({
-    id: UTILITY_POLE_LABELS_LAYER_ID,
+    id: POLE_LABELS_LAYER_ID,
     type: 'symbol',
-    source: 'utility-poles',
+    source: 'poles',
     layout: {
       'text-field': ['get', 'label'],
       'text-size': 11,
@@ -286,22 +283,18 @@ export function createWaypointImage(map: MapboxMap, sequence: number): void {
 }
 
 /**
- * Adds the inspection route line (with casing) and waypoint symbol markers to
- * the map. Call after addUtilityPoles so the route renders above poles.
+ * Adds the route line (with casing) and waypoint symbol markers to
+ * the map. Call after addPoles so the route renders above poles.
  */
-export function addInspectionRoute(
-  map: MapboxMap,
-  waypoints: Waypoint[],
-): void {
-  if (map.getLayer(ROUTE_LINE_LAYER_ID) || map.getSource('inspection-route'))
-    return;
+export function addRoute(map: MapboxMap, waypoints: Waypoint[]): void {
+  if (map.getLayer(ROUTE_LINE_LAYER_ID) || map.getSource('route')) return;
   if (waypoints.length < 2) return;
 
   const coordinates = waypoints.map(
     (wp) => [wp.lng, wp.lat] as [number, number],
   );
 
-  map.addSource('inspection-route', {
+  map.addSource('route', {
     type: 'geojson',
     data: {
       type: 'Feature',
@@ -316,7 +309,7 @@ export function addInspectionRoute(
   map.addLayer({
     id: ROUTE_CASING_LAYER_ID,
     type: 'line',
-    source: 'inspection-route',
+    source: 'route',
     paint: {
       'line-color': '#1d4ed8',
       'line-width': 5,
@@ -327,7 +320,7 @@ export function addInspectionRoute(
   map.addLayer({
     id: ROUTE_LINE_LAYER_ID,
     type: 'line',
-    source: 'inspection-route',
+    source: 'route',
     paint: {
       'line-color': '#3b82f6',
       'line-width': 3,

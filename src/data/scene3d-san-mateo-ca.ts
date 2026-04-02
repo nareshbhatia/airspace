@@ -3,20 +3,20 @@
  */
 
 import type { AirspaceScene } from '../lib/mapbox/types/AirspaceScene';
-import type { UtilityPole } from '../lib/mapbox/types/UtilityPole';
+import type { Pole } from '../lib/mapbox/types/Pole';
 
 const center: [number, number] = [-122.33129971217056, 37.534526705764435];
 
 /**
- * 10 utility poles in a circle with pole 1000 at the center
+ * 10 poles in a circle with pole 1000 at the center
  */
-const poles: UtilityPole[] = [
+const poles: Pole[] = [
   {
     id: '1000',
     label: 'Pole 1000',
     lng: center[0],
     lat: center[1],
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -24,7 +24,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1001',
     lng: -122.33129971217056,
     lat: 37.535424705764434,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -32,7 +32,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1002',
     lng: -122.33057192574826,
     lat: 37.535214706021776,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -40,7 +40,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1003',
     lng: -122.33018409127709,
     lat: 37.53468270636915,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -48,7 +48,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1004',
     lng: -122.33031911400494,
     lat: 37.53407770623164,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -56,7 +56,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1005',
     lng: -122.3309118776984,
     lat: 37.53368270583752,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -64,7 +64,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1006',
     lng: -122.33168754664273,
     lat: 37.53368270583752,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -72,7 +72,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1007',
     lng: -122.33228031033619,
     lat: 37.53407770623164,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -80,7 +80,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1008',
     lng: -122.33241533306403,
     lat: 37.53468270636915,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
   {
@@ -88,7 +88,7 @@ const poles: UtilityPole[] = [
     label: 'Pole 1009',
     lng: -122.33202749859286,
     lat: 37.535214706021776,
-    inspectionAltM: 50,
+    poleTopM: 50,
     status: 'nominal',
   },
 ];
@@ -103,5 +103,5 @@ export const scene: AirspaceScene = {
   },
   zones: [],
   poles,
-  inspectionRoute: [],
+  route: [],
 };
