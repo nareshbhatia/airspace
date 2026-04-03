@@ -24,7 +24,8 @@ const poles: Pole[] = [
     label: 'Pole 1000',
     lng: center[0],
     lat: center[1],
-    poleTopM: 2,
+    baseMetersAgl: 0,
+    topMetersAgl: 2,
     status: 'nominal',
   },
   {
@@ -32,7 +33,8 @@ const poles: Pole[] = [
     label: 'Pole 1001',
     lng: center[0] + POLE_STEP_DEG_LNG,
     lat: center[1],
-    poleTopM: 5,
+    baseMetersAgl: 0,
+    topMetersAgl: 5,
     status: 'inspected',
   },
   {
@@ -40,7 +42,8 @@ const poles: Pole[] = [
     label: 'Pole 1002',
     lng: center[0] + 2 * POLE_STEP_DEG_LNG,
     lat: center[1],
-    poleTopM: 10,
+    baseMetersAgl: 0,
+    topMetersAgl: 10,
     status: 'nominal',
   },
   {
@@ -48,7 +51,8 @@ const poles: Pole[] = [
     label: 'Pole 1003',
     lng: center[0] + 3 * POLE_STEP_DEG_LNG,
     lat: center[1],
-    poleTopM: 20,
+    baseMetersAgl: 0,
+    topMetersAgl: 20,
     status: 'flagged',
   },
   {
@@ -56,7 +60,8 @@ const poles: Pole[] = [
     label: 'Pole 1004',
     lng: center[0] + 4 * POLE_STEP_DEG_LNG,
     lat: center[1],
-    poleTopM: 30,
+    baseMetersAgl: 0,
+    topMetersAgl: 30,
     status: 'nominal',
   },
 ];

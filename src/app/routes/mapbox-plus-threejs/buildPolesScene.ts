@@ -53,7 +53,8 @@ export function buildPolesScene(
       originMerc,
       originScale,
     );
-    const poleHeightM = pole.poleTopM;
+    const baseM = pole.baseMetersAgl;
+    const poleHeightM = pole.topMetersAgl - baseM;
 
     const material = new MeshStandardMaterial({
       color: statusColors[pole.status] ?? 0xffffff,
@@ -66,7 +67,7 @@ export function buildPolesScene(
     );
     const mesh = new Mesh(poleGeometry, material);
 
-    mesh.position.set(offsetXm, offsetYm, poleHeightM / 2);
+    mesh.position.set(offsetXm, offsetYm, baseM + poleHeightM / 2);
     mesh.rotation.x = Math.PI / 2;
     mesh.frustumCulled = false;
 

@@ -88,13 +88,13 @@ export function pointToCirclePolygon(
 }
 
 /**
- * Adds airspace zone volumes as a fill-extrusion layer. Zones are translucent
- * boxes with floor/ceiling altitude from data.
+ * Adds zones as a fill-extrusion layer. Zones are translucent boxes with
+ * floor/ceiling altitude from data.
  *
  * @param beforeLayerId - If set, the layer is inserted before this id (zones
  * behind that layer). If omitted, the layer is added on top so zones are visible.
  */
-export function addAirspaceZones(
+export function addZones(
   map: MapboxMap,
   zones: AirspaceZone[],
   beforeLayerId?: string,
@@ -191,8 +191,8 @@ export function addBuildings(map: MapboxMap): void {
 
 /**
  * Adds pole markers (fill-extrusion) and labels (symbol) to the map.
- * Each pole is a cylindrical vertical bar with height = poleTopM and
- * color by status. Labels show the pole label at the base.
+ * Each pole is a cylindrical vertical bar from baseMetersAgl to topMetersAgl
+ * (m AGL) with color by status. Labels show the pole label at the base.
  */
 export function addPoles(map: MapboxMap, poles: Pole[]): void {
   if (map.getLayer(POLE_MARKERS_LAYER_ID)) return;
@@ -209,7 +209,8 @@ export function addPoles(map: MapboxMap, poles: Pole[]): void {
             label: pole.label,
             status: pole.status,
             color: POLE_STATUS_COLORS[pole.status],
-            poleTop: pole.poleTopM,
+            poleBase: pole.baseMetersAgl,
+            poleTop: pole.topMetersAgl,
           },
           geometry: {
             type: 'Polygon',
@@ -227,9 +228,9 @@ export function addPoles(map: MapboxMap, poles: Pole[]): void {
     type: 'fill-extrusion',
     source: 'poles',
     paint: {
-      'fill-extrusion-color': ['get', 'color'],
+      'fill-extrusion-base': ['get', 'poleBase'],
       'fill-extrusion-height': ['get', 'poleTop'],
-      'fill-extrusion-base': 0,
+      'fill-extrusion-color': ['get', 'color'],
       'fill-extrusion-opacity': 0.9,
     },
   });

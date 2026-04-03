@@ -73,7 +73,8 @@ const poles: Pole[] = [
     label: 'Pole 01547',
     lng: -71.0755,
     lat: 42.3498,
-    poleTopM: 10,
+    baseMetersAgl: 0,
+    topMetersAgl: 10,
     status: 'nominal',
   },
   {
@@ -81,7 +82,8 @@ const poles: Pole[] = [
     label: 'Pole 01561',
     lng: -71.0749,
     lat: 42.3495,
-    poleTopM: 25,
+    baseMetersAgl: 0,
+    topMetersAgl: 25,
     status: 'flagged',
   },
   {
@@ -89,7 +91,8 @@ const poles: Pole[] = [
     label: 'Pole 01562',
     lng: -71.0758,
     lat: 42.3489,
-    poleTopM: 30,
+    baseMetersAgl: 0,
+    topMetersAgl: 30,
     status: 'nominal',
   },
   {
@@ -97,7 +100,8 @@ const poles: Pole[] = [
     label: 'Pole 01563',
     lng: -71.0745,
     lat: 42.349,
-    poleTopM: 35,
+    baseMetersAgl: 0,
+    topMetersAgl: 35,
     status: 'inspected',
   },
   {
@@ -105,7 +109,8 @@ const poles: Pole[] = [
     label: 'Pole 01564',
     lng: -71.076,
     lat: 42.3494,
-    poleTopM: 40,
+    baseMetersAgl: 0,
+    topMetersAgl: 40,
     status: 'nominal',
   },
 ];
@@ -114,7 +119,7 @@ const route: Waypoint[] = poles.map((pole, index) => ({
   sequence: index + 1,
   lng: pole.lng,
   lat: pole.lat,
-  altM: pole.poleTopM,
+  altM: pole.topMetersAgl,
   label: String(index + 1),
 }));
 

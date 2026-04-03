@@ -231,10 +231,10 @@ eases pitch (**0** in 2D, `MAP_VIEW.pitch` in 3D). The active custom layer’s
 
 - Task: Add lights to the scene. Create cylinders (representing vertical markers
   like poles) for the `poles` in `src/data/scene3d.ts` at their geographic
-  positions. Use `poleTopM` as the cylinder height (AGL, i.e. the cylinder runs
-  from 0 → `poleTopM` above ground) and use `MeshStandardMaterial` with distinct
-  colors (or an unlit material while debugging). Observe realistic shading as
-  you rotate the map.
+  positions. Use `topMetersAgl` as the cylinder height (AGL, i.e. the cylinder
+  runs from 0 → `topMetersAgl` above ground) and use `MeshStandardMaterial` with
+  distinct colors (or an unlit material while debugging). Observe realistic
+  shading as you rotate the map.
 
 **Step 7 -- 2D/3D Toggle and Dual Camera Strategies (MX / CS)**
 

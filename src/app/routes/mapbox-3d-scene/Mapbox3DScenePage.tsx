@@ -14,7 +14,7 @@ import { useMapBuildingsToggle } from '../../../lib/mapbox/hooks/useMapBuildings
 import { useMapViewMode } from '../../../lib/mapbox/hooks/useMapViewMode';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import {
-  addAirspaceZones,
+  addZones,
   addRoute,
   addPoles,
   AIRSPACE_ZONE_LAYER_ID_PREFIX,
@@ -125,7 +125,7 @@ export function Mapbox3DScenePage() {
           className="w-full h-full"
           mapOptions={{ antialias: true }}
           onLoad={(map) => {
-            addAirspaceZones(map, scene.zones);
+            addZones(map, scene.zones);
             addPoles(map, scene.poles);
             addRoute(map, scene.route);
           }}

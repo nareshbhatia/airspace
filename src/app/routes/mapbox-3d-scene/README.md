@@ -305,7 +305,7 @@ interface Pole {
   label: string; // "Pole 01547"
   lng: number;
   lat: number;
-  poleTopM: number; // bar is drawn 0 → this value
+  topMetersAgl: number; // bar is drawn 0 → this value
   status: 'nominal' | 'flagged' | 'inspected';
 }
 
@@ -315,7 +315,7 @@ const poles: Pole[] = [
     label: 'Pole 01547',
     lng: -71.042,
     lat: 42.362,
-    poleTopM: 35,
+    topMetersAgl: 35,
     status: 'nominal',
   },
   {
@@ -323,7 +323,7 @@ const poles: Pole[] = [
     label: 'Pole 01561',
     lng: -71.038,
     lat: 42.365,
-    poleTopM: 35,
+    topMetersAgl: 35,
     status: 'flagged',
   },
   {
@@ -331,7 +331,7 @@ const poles: Pole[] = [
     label: 'Pole 01562',
     lng: -71.033,
     lat: 42.36,
-    poleTopM: 30,
+    topMetersAgl: 30,
     status: 'nominal',
   },
   {
@@ -339,7 +339,7 @@ const poles: Pole[] = [
     label: 'Pole 01563',
     lng: -71.028,
     lat: 42.368,
-    poleTopM: 40,
+    topMetersAgl: 40,
     status: 'inspected',
   },
   {
@@ -347,7 +347,7 @@ const poles: Pole[] = [
     label: 'Pole 01564',
     lng: -71.022,
     lat: 42.355,
-    poleTopM: 35,
+    topMetersAgl: 35,
     status: 'nominal',
   },
 ];
@@ -374,7 +374,7 @@ function addPoles(map: mapboxgl.Map, poles: Pole[]) {
           label: pole.label,
           status: pole.status,
           color: STATUS_COLORS[pole.status],
-          poleTop: pole.poleTopM,
+          poleTop: pole.topMetersAgl,
         },
         geometry: {
           type: 'Polygon',
@@ -650,7 +650,7 @@ src/
 | **Step 1** Camera             | Create `Scene3DPage` with a Mapbox map initialized at `pitch: 50, bearing: -20, antialias: true`, satellite-streets style, centered on Boston at zoom 15. Verify the pitched satellite view renders correctly.         | Pitch, bearing, antialias. The visual impact of these three parameters. Satellite style vs streets style in 3D.                                                             |
 | **Step 2** 3D buildings       | Add the `fill-extrusion` buildings layer using the `composite` source. Find the first symbol layer and insert buildings below it. Adjust `fill-extrusion-opacity` and `ambient-occlusion-intensity`.                   | The `composite` source and `building` layer. `fill-extrusion` fundamentals. Layer insertion order relative to symbol layers. The `ambient-occlusion` properties.            |
 | **Step 3** Zones              | Add 3 zone volumes from `scene3d.ts`. Experiment with `fill-extrusion-base` and `fill-extrusion-height` — try a zone from 0→120m vs 50→200m and observe the visual difference. Adjust `opacity` between 0.10 and 0.30. | Floor/ceiling altitude model for airspace. `['get', property]` expressions for data-driven paint. How opacity creates the translucent box visual.                           |
-| **Step 4** Pole markers       | Add 5 pole markers using `pointToSquarePolygon`. Set heights to `poleTopM`. Color by status. Add the label symbol layer.                                                                                               | Generating polygon geometry from point data. `fill-extrusion` as a vertical marker technique. Symbol layers for labels on the same source.                                  |
+| **Step 4** Pole markers       | Add 5 pole markers using `pointToSquarePolygon`. Set heights to `topMetersAgl`. Color by status. Add the label symbol layer.                                                                                           | Generating polygon geometry from point data. `fill-extrusion` as a vertical marker technique. Symbol layers for labels on the same source.                                  |
 | **Step 5** Route + waypoints  | Add the route line with casing. Register waypoint images using canvas. Add the waypoint symbol layer.                                                                                                                  | `LineString` GeoJSON. Line casing technique (two lines, different widths). Dynamic image registration with `addImage`. `['concat', ...]` expression for dynamic icon names. |
 | **Step 6** Layer toggle panel | Add `LayerTogglePanel` as a map overlay. Each checkbox calls `toggleLayer` for its group. Verify each layer toggles independently.                                                                                     | `setLayoutProperty` for runtime visibility control. The value of seeing each layer in isolation — this makes the composition legible.                                       |
 
