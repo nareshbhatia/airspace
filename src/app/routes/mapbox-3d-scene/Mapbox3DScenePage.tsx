@@ -6,12 +6,12 @@ import { BearingDisplay } from '../../../lib/mapbox/components/BearingDisplay';
 import { BuildingsToggle } from '../../../lib/mapbox/components/BuildingsToggle';
 import { LayerTogglePanel } from '../../../lib/mapbox/components/LayerTogglePanel';
 import { MapPanel } from '../../../lib/mapbox/components/MapPanel';
+import { MapViewModeToggle } from '../../../lib/mapbox/components/MapViewModeToggle';
 import { PitchDisplay } from '../../../lib/mapbox/components/PitchDisplay';
-import { PitchToggle } from '../../../lib/mapbox/components/PitchToggle';
 import { SceneSelector } from '../../../lib/mapbox/components/SceneSelector';
 import { ZoomLevelDisplay } from '../../../lib/mapbox/components/ZoomLevelDisplay';
 import { useMapBuildingsToggle } from '../../../lib/mapbox/hooks/useMapBuildingsToggle';
-import { useMapPitch3dToggle } from '../../../lib/mapbox/hooks/useMapPitch3dToggle';
+import { useMapViewMode } from '../../../lib/mapbox/hooks/useMapViewMode';
 import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
 import {
   addAirspaceZones,
@@ -28,6 +28,7 @@ import { cn } from '../../../utils/cn';
 
 import type { LayerGroup } from '../../../lib/mapbox/components/LayerTogglePanel';
 import type { AirspaceScene } from '../../../lib/mapbox/types/AirspaceScene';
+import type { MapViewMode } from '../../../lib/mapbox/types/MapViewMode';
 
 function getLayerGroupsForScene(scene: AirspaceScene): LayerGroup[] {
   return [
@@ -56,8 +57,8 @@ function getLayerGroupsForScene(scene: AirspaceScene): LayerGroup[] {
 }
 
 interface Mapbox3DSceneOverlayProps {
-  is3dEnabled: boolean;
-  on3dEnabledChange: (is3dEnabled: boolean) => void;
+  mapViewMode: MapViewMode;
+  onMapViewModeChange: (mode: MapViewMode) => void;
   scene: AirspaceScene;
   onSceneChange: (scene: AirspaceScene) => void;
   isBuildingsEnabled: boolean;
@@ -65,14 +66,14 @@ interface Mapbox3DSceneOverlayProps {
 }
 
 function Mapbox3DSceneOverlay({
-  is3dEnabled,
-  on3dEnabledChange,
+  mapViewMode,
+  onMapViewModeChange,
   scene,
   onSceneChange,
   isBuildingsEnabled,
   onBuildingsEnabledChange,
 }: Mapbox3DSceneOverlayProps) {
-  useMapPitch3dToggle(is3dEnabled);
+  useMapViewMode(mapViewMode);
   useMapBuildingsToggle(isBuildingsEnabled);
 
   const layerGroups = useMemo(() => getLayerGroupsForScene(scene), [scene]);
@@ -87,9 +88,9 @@ function Mapbox3DSceneOverlay({
           isBuildingsEnabled={isBuildingsEnabled}
           onBuildingsEnabledChange={onBuildingsEnabledChange}
         />
-        <PitchToggle
-          is3dEnabled={is3dEnabled}
-          on3dEnabledChange={on3dEnabledChange}
+        <MapViewModeToggle
+          mode={mapViewMode}
+          onModeChange={onMapViewModeChange}
         />
         <SceneSelector
           scenes={scenes}
@@ -107,7 +108,7 @@ function Mapbox3DSceneOverlay({
  */
 export function Mapbox3DScenePage() {
   const [scene, setScene] = useState(DEFAULT_SCENE);
-  const [is3dEnabled, setIs3dEnabled] = useState(true);
+  const [mapViewMode, setMapViewMode] = useState<MapViewMode>('3d');
   const [isBuildingsEnabled, setIsBuildingsEnabled] = useState(true);
 
   return (
@@ -130,8 +131,8 @@ export function Mapbox3DScenePage() {
           }}
         >
           <Mapbox3DSceneOverlay
-            is3dEnabled={is3dEnabled}
-            on3dEnabledChange={setIs3dEnabled}
+            mapViewMode={mapViewMode}
+            onMapViewModeChange={setMapViewMode}
             scene={scene}
             onSceneChange={setScene}
             isBuildingsEnabled={isBuildingsEnabled}

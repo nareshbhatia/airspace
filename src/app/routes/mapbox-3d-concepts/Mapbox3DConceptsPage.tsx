@@ -6,22 +6,23 @@ import {
   BearingDisplay,
   MapPanel,
   MapProvider,
+  MapViewModeToggle,
   PitchDisplay,
-  PitchToggle,
   SceneSelector,
   TerrainSwitch,
-  useMapPitch3dToggle,
+  useMapViewMode,
   ZoomLevelDisplay,
 } from '../../../lib/mapbox';
 import { cn } from '../../../utils/cn';
 
+import type { MapViewMode } from '../../../lib/mapbox';
 import type { AirspaceScene } from '../../../lib/mapbox/types/AirspaceScene';
 
 interface Mapbox3DConceptsPanelProps {
   isTerrainEnabled: boolean;
   onTerrainEnabledChange: (isTerrainEnabled: boolean) => void;
-  is3dEnabled: boolean;
-  on3dEnabledChange: (is3dEnabled: boolean) => void;
+  mapViewMode: MapViewMode;
+  onMapViewModeChange: (mode: MapViewMode) => void;
   scene: AirspaceScene;
   onSceneChange: (scene: AirspaceScene) => void;
 }
@@ -29,12 +30,12 @@ interface Mapbox3DConceptsPanelProps {
 function Mapbox3DConceptsPanel({
   isTerrainEnabled,
   onTerrainEnabledChange,
-  is3dEnabled,
-  on3dEnabledChange,
+  mapViewMode,
+  onMapViewModeChange,
   scene,
   onSceneChange,
 }: Mapbox3DConceptsPanelProps) {
-  useMapPitch3dToggle(is3dEnabled);
+  useMapViewMode(mapViewMode);
 
   return (
     <MapPanel>
@@ -45,9 +46,9 @@ function Mapbox3DConceptsPanel({
         isTerrainEnabled={isTerrainEnabled}
         onTerrainEnabledChange={onTerrainEnabledChange}
       />
-      <PitchToggle
-        is3dEnabled={is3dEnabled}
-        on3dEnabledChange={on3dEnabledChange}
+      <MapViewModeToggle
+        mode={mapViewMode}
+        onModeChange={onMapViewModeChange}
       />
       <SceneSelector
         scenes={scenes}
@@ -64,7 +65,7 @@ function Mapbox3DConceptsPanel({
 export function Mapbox3DConceptsPage() {
   const [scene, setScene] = useState(DEFAULT_SCENE);
   const [isTerrainEnabled, setIsTerrainEnabled] = useState(true);
-  const [is3dEnabled, setIs3dEnabled] = useState(true);
+  const [mapViewMode, setMapViewMode] = useState<MapViewMode>('3d');
 
   return (
     <div
@@ -85,8 +86,8 @@ export function Mapbox3DConceptsPage() {
             <Mapbox3DConceptsPanel
               isTerrainEnabled={isTerrainEnabled}
               onTerrainEnabledChange={setIsTerrainEnabled}
-              is3dEnabled={is3dEnabled}
-              on3dEnabledChange={setIs3dEnabled}
+              mapViewMode={mapViewMode}
+              onMapViewModeChange={setMapViewMode}
               scene={scene}
               onSceneChange={setScene}
             />
