@@ -305,7 +305,7 @@ interface Pole {
   label: string; // "Pole 01547"
   lng: number;
   lat: number;
-  topMetersAgl: number; // bar is drawn 0 → this value
+  topMetersAgl: number; // bar is drawn baseMetersAgl → this value
   status: 'nominal' | 'flagged' | 'inspected';
 }
 
