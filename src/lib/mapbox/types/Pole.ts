@@ -3,8 +3,8 @@ export interface Pole {
   label: string;
   lng: number;
   lat: number;
-  /** Pole top (m AGL). The 3D bar is drawn from 0 → this value. */
-  poleTopM: number;
+  baseMetersAgl: number;
+  topMetersAgl: number;
   status: 'nominal' | 'flagged' | 'inspected';
 }
 

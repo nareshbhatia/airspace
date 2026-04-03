@@ -14,6 +14,29 @@ function getInitialMapError(): string | undefined {
   return MAPBOX_TOKEN ? undefined : 'VITE_MAPBOX_TOKEN is not set';
 }
 
+/**
+ * When `enabled`, ensures the `mapbox-dem` source exists and calls `setTerrain`.
+ * When `enabled` is false, clears terrain. Idempotent.
+ */
+function applyTerrainToMap(map: MapboxMap, enabled: boolean): void {
+  if (enabled) {
+    if (!map.getSource('mapbox-dem')) {
+      map.addSource('mapbox-dem', {
+        type: 'raster-dem',
+        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+        tileSize: 512,
+        maxzoom: 14,
+      });
+    }
+    map.setTerrain({
+      source: 'mapbox-dem',
+      exaggeration: 1.5,
+    });
+  } else {
+    map.setTerrain(null);
+  }
+}
+
 export interface MapProviderProps {
   style?: string;
   center?: LngLatLike;
@@ -42,6 +65,23 @@ export interface MapProviderProps {
  * is ready). Displays a fallback message when `VITE_MAPBOX_TOKEN` is missing,
  * map creation fails, or a runtime map error occurs.
  *
+ * **Initial load (terrain):**
+ * - Style `load` fires: attach `error`, `setMap`, consumer `onLoad` (scene sources/layers),
+ *   then `applyTerrainToMap` synchronously, then `once('idle', …)` for a second apply.
+ * - After React commits `map`: terrain `useEffect` runs—`applyTerrainToMap` if the style
+ *   is already loaded, plus a `style.load` listener for full style reloads.
+ * - First `idle`: `applyTerrainToMap` again (skipped if the style is not loaded).
+ *
+ * Reason: Mapbox Standard / Standard Satellite can run further style work after custom
+ * layers are added. Relying only on the terrain `useEffect` (first run after `onLoad`
+ * in a later commit) was observed to leave terrain unset until toggled. Applying at
+ * the end of the `load` handler (after `onLoad`) and again on `idle` matches the stable
+ * state and matches what a later toggle does.
+ *
+ * **Toggle terrain:**
+ * - `enableTerrain` changes; the terrain `useEffect` re-runs and calls `applyTerrainToMap`.
+ * - The one-time `load` / `idle` handlers registered at creation do not run again.
+ *
  * @param style - Mapbox style URL (default: `'mapbox://styles/mapbox/standard'`).
  * @param center - Initial map center as `[lng, lat]`.
  * @param zoom - Initial zoom level (default: `12`).
@@ -50,7 +90,7 @@ export interface MapProviderProps {
  * @param className - Additional CSS classes for the map wrapper.
  * @param onLoad - Callback fired once the map has loaded. Does not need to be memoized (useEffectEvent keeps latest).
  * @param onError - Optional. Called when a runtime map error occurs (e.g. tile failure). Use for logging/monitoring. Does not need to be memoized.
- * @param enableTerrain - When `true`, adds a DEM source and enables terrain.
+ * @param enableTerrain - When `true`, adds a DEM source and enables terrain; when `false`, clears terrain.
  * @param mapOptions - Extra `MapboxOptions` forwarded to the constructor (container/style/camera props are excluded).
  * @param children - React nodes rendered on top of the map (controls, overlays, etc.).
  *
@@ -75,6 +115,8 @@ export function MapProvider({
   children,
 }: MapProviderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const enableTerrainRef = useRef(enableTerrain);
+  enableTerrainRef.current = enableTerrain;
   const [map, setMap] = useState<MapboxMap>();
   const [mapError, setMapError] = useState<string | undefined>(
     getInitialMapError,
@@ -117,12 +159,21 @@ export function MapProvider({
 
       mapInstance.on('load', () => {
         if (!mapInstance) return;
-        mapInstance.on('error', (e) => {
+        const map = mapInstance;
+        map.on('error', (e) => {
           onErrorEvent(e.error);
         });
-        setMap(mapInstance);
+        setMap(map);
         setMapError(undefined);
-        onLoadEvent(mapInstance);
+        onLoadEvent(map);
+        // After consumer layers: apply here and on idle, not only in the terrain
+        // useEffect, so Standard-style reconciliation after custom layers does not
+        // leave terrain unset (see component JSDoc).
+        applyTerrainToMap(map, enableTerrainRef.current);
+        map.once('idle', () => {
+          if (!map.isStyleLoaded()) return;
+          applyTerrainToMap(map, enableTerrainRef.current);
+        });
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load map';
@@ -136,27 +187,12 @@ export function MapProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once with initial props
   }, []);
 
-  // Keep terrain in sync with the latest prop and style lifecycle.
+  // Terrain from props and when the style reloads (`style.load`).
   useEffect(() => {
     if (!map) return;
 
     const applyTerrain = () => {
-      if (enableTerrain) {
-        if (!map.getSource('mapbox-dem')) {
-          map.addSource('mapbox-dem', {
-            type: 'raster-dem',
-            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-            tileSize: 512,
-            maxzoom: 14,
-          });
-        }
-        map.setTerrain({
-          source: 'mapbox-dem',
-          exaggeration: 1.5,
-        });
-      } else {
-        map.setTerrain(null);
-      }
+      applyTerrainToMap(map, enableTerrain);
     };
 
     if (map.isStyleLoaded()) {

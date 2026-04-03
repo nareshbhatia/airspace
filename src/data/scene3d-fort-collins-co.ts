@@ -16,7 +16,8 @@ const poles: Pole[] = [
     label: 'Pole 1000',
     lng: -105.1400063,
     lat: 40.5908333,
-    poleTopM: 50,
+    baseMetersAgl: 10,
+    topMetersAgl: 60,
     status: 'nominal',
   },
   {
@@ -24,7 +25,8 @@ const poles: Pole[] = [
     label: 'Pole 1001',
     lng: -105.1400063,
     lat: 40.5917313,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -32,7 +34,8 @@ const poles: Pole[] = [
     label: 'Pole 1002',
     lng: -105.1392463,
     lat: 40.5915213,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -40,7 +43,8 @@ const poles: Pole[] = [
     label: 'Pole 1003',
     lng: -105.1388413,
     lat: 40.5909893,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -48,7 +52,8 @@ const poles: Pole[] = [
     label: 'Pole 1004',
     lng: -105.1389823,
     lat: 40.5903843,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -56,7 +61,8 @@ const poles: Pole[] = [
     label: 'Pole 1005',
     lng: -105.1396013,
     lat: 40.5899893,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -64,7 +70,8 @@ const poles: Pole[] = [
     label: 'Pole 1006',
     lng: -105.1404113,
     lat: 40.5899893,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -72,7 +79,8 @@ const poles: Pole[] = [
     label: 'Pole 1007',
     lng: -105.1410303,
     lat: 40.5903843,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -80,7 +88,8 @@ const poles: Pole[] = [
     label: 'Pole 1008',
     lng: -105.1411713,
     lat: 40.5909893,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
   {
@@ -88,7 +97,8 @@ const poles: Pole[] = [
     label: 'Pole 1009',
     lng: -105.1407663,
     lat: 40.5915213,
-    poleTopM: 50,
+    baseMetersAgl: 0,
+    topMetersAgl: 50,
     status: 'nominal',
   },
 ];

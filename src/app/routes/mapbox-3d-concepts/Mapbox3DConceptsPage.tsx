@@ -13,6 +13,11 @@ import {
   useMapViewMode,
   ZoomLevelDisplay,
 } from '../../../lib/mapbox';
+import {
+  addZones,
+  addPoles,
+  addRoute,
+} from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
 
 import type { MapViewMode } from '../../../lib/mapbox';
@@ -81,6 +86,11 @@ export function Mapbox3DConceptsPage() {
           className="w-full h-full"
           mapOptions={{ antialias: true }}
           enableTerrain={isTerrainEnabled}
+          onLoad={(map) => {
+            addZones(map, scene.zones);
+            addPoles(map, scene.poles);
+            addRoute(map, scene.route);
+          }}
         >
           <div className="absolute right-3 top-3 z-10 flex flex-col gap-2 min-w-40">
             <Mapbox3DConceptsPanel
