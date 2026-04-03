@@ -24,7 +24,7 @@ export function useMapViewMode(mode: MapViewMode): void {
   // so we can restore custom Map limits when 3D is on again.
   const intrinsicRef = useRef<{ min: number; max: number } | null>(null);
 
-  // --- Effect 1 (runs before effect 2 in the same commit) ---
+  // --- Effect 1 (runs before effect 2 in the same render cycle) ---
   // Touch + pitch *limits* only. Actual pitch is driven by effect 2 (easeTo).
   //
   // 3D: restore intrinsic min/max and enable touch pitch so the user can tilt
