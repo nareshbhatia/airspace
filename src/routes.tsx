@@ -2,8 +2,8 @@ import { RootLayout } from './app/RootLayout';
 import { Drone3DPage } from './app/routes/drone-3d/Drone3DPage';
 import { FlightpathPage } from './app/routes/flightpath/FlightpathPage';
 import { FlightpathOLPage } from './app/routes/flightpath-ol/FlightpathOLPage';
-import { Mapbox3DConceptsPage } from './app/routes/mapbox-3d-concepts/Mapbox3DConceptsPage';
-import { Mapbox3DScenePage } from './app/routes/mapbox-3d-scene/Mapbox3DScenePage';
+import { MapboxConceptsStandardPage } from './app/routes/mapbox-concepts-standard/MapboxConceptsStandardPage';
+import { MapboxConceptsStandardSatellitePage } from './app/routes/mapbox-concepts-standard-satellite/MapboxConceptsStandardSatellitePage';
 import { MapboxPlusThreeJsPage } from './app/routes/mapbox-plus-threejs/MapboxPlusThreeJsPage';
 import { MarkPlacesPage } from './app/routes/mark-places/MarkPlacesPage';
 import { NavigatePage } from './app/routes/navigate/NavigatePage';
@@ -23,8 +23,10 @@ const navElementByPath: Record<string, ReactNode> = {
   '/flightpath': <FlightpathPage />,
   '/flightpath-ol': <FlightpathOLPage />,
   '/zone-editor': <ZoneEditorPage />,
-  '/mapbox-3d-concepts': <Mapbox3DConceptsPage />,
-  '/mapbox-3d-scene': <Mapbox3DScenePage />,
+  '/mapbox-concepts-standard': <MapboxConceptsStandardPage />,
+  '/mapbox-concepts-standard-satellite': (
+    <MapboxConceptsStandardSatellitePage />
+  ),
   '/mapbox-plus-threejs': <MapboxPlusThreeJsPage />,
   '/nyc-subway-stops': <NycSubwayStopsPage />,
   '/drone-3d': <Drone3DPage />,
