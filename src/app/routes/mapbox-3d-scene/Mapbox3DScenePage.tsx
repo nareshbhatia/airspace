@@ -112,7 +112,7 @@ function MapboxOverlay({
 }
 
 /**
- * Mapbox 3D Scene page for viewing a 3D map scene.
+ * Explore Mapbox concepts using the standard style.
  */
 export function Mapbox3DScenePage() {
   const [scene, setScene] = useState(DEFAULT_SCENE);
