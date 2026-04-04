@@ -1,16 +1,17 @@
 import { useMemo, useState } from 'react';
 
-import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
+import { MAPBOX_STANDARD_STYLE } from '../../../config/MapConfig';
 import { DEFAULT_SCENE, scenes } from '../../../data/scenes';
 import {
   BearingDisplay,
+  BuildingsToggle,
   LayerTogglePanel,
   MapPanel,
   MapProvider,
   MapViewModeToggle,
   PitchDisplay,
   SceneSelector,
-  TerrainSwitch,
+  useMapBuildingsToggle,
   useMapViewMode,
   ZoomLevelDisplay,
 } from '../../../lib/mapbox';
@@ -64,8 +65,8 @@ interface MapboxOverlayProps {
   onMapViewModeChange: (mode: MapViewMode) => void;
   scene: AirspaceScene;
   onSceneChange: (scene: AirspaceScene) => void;
-  isTerrainEnabled: boolean;
-  onTerrainEnabledChange: (isTerrainEnabled: boolean) => void;
+  isBuildingsEnabled: boolean;
+  onBuildingsEnabledChange: (enabled: boolean) => void;
 }
 
 function MapboxOverlay({
@@ -73,11 +74,14 @@ function MapboxOverlay({
   onMapViewModeChange,
   scene,
   onSceneChange,
-  isTerrainEnabled,
-  onTerrainEnabledChange,
+  isBuildingsEnabled,
+  onBuildingsEnabledChange,
 }: MapboxOverlayProps) {
   // Apply 2D vs 3D to the map view
   useMapViewMode(mapViewMode);
+
+  // Toggle 3D buildings rendering
+  useMapBuildingsToggle(isBuildingsEnabled);
 
   // Get the layer groups for the scene
   const layerGroups = useMemo(() => getLayerGroupsForScene(scene), [scene]);
@@ -88,9 +92,9 @@ function MapboxOverlay({
         <ZoomLevelDisplay />
         <PitchDisplay />
         <BearingDisplay />
-        <TerrainSwitch
-          isTerrainEnabled={isTerrainEnabled}
-          onTerrainEnabledChange={onTerrainEnabledChange}
+        <BuildingsToggle
+          isBuildingsEnabled={isBuildingsEnabled}
+          onBuildingsEnabledChange={onBuildingsEnabledChange}
         />
         <MapViewModeToggle
           mode={mapViewMode}
@@ -108,12 +112,12 @@ function MapboxOverlay({
 }
 
 /**
- * Explore Mapbox concepts using the standard satellite style.
+ * Explore Mapbox concepts using the standard style.
  */
-export function Mapbox3DConceptsPage() {
+export function MapboxConceptsStandardPage() {
   const [scene, setScene] = useState(DEFAULT_SCENE);
   const [mapViewMode, setMapViewMode] = useState<MapViewMode>('3d');
-  const [isTerrainEnabled, setIsTerrainEnabled] = useState(true);
+  const [isBuildingsEnabled, setIsBuildingsEnabled] = useState(true);
 
   return (
     <div
@@ -125,10 +129,9 @@ export function Mapbox3DConceptsPage() {
         <MapProvider
           key={scene.name} // ask react to remount MapProvider when the scene changes
           {...scene.mapProvider}
-          style={MAPBOX_STANDARD_SATELLITE_STYLE}
+          style={MAPBOX_STANDARD_STYLE}
           className="w-full h-full"
           mapOptions={{ antialias: true }}
-          enableTerrain={isTerrainEnabled}
           onLoad={(map) => {
             addZones(map, scene.zones);
             addPoles(map, scene.poles);
@@ -140,8 +143,8 @@ export function Mapbox3DConceptsPage() {
             onMapViewModeChange={setMapViewMode}
             scene={scene}
             onSceneChange={setScene}
-            isTerrainEnabled={isTerrainEnabled}
-            onTerrainEnabledChange={setIsTerrainEnabled}
+            isBuildingsEnabled={isBuildingsEnabled}
+            onBuildingsEnabledChange={setIsBuildingsEnabled}
           />
         </MapProvider>
       </div>

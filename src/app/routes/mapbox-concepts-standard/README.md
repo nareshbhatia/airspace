@@ -1,4 +1,4 @@
-# Mapbox 3D Scene
+# Mapbox Concepts – Standard Style
 
 ## Purpose
 
