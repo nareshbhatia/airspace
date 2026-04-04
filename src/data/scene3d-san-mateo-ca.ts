@@ -3,9 +3,32 @@
  */
 
 import type { AirspaceScene } from '../lib/mapbox/types/AirspaceScene';
+import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
 import type { Pole } from '../lib/mapbox/types/Pole';
+import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 
 const center: [number, number] = [-122.33129971217056, 37.534526705764435];
+
+/**
+ * 1 zone around 3000 Clearview Way
+ */
+const zones: AirspaceZone[] = [
+  {
+    id: 'zone-1-mission',
+    name: 'Zone 1: 3000 Clearview Way (Mission)',
+    type: 'mission',
+    color: '#3b82f6',
+    opacity: 0.55,
+    ceilingHeightM: 50,
+    footprint: [
+      { lng: -122.3309, lat: 37.5356, floorMetersAgl: 0 },
+      { lng: -122.3293, lat: 37.5346, floorMetersAgl: 0 },
+      { lng: -122.3308, lat: 37.5329, floorMetersAgl: 0 },
+      { lng: -122.3325, lat: 37.534, floorMetersAgl: 0 },
+      { lng: -122.3309, lat: 37.5356, floorMetersAgl: 0 },
+    ],
+  },
+];
 
 /**
  * 10 poles in a circle with pole 1000 at the center
@@ -103,6 +126,15 @@ const poles: Pole[] = [
   },
 ];
 
+const route: Waypoint[] = [
+  { sequence: 1, label: 'W1', lng: -122.3291, lat: 37.5361, altM: 0 },
+  { sequence: 2, label: 'W2', lng: -122.3299, lat: 37.5356, altM: 0 },
+  { sequence: 3, label: 'W3', lng: -122.3324, lat: 37.5354, altM: 0 },
+  { sequence: 4, label: 'W4', lng: -122.333, lat: 37.534, altM: 0 },
+  { sequence: 5, label: 'W5', lng: -122.3314, lat: 37.5333, altM: 0 },
+  { sequence: 6, label: 'W6', lng: -122.3301, lat: 37.5338, altM: 0 },
+];
+
 export const scene: AirspaceScene = {
   name: 'San Mateo, CA',
   mapProvider: {
@@ -111,7 +143,7 @@ export const scene: AirspaceScene = {
     pitch: 5,
     bearing: 40,
   },
-  zones: [],
+  zones,
   poles,
-  route: [],
+  route,
 };

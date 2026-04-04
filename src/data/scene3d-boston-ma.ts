@@ -11,55 +11,22 @@ import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 const center: [number, number] = [-71.07512263099572, 42.34942291272112];
 
 /**
- * Three zones around John Hancock Tower
+ * 1 zone around Copley Square
  */
 const zones: AirspaceZone[] = [
   {
-    id: 'restricted-clarendon',
-    name: 'Restricted Zone (Clarendon St)',
-    type: 'restricted',
-    color: '#f97316',
-    opacity: 0.55,
-    floorAltM: 0,
-    ceilingAltM: 150,
-    footprint: [
-      [-71.07532, 42.3491],
-      [-71.07508, 42.3491],
-      [-71.07508, 42.3499],
-      [-71.07532, 42.3499],
-      [-71.07532, 42.3491],
-    ],
-  },
-  {
-    id: 'advisory-trinity',
-    name: 'Advisory Zone (Trinity Place)',
-    type: 'advisory',
-    color: '#22c55e',
-    opacity: 0.55,
-    floorAltM: 50,
-    ceilingAltM: 200,
-    footprint: [
-      [-71.0747, 42.3489],
-      [-71.0743, 42.3489],
-      [-71.0743, 42.3492],
-      [-71.0747, 42.3492],
-      [-71.0747, 42.3489],
-    ],
-  },
-  {
-    id: 'mission-stuart',
-    name: 'Mission Boundary (Stuart St)',
+    id: 'zone-1-mission',
+    name: 'Zone 1: Copley Square (Mission)',
     type: 'mission',
     color: '#3b82f6',
     opacity: 0.55,
-    floorAltM: 0,
-    ceilingAltM: 120,
+    ceilingHeightM: 20,
     footprint: [
-      [-71.0761, 42.3482],
-      [-71.0743, 42.3482],
-      [-71.0743, 42.34835],
-      [-71.0761, 42.34835],
-      [-71.0761, 42.3482],
+      { lng: -71.0772, lat: 42.35, floorMetersAgl: 0 },
+      { lng: -71.0761, lat: 42.3504, floorMetersAgl: 0 },
+      { lng: -71.0758, lat: 42.3497, floorMetersAgl: 0 },
+      { lng: -71.0769, lat: 42.3495, floorMetersAgl: 0 },
+      { lng: -71.0772, lat: 42.35, floorMetersAgl: 0 },
     ],
   },
 ];
@@ -69,35 +36,26 @@ const zones: AirspaceZone[] = [
  */
 const poles: Pole[] = [
   {
-    id: 'p01547',
-    label: 'Pole 01547',
-    lng: -71.0755,
-    lat: 42.3498,
+    id: '1000',
+    label: 'Pole 1000',
+    lng: -71.0758,
+    lat: 42.3495,
     baseMetersAgl: 0,
     topMetersAgl: 10,
     status: 'nominal',
   },
   {
-    id: 'p01561',
-    label: 'Pole 01561',
+    id: '1001',
+    label: 'Pole 1001',
     lng: -71.0749,
-    lat: 42.3495,
+    lat: 42.3497,
     baseMetersAgl: 0,
     topMetersAgl: 25,
     status: 'flagged',
   },
   {
-    id: 'p01562',
-    label: 'Pole 01562',
-    lng: -71.0758,
-    lat: 42.3489,
-    baseMetersAgl: 0,
-    topMetersAgl: 30,
-    status: 'nominal',
-  },
-  {
-    id: 'p01563',
-    label: 'Pole 01563',
+    id: '1002',
+    label: 'Pole 1002',
     lng: -71.0745,
     lat: 42.349,
     baseMetersAgl: 0,
@@ -105,23 +63,33 @@ const poles: Pole[] = [
     status: 'inspected',
   },
   {
-    id: 'p01564',
-    label: 'Pole 01564',
-    lng: -71.076,
-    lat: 42.3494,
+    id: '1003',
+    label: 'Pole 1003',
+    lng: -71.0754,
+    lat: 42.3488,
     baseMetersAgl: 0,
-    topMetersAgl: 40,
+    topMetersAgl: 30,
+    status: 'nominal',
+  },
+  {
+    id: '1004',
+    label: 'Pole 1004',
+    lng: -71.0752,
+    lat: 42.3493,
+    baseMetersAgl: 200,
+    topMetersAgl: 260,
     status: 'nominal',
   },
 ];
 
-const route: Waypoint[] = poles.map((pole, index) => ({
-  sequence: index + 1,
-  lng: pole.lng,
-  lat: pole.lat,
-  altM: pole.topMetersAgl,
-  label: String(index + 1),
-}));
+const route: Waypoint[] = [
+  { sequence: 1, label: 'W1', lng: -71.0755, lat: 42.3491, altM: 0 },
+  { sequence: 2, label: 'W2', lng: -71.0757, lat: 42.3491, altM: 0 },
+  { sequence: 3, label: 'W3', lng: -71.0755, lat: 42.3486, altM: 0 },
+  { sequence: 4, label: 'W4', lng: -71.0763, lat: 42.3484, altM: 0 },
+  { sequence: 5, label: 'W5', lng: -71.0762, lat: 42.3482, altM: 0 },
+  { sequence: 6, label: 'W6', lng: -71.0758, lat: 42.3473, altM: 0 },
+];
 
 export const scene: AirspaceScene = {
   name: 'Boston, MA',
