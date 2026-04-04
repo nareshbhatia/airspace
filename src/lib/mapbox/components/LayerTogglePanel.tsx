@@ -12,12 +12,7 @@ import { cn } from '../../../utils/cn';
 import { useMap } from '../hooks/useMap';
 import { toggleLayer } from '../utils/scene3d';
 
-// A group of layers that can be toggled together
-export interface LayerGroup {
-  id: string;
-  label: string;
-  layerIds: string[];
-}
+import type { LayerGroup } from '../types/LayerGroup';
 
 interface LayerTogglePanelProps {
   layerGroups: LayerGroup[];

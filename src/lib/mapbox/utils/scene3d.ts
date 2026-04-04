@@ -1,3 +1,7 @@
+import {
+  airspaceZoneCeilingTopMaxMetersAgl,
+  airspaceZoneFloorMinMetersAgl,
+} from '../types/AirspaceZone';
 import { POLE_RADIUS_M, POLE_STATUS_COLORS } from '../types/Pole';
 
 import type { AirspaceZone } from '../types/AirspaceZone';
@@ -88,8 +92,9 @@ export function pointToCirclePolygon(
 }
 
 /**
- * Adds zones as a fill-extrusion layer. Zones are translucent boxes with
- * floor/ceiling altitude from data.
+ * Adds zones as a fill-extrusion layer. Translucent volumes from footprint +
+ * per-vertex floor AGL + constant ceiling height. Sloped floors are drawn with
+ * a single extrusion from min floor to max ceiling AGL (bounding envelope).
  *
  * @param beforeLayerId - If set, the layer is inserted before this id (zones
  * behind that layer). If omitted, the layer is added on top so zones are visible.
@@ -107,21 +112,25 @@ export function addZones(
       type: 'geojson',
       data: {
         type: 'FeatureCollection',
-        features: zones.map((zone) => ({
-          type: 'Feature',
-          properties: {
-            id: zone.id,
-            name: zone.name,
-            type: zone.type,
-            color: zone.color,
-            floor: zone.floorAltM,
-            ceiling: zone.ceilingAltM,
-          },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [zone.footprint],
-          },
-        })),
+        features: zones.map((zone) => {
+          const ring: [number, number][] = zone.footprint.map((p) => [
+            p.lng,
+            p.lat,
+          ]);
+          return {
+            type: 'Feature',
+            properties: {
+              id: zone.id,
+              name: zone.name,
+              type: zone.type,
+              color: zone.color,
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [ring],
+            },
+          };
+        }),
       },
     });
   }
@@ -134,9 +143,9 @@ export function addZones(
     source: 'airspace-zones',
     filter: ['==', ['get', 'id'], zone.id],
     paint: {
+      'fill-extrusion-base': airspaceZoneFloorMinMetersAgl(zone),
+      'fill-extrusion-height': airspaceZoneCeilingTopMaxMetersAgl(zone),
       'fill-extrusion-color': zone.color,
-      'fill-extrusion-base': zone.floorAltM,
-      'fill-extrusion-height': zone.ceilingAltM,
       'fill-extrusion-opacity': zone.opacity,
     },
   });

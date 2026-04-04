@@ -3,9 +3,78 @@
  */
 
 import type { AirspaceScene } from '../lib/mapbox/types/AirspaceScene';
+import type { AirspaceZone } from '../lib/mapbox/types/AirspaceZone';
 import type { Pole } from '../lib/mapbox/types/Pole';
+import type { Waypoint } from '../lib/mapbox/types/Waypoint';
 
 const center: [number, number] = [-105.1400063, 40.5908333];
+
+/**
+ * 4 zones around Fort Collins
+ */
+const zones: AirspaceZone[] = [
+  {
+    id: 'zone-1-restricted',
+    name: 'Zone 1: Mountains (Restricted)',
+    type: 'restricted',
+    color: '#f97316',
+    opacity: 0.55,
+    ceilingHeightM: 160,
+    footprint: [
+      { lng: -105.2019, lat: 40.5818, floorMetersAgl: 0 },
+      { lng: -105.1957, lat: 40.5811, floorMetersAgl: 0 },
+      { lng: -105.1961, lat: 40.5783, floorMetersAgl: 0 },
+      { lng: -105.2021, lat: 40.5789, floorMetersAgl: 0 },
+      { lng: -105.2019, lat: 40.5818, floorMetersAgl: 0 },
+    ],
+  },
+  {
+    id: 'zone-2-advisory',
+    name: 'Zone 2: Horsetooth Reservoir (Advisory)',
+    type: 'advisory',
+    color: '#22c55e',
+    opacity: 0.55,
+    ceilingHeightM: 160,
+    footprint: [
+      { lng: -105.1797, lat: 40.5834, floorMetersAgl: 0 },
+      { lng: -105.1714, lat: 40.5851, floorMetersAgl: 0 },
+      { lng: -105.1702, lat: 40.5816, floorMetersAgl: 0 },
+      { lng: -105.1785, lat: 40.5798, floorMetersAgl: 0 },
+      { lng: -105.1797, lat: 40.5834, floorMetersAgl: 0 },
+    ],
+  },
+  {
+    id: 'zone-3-mission',
+    name: 'Zone 3: Airport (Mission)',
+    type: 'mission',
+    color: '#3b82f6',
+    opacity: 0.55,
+    ceilingHeightM: 20,
+    footprint: [
+      { lng: -105.1404, lat: 40.5909, floorMetersAgl: 0 },
+      { lng: -105.1398, lat: 40.5911, floorMetersAgl: 0 },
+      { lng: -105.1396, lat: 40.5908, floorMetersAgl: 0 },
+      { lng: -105.1402, lat: 40.5905, floorMetersAgl: 0 },
+      { lng: -105.1404, lat: 40.5909, floorMetersAgl: 0 },
+    ],
+  },
+  {
+    id: 'zone-4-mission',
+    name: 'Zone 4: Solar Farm (Mission)',
+    type: 'mission',
+    color: '#3b82f6',
+    opacity: 0.55,
+    ceilingHeightM: 20,
+    footprint: [
+      { lng: -105.1501, lat: 40.5938, floorMetersAgl: 30 },
+      { lng: -105.1448, lat: 40.5939, floorMetersAgl: 35 },
+      { lng: -105.1448, lat: 40.5902, floorMetersAgl: 40 },
+      { lng: -105.1466, lat: 40.5902, floorMetersAgl: 45 },
+      { lng: -105.1501, lat: 40.5922, floorMetersAgl: 50 },
+      { lng: -105.1501, lat: 40.5938, floorMetersAgl: 30 },
+    ],
+  },
+];
 
 /**
  * 10 poles in a circle with pole 1000 at the center
@@ -103,6 +172,17 @@ const poles: Pole[] = [
   },
 ];
 
+const route: Waypoint[] = [
+  { sequence: 1, label: 'W1', lng: -105.1494, lat: 40.5427, altM: 0 },
+  { sequence: 2, label: 'W2', lng: -105.1491, lat: 40.5431, altM: 0 },
+  { sequence: 3, label: 'W3', lng: -105.1492, lat: 40.5434, altM: 0 },
+  { sequence: 4, label: 'W4', lng: -105.149, lat: 40.5445, altM: 100 },
+  { sequence: 5, label: 'W5', lng: -105.1482, lat: 40.5434, altM: 0 },
+  { sequence: 6, label: 'W6', lng: -105.1482, lat: 40.5429, altM: 0 },
+  { sequence: 7, label: 'W7', lng: -105.1472, lat: 40.5441, altM: 100 },
+  { sequence: 8, label: 'W8', lng: -105.1469, lat: 40.5441, altM: 0 },
+];
+
 export const scene: AirspaceScene = {
   name: 'Fort Collins, CO',
   mapProvider: {
@@ -111,7 +191,7 @@ export const scene: AirspaceScene = {
     pitch: 60,
     bearing: 0,
   },
-  zones: [],
+  zones,
   poles,
-  route: [],
+  route,
 };

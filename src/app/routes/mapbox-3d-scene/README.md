@@ -135,24 +135,31 @@ and above. Below that, the layer renders nothing. This is correct behavior.
 Translucent 3D boxes representing airspace volumes are the most visually
 distinctive element of a drone operator interface. They represent restricted
 zones, advisory zones, or mission boundaries — defined by a polygon footprint
-and a floor-to-ceiling altitude range.
+with per-vertex floor AGL and a constant ceiling height above that floor.
 
 These are `fill-extrusion` layers on custom GeoJSON data. The key difference
 from buildings: `fill-extrusion-height` and `fill-extrusion-base` represent
-altitude above ground level, not building height.
+altitude above ground level, not building height. Mapbox uses one base and one
+top per layer; sloped floors are approximated by extruding from the minimum
+floor AGL to the maximum ceiling AGL across vertices (see `scene3d.ts`).
 
 ### The Data Model
 
 ```typescript
+interface AirspaceZoneFootprintPoint {
+  lng: number;
+  lat: number;
+  floorMetersAgl: number;
+}
+
 interface AirspaceZone {
   id: string;
   name: string;
   type: 'restricted' | 'advisory' | 'mission';
   color: string;
   opacity: number;
-  floorAltM: number; // bottom of zone in meters AGL
-  ceilingAltM: number; // top of zone in meters AGL
-  footprint: [number, number][]; // [lng, lat] polygon ring
+  ceilingHeightM: number; // ceiling height above the floor at each vertex (m)
+  footprint: AirspaceZoneFootprintPoint[]; // closed ring
 }
 
 // Sample data — Boston area matching the page location
@@ -163,14 +170,13 @@ const airspaceZones: AirspaceZone[] = [
     type: 'restricted',
     color: '#f97316', // orange
     opacity: 0.2,
-    floorAltM: 0,
-    ceilingAltM: 150,
+    ceilingHeightM: 150,
     footprint: [
-      [-71.035, 42.375],
-      [-71.01, 42.375],
-      [-71.01, 42.36],
-      [-71.035, 42.36],
-      [-71.035, 42.375],
+      { lng: -71.035, lat: 42.375, floorMetersAgl: 0 },
+      { lng: -71.01, lat: 42.375, floorMetersAgl: 0 },
+      { lng: -71.01, lat: 42.36, floorMetersAgl: 0 },
+      { lng: -71.035, lat: 42.36, floorMetersAgl: 0 },
+      { lng: -71.035, lat: 42.375, floorMetersAgl: 0 },
     ],
   },
   {
@@ -179,14 +185,13 @@ const airspaceZones: AirspaceZone[] = [
     type: 'advisory',
     color: '#22c55e', // green
     opacity: 0.15,
-    floorAltM: 50,
-    ceilingAltM: 200,
+    ceilingHeightM: 150,
     footprint: [
-      [-71.06, 42.365],
-      [-71.04, 42.365],
-      [-71.04, 42.35],
-      [-71.06, 42.35],
-      [-71.06, 42.365],
+      { lng: -71.06, lat: 42.365, floorMetersAgl: 50 },
+      { lng: -71.04, lat: 42.365, floorMetersAgl: 50 },
+      { lng: -71.04, lat: 42.35, floorMetersAgl: 50 },
+      { lng: -71.06, lat: 42.35, floorMetersAgl: 50 },
+      { lng: -71.06, lat: 42.365, floorMetersAgl: 50 },
     ],
   },
   {
@@ -195,14 +200,13 @@ const airspaceZones: AirspaceZone[] = [
     type: 'mission',
     color: '#3b82f6', // blue
     opacity: 0.12,
-    floorAltM: 0,
-    ceilingAltM: 120,
+    ceilingHeightM: 120,
     footprint: [
-      [-71.05, 42.37],
-      [-71.025, 42.37],
-      [-71.025, 42.355],
-      [-71.05, 42.355],
-      [-71.05, 42.37],
+      { lng: -71.05, lat: 42.37, floorMetersAgl: 0 },
+      { lng: -71.025, lat: 42.37, floorMetersAgl: 0 },
+      { lng: -71.025, lat: 42.355, floorMetersAgl: 0 },
+      { lng: -71.05, lat: 42.355, floorMetersAgl: 0 },
+      { lng: -71.05, lat: 42.37, floorMetersAgl: 0 },
     ],
   },
 ];
@@ -213,27 +217,36 @@ const airspaceZones: AirspaceZone[] = [
 Each zone type gets its own layer so they can be toggled independently:
 
 ```typescript
-function addAirspaceZones(map: mapboxgl.Map, zones: AirspaceZone[]) {
+function addZones(map: mapboxgl.Map, zones: AirspaceZone[]) {
   map.addSource('airspace-zones', {
     type: 'geojson',
     data: {
       type: 'FeatureCollection',
-      features: zones.map((zone) => ({
-        type: 'Feature',
-        properties: {
-          id: zone.id,
-          name: zone.name,
-          type: zone.type,
-          color: zone.color,
-          opacity: zone.opacity,
-          floor: zone.floorAltM,
-          ceiling: zone.ceilingAltM,
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [zone.footprint],
-        },
-      })),
+      features: zones.map((zone) => {
+        const floorMin = Math.min(
+          ...zone.footprint.map((p) => p.floorMetersAgl),
+        );
+        const ceilingTop = Math.max(
+          ...zone.footprint.map((p) => p.floorMetersAgl + zone.ceilingHeightM),
+        );
+        const ring = zone.footprint.map((p) => [p.lng, p.lat]);
+        return {
+          type: 'Feature',
+          properties: {
+            id: zone.id,
+            name: zone.name,
+            type: zone.type,
+            color: zone.color,
+            opacity: zone.opacity,
+            floorMin,
+            ceilingTop,
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [ring],
+          },
+        };
+      }),
     },
   });
 
@@ -243,9 +256,9 @@ function addAirspaceZones(map: mapboxgl.Map, zones: AirspaceZone[]) {
     source: 'airspace-zones',
     paint: {
       'fill-extrusion-color': ['get', 'color'],
-      'fill-extrusion-base': ['get', 'floor'], // zone floor altitude
-      'fill-extrusion-height': ['get', 'ceiling'], // zone ceiling altitude
-      'fill-extrusion-opacity': ['get', 'opacity'], // per-zone translucency
+      'fill-extrusion-base': ['get', 'floorMin'],
+      'fill-extrusion-height': ['get', 'ceilingTop'],
+      'fill-extrusion-opacity': ['get', 'opacity'],
     },
   });
 }
@@ -257,10 +270,11 @@ still reading their volume clearly. Above ~0.4 they become opaque boxes that
 obscure everything inside; below ~0.1 they disappear. The range 0.15–0.25 is the
 sweet spot for operator interfaces.
 
-**Floor vs ceiling:** A zone from 50m to 200m AGL has `fill-extrusion-base: 50`
-and `fill-extrusion-height: 200`. The zone floats above the ground — you can see
-buildings and terrain underneath it. This is the correct model for airspace
-volumes, which define altitude ranges, not ground-up extrusions.
+**Floor vs ceiling:** At each footprint vertex, ceiling AGL is
+`floorMetersAgl + ceilingHeightM`. For rendering, `fill-extrusion-base` is the
+minimum floor AGL and `fill-extrusion-height` is the maximum ceiling AGL (top of
+the volume). The zone can float above the ground; sloped floors use a single
+bounding extrusion (see above).
 
 ---
 
@@ -573,7 +587,7 @@ Layer order determines what renders on top of what. Add layers in this sequence:
 
 ```typescript
 // 1. Zone volumes first — they are the widest/tallest, should be behind everything
-addAirspaceZones(map, airspaceZones);
+addZones(map, airspaceZones);
 
 // 2. Buildings — above zones so zone transparency shows buildings inside
 // (inserted below symbol layers by passing firstSymbolLayer.id as the before parameter)
@@ -631,7 +645,7 @@ src/
 
   lib/
     mapbox/
-      scene3d.ts            ← addBuildings, addAirspaceZones, addPoles,
+      utils/scene3d.ts      ← addBuildings, addZones, addPoles,
                                addRoute, createWaypointImage
 
   routes/

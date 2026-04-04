@@ -2,17 +2,19 @@ import { useMemo, useState } from 'react';
 
 import { MAPBOX_STANDARD_STYLE } from '../../../config/MapConfig';
 import { DEFAULT_SCENE, scenes } from '../../../data/scenes';
-import { BearingDisplay } from '../../../lib/mapbox/components/BearingDisplay';
-import { BuildingsToggle } from '../../../lib/mapbox/components/BuildingsToggle';
-import { LayerTogglePanel } from '../../../lib/mapbox/components/LayerTogglePanel';
-import { MapPanel } from '../../../lib/mapbox/components/MapPanel';
-import { MapViewModeToggle } from '../../../lib/mapbox/components/MapViewModeToggle';
-import { PitchDisplay } from '../../../lib/mapbox/components/PitchDisplay';
-import { SceneSelector } from '../../../lib/mapbox/components/SceneSelector';
-import { ZoomLevelDisplay } from '../../../lib/mapbox/components/ZoomLevelDisplay';
-import { useMapBuildingsToggle } from '../../../lib/mapbox/hooks/useMapBuildingsToggle';
-import { useMapViewMode } from '../../../lib/mapbox/hooks/useMapViewMode';
-import { MapProvider } from '../../../lib/mapbox/providers/MapProvider';
+import {
+  BearingDisplay,
+  BuildingsToggle,
+  LayerTogglePanel,
+  MapPanel,
+  MapProvider,
+  MapViewModeToggle,
+  PitchDisplay,
+  SceneSelector,
+  useMapBuildingsToggle,
+  useMapViewMode,
+  ZoomLevelDisplay,
+} from '../../../lib/mapbox';
 import {
   addZones,
   addRoute,
@@ -26,9 +28,11 @@ import {
 } from '../../../lib/mapbox/utils/scene3d';
 import { cn } from '../../../utils/cn';
 
-import type { LayerGroup } from '../../../lib/mapbox/components/LayerTogglePanel';
-import type { AirspaceScene } from '../../../lib/mapbox/types/AirspaceScene';
-import type { MapViewMode } from '../../../lib/mapbox/types/MapViewMode';
+import type {
+  AirspaceScene,
+  LayerGroup,
+  MapViewMode,
+} from '../../../lib/mapbox';
 
 function getLayerGroupsForScene(scene: AirspaceScene): LayerGroup[] {
   return [
@@ -56,7 +60,7 @@ function getLayerGroupsForScene(scene: AirspaceScene): LayerGroup[] {
   ];
 }
 
-interface Mapbox3DSceneOverlayProps {
+interface MapboxOverlayProps {
   mapViewMode: MapViewMode;
   onMapViewModeChange: (mode: MapViewMode) => void;
   scene: AirspaceScene;
@@ -65,17 +69,21 @@ interface Mapbox3DSceneOverlayProps {
   onBuildingsEnabledChange: (enabled: boolean) => void;
 }
 
-function Mapbox3DSceneOverlay({
+function MapboxOverlay({
   mapViewMode,
   onMapViewModeChange,
   scene,
   onSceneChange,
   isBuildingsEnabled,
   onBuildingsEnabledChange,
-}: Mapbox3DSceneOverlayProps) {
+}: MapboxOverlayProps) {
+  // Apply 2D vs 3D to the map view
   useMapViewMode(mapViewMode);
+
+  // Toggle 3D buildings rendering
   useMapBuildingsToggle(isBuildingsEnabled);
 
+  // Get the layer groups for the scene
   const layerGroups = useMemo(() => getLayerGroupsForScene(scene), [scene]);
 
   return (
@@ -104,7 +112,7 @@ function Mapbox3DSceneOverlay({
 }
 
 /**
- * Mapbox 3D Scene page for viewing a 3D map scene.
+ * Explore Mapbox concepts using the standard style.
  */
 export function Mapbox3DScenePage() {
   const [scene, setScene] = useState(DEFAULT_SCENE);
@@ -119,7 +127,7 @@ export function Mapbox3DScenePage() {
     >
       <div className="min-h-0 flex-1 w-full">
         <MapProvider
-          key={scene.name}
+          key={scene.name} // ask react to remount MapProvider when the scene changes
           {...scene.mapProvider}
           style={MAPBOX_STANDARD_STYLE}
           className="w-full h-full"
@@ -130,7 +138,7 @@ export function Mapbox3DScenePage() {
             addRoute(map, scene.route);
           }}
         >
-          <Mapbox3DSceneOverlay
+          <MapboxOverlay
             mapViewMode={mapViewMode}
             onMapViewModeChange={setMapViewMode}
             scene={scene}
