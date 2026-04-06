@@ -51,6 +51,7 @@
     "turborepo",
     "typecheck",
     "unclustered",
+    "updatables",
     "vite"
   ],
   "editor.codeActionsOnSave": {

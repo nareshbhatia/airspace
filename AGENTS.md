@@ -67,6 +67,11 @@ server.
     directly from the defining file:
     `from '../DroneServiceProvider/DroneServiceProvider'` rather than
     `from '../DroneServiceProvider'` or `from '../providers'`.
+  - **Exception – library packages:** You may use a barrel `index.ts` under
+    [`src/lib/mapbox`](src/lib/mapbox) and [`src/lib/threejs`](src/lib/threejs)
+    so consumers can import stable public APIs from the package root (e.g.
+    `from '../../lib/threejs'`). Keep barrels limited to these folders;
+    elsewhere the no-barrel rule still applies.
 
 ### Coding Style for imports
 

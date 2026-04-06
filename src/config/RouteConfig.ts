@@ -36,7 +36,8 @@ export const mainNavItems: NavItem[] = [
     title: 'Mapbox Concepts (Satellite)',
     icon: Globe,
   },
+  { path: '/threejs-concepts', title: 'Three.js Concepts', icon: Axis3D },
+  { path: '/threejs-drone', title: 'Three.js Drone', icon: Axis3D },
   { path: '/mapbox-plus-threejs', title: 'Mapbox + Three.js', icon: Box },
   { path: '/nyc-subway-stops', title: 'NYC Subway Stops', icon: Train },
-  { path: '/drone-3d', title: '3D Drone', icon: Axis3D },
 ];
