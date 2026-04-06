@@ -66,12 +66,12 @@ const zones: AirspaceZone[] = [
     opacity: 0.55,
     ceilingHeightM: 20,
     footprint: [
-      { lng: -105.1501, lat: 40.5938, floorMetersAgl: 30 },
-      { lng: -105.1448, lat: 40.5939, floorMetersAgl: 35 },
-      { lng: -105.1448, lat: 40.5902, floorMetersAgl: 40 },
-      { lng: -105.1466, lat: 40.5902, floorMetersAgl: 45 },
-      { lng: -105.1501, lat: 40.5922, floorMetersAgl: 50 },
-      { lng: -105.1501, lat: 40.5938, floorMetersAgl: 30 },
+      { lng: -105.1501, lat: 40.5938, floorMetersAgl: 0 },
+      { lng: -105.1448, lat: 40.5939, floorMetersAgl: 100 },
+      { lng: -105.1448, lat: 40.5902, floorMetersAgl: 0 },
+      { lng: -105.1466, lat: 40.5902, floorMetersAgl: 0 },
+      { lng: -105.1501, lat: 40.5922, floorMetersAgl: 0 },
+      { lng: -105.1501, lat: 40.5938, floorMetersAgl: 0 },
     ],
   },
 ];
