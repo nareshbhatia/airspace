@@ -24,7 +24,10 @@ export function buildRouteLine(
       originMerc,
       originScale,
     );
-    // Keep route orientation aligned with current scene convention.
+    // Intentional Z flip:
+    // - Zones/poles use z = local.y and are already aligned in this scene.
+    // - Route appeared mirrored north/south with that same mapping for current data.
+    // - Keep route at z = -local.y so it renders in the expected southwest area.
     return new Vector3(local.x, wp.altM, -local.y);
   });
 

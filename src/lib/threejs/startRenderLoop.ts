@@ -41,8 +41,8 @@ export function startRenderLoop(
   const tick = (): void => {
     rafId = requestAnimationFrame(tick);
     if (clock != null && updatables != null) {
-      const delta = clock.getDelta();
       const elapsed = clock.getElapsedTime();
+      const delta = clock.getDelta();
       for (const fn of updatables) {
         fn(elapsed, delta);
       }

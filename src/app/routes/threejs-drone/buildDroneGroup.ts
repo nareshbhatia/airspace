@@ -9,22 +9,22 @@ import {
 import type { FrameCallback } from '../../../lib/threejs';
 import type { Material } from 'three';
 
-const bodyMaterial = new MeshStandardMaterial({
-  color: 0x282828,
-  metalness: 0.7,
-  roughness: 0.3,
-});
-
-const rotorMaterial = new MeshStandardMaterial({
-  color: 0x2196f3,
-  metalness: 0.7,
-  roughness: 0.5,
-});
-
 /**
  * Drone model: two plates, four rotors, and four arms (imperative Three.js).
  */
 export function buildDroneGroup(): Group {
+  const bodyMaterial = new MeshStandardMaterial({
+    color: 0x282828,
+    metalness: 0.7,
+    roughness: 0.3,
+  });
+
+  const rotorMaterial = new MeshStandardMaterial({
+    color: 0x2196f3,
+    metalness: 0.7,
+    roughness: 0.5,
+  });
+
   const group = new Group();
 
   const plate1 = new Mesh(new BoxGeometry(200, 10, 200), bodyMaterial);
@@ -77,7 +77,7 @@ export function createDroneFrameCallback(drone: Group): FrameCallback {
 }
 
 /**
- * Disposes geometries and shared materials for meshes under the drone group.
+ * Disposes geometries and materials for meshes under the drone group.
  */
 export function disposeDroneGroup(drone: Group): void {
   const materials = new Set<Material>();
