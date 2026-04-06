@@ -1,7 +1,7 @@
 import { MercatorCoordinate } from 'mapbox-gl';
 import { BufferGeometry, Line, LineBasicMaterial, Vector3 } from 'three';
 
-import { mercatorToLocalPosition } from '../mapbox-plus-threejs/mercatorUtils';
+import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
 
 import type { Waypoint } from '../../../lib/mapbox/types/Waypoint';
 

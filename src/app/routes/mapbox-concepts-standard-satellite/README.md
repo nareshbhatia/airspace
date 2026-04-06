@@ -1,4 +1,4 @@
-# Mapbox Concepts – Standard Style
+# Mapbox Concepts
 
 ## Purpose
 
@@ -49,7 +49,7 @@ buildings and zones.
 ```typescript
 const map = new mapboxgl.Map({
   container,
-  style: 'mapbox://styles/mapbox/satellite-streets-v12', // satellite base
+  style: 'mapbox://styles/mapbox/standard-satellite', // standard satellite base
   center: [-71.05, 42.36], // Boston area
   zoom: 15,
   pitch: 50, // 0 = top-down, 90 = horizon

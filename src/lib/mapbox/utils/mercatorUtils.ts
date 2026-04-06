@@ -21,7 +21,7 @@ export function mercatorToLocalPosition(
 }
 
 /**
- * Model transform: translate to Mercator origin, scale meters → Mercator units.
+ * Model transform: translate to Mercator origin, scale meters -> Mercator units.
  * The negative Y scale maps Three.js Y-up into Mapbox Mercator Y-south space.
  */
 export function computeModelTransform(originMerc: MercatorCoordinate): Matrix4 {

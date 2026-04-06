@@ -12,7 +12,7 @@ import {
   Vector2,
 } from 'three';
 
-import { mercatorToLocalPosition } from '../mapbox-plus-threejs/mercatorUtils';
+import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
 
 import type { AirspaceZone } from '../../../lib/mapbox/types/AirspaceZone';
 

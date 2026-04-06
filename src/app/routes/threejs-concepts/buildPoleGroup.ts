@@ -5,7 +5,7 @@ import {
   POLE_RADIUS_M,
   POLE_STATUS_COLORS,
 } from '../../../lib/mapbox/types/Pole';
-import { mercatorToLocalPosition } from '../mapbox-plus-threejs/mercatorUtils';
+import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
 
 import type { Pole } from '../../../lib/mapbox/types/Pole';
 
