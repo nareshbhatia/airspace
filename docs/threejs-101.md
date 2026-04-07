@@ -139,9 +139,9 @@ scene.add(ambient, sun);
 
 ## Renderer size and animation
 
-`WebGLRenderer` draws into a canvas. **`setSize`** sets the drawing buffer to match your layout (or a fixed size for demos).
+`WebGLRenderer` draws into a canvas. **`setSize`** sets the drawing buffer to match your layout.
 
-For interaction you usually run a **requestAnimationFrame** loop: update anything that moves, then `renderer.render(scene, camera)` again. The [Three.js concepts page](https://github.com/nareshbhatia/airspace/blob/main/src/lib/threejs/startRenderLoop.ts) in airspace wraps construction in a small API: create scene, camera, lights, content groups, renderer, and optional **orbit controls** so you can tumble around airspace zones and routes in isolation from Mapbox.
+For interaction you usually run a **requestAnimationFrame** loop: update anything that moves, then `renderer.render(scene, camera)` again. For example:
 
 ```typescript
 function animate() {
