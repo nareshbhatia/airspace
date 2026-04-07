@@ -119,6 +119,7 @@ export class MapboxThreeCustomLayer
    * Rebuilds scene content for the newly selected scene.
    */
   setSceneData(nextData: ThreeSceneData): void {
+    this.hasRebuiltAfterTerrainResolved = false;
     this.sceneData = nextData;
     this.rebuildContentFromSceneData();
   }
