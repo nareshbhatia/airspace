@@ -46,3 +46,15 @@ pnpm fix              # lints, formats and attempts to fix any issues (requires 
 pnpm lint             # runs the linter, useful for debugging lint issues (generally `pnpm fix` is preferred)
 pnpm preview          # runs the prod build
 ```
+
+## Learning: Mapbox and Three.js
+
+Short notes from building this lab – enough to orient newcomers to Mapbox GL JS,
+Three.js, and how Threebox’s `CameraSync` approaches embedding Three.js on a map
+(distinct from some in-repo integration experiments).
+
+| Article                                                     | What it covers                                                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [Mapbox 101](docs/mapbox-101.md)                            | Styles, sources vs layers, GeoJSON, 3D-first mental model, “2D” as orthographic + top-down  |
+| [Three.js 101](docs/threejs-101.md)                         | Scene, camera, meshes, renderer, coordinates in plain language                              |
+| [Using Three.js in Mapbox](docs/using-threejs-in-mapbox.md) | Shared WebGL context, custom layers, Threebox `CameraSync` and why explicit near/far matter |
