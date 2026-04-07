@@ -38,7 +38,7 @@ A **style** URL (for example Mapbox Standard or Standard Satellite) decides the 
 
 The **camera** is controlled with center, zoom, **pitch** (tilt toward the horizon), and **bearing** (rotation around the map). One rule trips up almost everyone the first time:
 
-**Longitude comes first, then latitude** — `[lng, lat]`, not the other way around.
+**Longitude comes first, then latitude** – `[lng, lat]`, not the other way around.
 
 ```typescript
 const map = new mapboxgl.Map({
@@ -97,10 +97,10 @@ That **add source → add layer → setData** loop is the backbone of real-time 
 
 Names matter when you read examples:
 
-- **`geojson`** — your features, your schema; great for zones, routes, and anything you edit in app code.
-- **`vector`** — Mapbox-hosted tiles; building footprints in `composite` are the classic example for extrusions.
-- **`raster`** — imagery overlays (weather, scanned maps).
-- **`raster-dem`** — elevation for hillshade (painted shading) and terrain (actual height in the scene).
+- **`geojson`** – your features, your schema; great for zones, routes, and anything you edit in app code.
+- **`vector`** – Mapbox-hosted tiles; building footprints in `composite` are the classic example for extrusions.
+- **`raster`** – imagery overlays (weather, scanned maps).
+- **`raster-dem`** – elevation for hillshade (painted shading) and terrain (actual height in the scene).
 
 Layers (`fill`, `line`, `circle`, `symbol`, `heatmap`, `fill-extrusion`, …) sit on top of these sources. If a tutorial skips straight to `addLayer`, scroll up: there is almost always a source id hiding in the snippet.
 
@@ -112,9 +112,9 @@ Layers (`fill`, `line`, `circle`, `symbol`, `heatmap`, `fill-extrusion`, …) si
 
 GeoJSON is JSON that follows a small spec. For apps you will mostly use:
 
-- **Point** — one coordinate pair `[lng, lat]`.
-- **LineString** — an ordered list of coordinates (a path).
-- **Polygon** — rings of coordinates; the first ring is the outer boundary and the first and last point must match.
+- **Point** – one coordinate pair `[lng, lat]`.
+- **LineString** – an ordered list of coordinates (a path).
+- **Polygon** – rings of coordinates; the first ring is the outer boundary and the first and last point must match.
 
 ```typescript
 const point: GeoJSON.Feature = {
@@ -124,7 +124,7 @@ const point: GeoJSON.Feature = {
 };
 ```
 
-**Visual idea:** Sketch Point vs LineString vs Polygon on a napkin—annotate “ring closes” on the polygon.
+**Visual idea:** Sketch Point vs LineString vs Polygon on a napkin – annotate “ring closes” on the polygon.
 
 ---
 
@@ -144,8 +144,8 @@ Rule of thumb from experience: **markers for a few interactive points; layers fo
 
 You already have two big levers:
 
-1. **Pitch and terrain** — show the ground in relief; combine with Standard style features where available.
-2. **`fill-extrusion` layers** — extrude polygons to a height in meters. Building heights often come from vector tile properties; your own GeoJSON can extrude custom volumes (for example airspace zones).
+1. **Pitch and terrain** – show the ground in relief; combine with Standard style features where available.
+2. **`fill-extrusion` layers** – extrude polygons to a height in meters. Building heights often come from vector tile properties; your own GeoJSON can extrude custom volumes (for example airspace zones).
 
 ```typescript
 map.addLayer({
@@ -160,7 +160,7 @@ map.addLayer({
 });
 ```
 
-For Mapbox Standard styles, there is also a high-level switch that toggles a bundle of 3D content (buildings, landmarks, and similar)—use the style docs for the exact property name and behavior for your version.
+For Mapbox Standard styles, there is also a high-level switch that toggles a bundle of 3D content (buildings, landmarks, and similar) – use the style docs for the exact property name and behavior for your version.
 
 **Visual idea:** Before/after: flat polygons vs the same footprints extruded with opacity.
 
@@ -231,7 +231,7 @@ function tick() {
 }
 ```
 
-Batch work when you can—updating one `FeatureCollection` once per frame beats thousands of tiny edits.
+Batch work when you can – updating one `FeatureCollection` once per frame beats thousands of tiny edits.
 
 **Visual idea:** Timeline strip showing telemetry → `setData` → map frame.
 
@@ -258,7 +258,7 @@ None of this is glamorous; it is what keeps a demo smooth on a laptop battery.
 
 ## Series navigation
 
-**Next:** [Three.js 101](./threejs-101.md) — scene, camera, mesh, renderer.
+**Next:** [Three.js 101](./threejs-101.md) – scene, camera, mesh, renderer.
 
 Also in this series: [Using Three.js in Mapbox](./using-threejs-in-mapbox.md).
 
@@ -266,10 +266,10 @@ Also in this series: [Using Three.js in Mapbox](./using-threejs-in-mapbox.md).
 
 ## References
 
-- [Mapbox GL JS documentation](https://docs.mapbox.com/mapbox-gl-js/guides/) — guides and API reference.
-- [Mapbox GL JS `Map#setCamera`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setcamera) — camera projection and related options (verify names against your version).
-- [Mapbox Styles API](https://docs.mapbox.com/api/maps/styles/) — Standard and Standard Satellite style URLs.
-- [GeoJSON specification](https://geojson.org/) — geometry types and rules.
-- [Mapbox GL JS example: Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/) — `fill-extrusion` from composite source.
-- Tom MacWright, [GeoJSON is widely loved](https://macwright.com/lonlat/) — approachable notes on lng/lat ordering confusion.
-- Mapbox blog / developers site — search for “Mapbox GL JS” + “terrain” or “extrusion” for current feature overviews.
+- [Mapbox GL JS documentation](https://docs.mapbox.com/mapbox-gl-js/guides/) – guides and API reference.
+- [Mapbox GL JS `Map#setCamera`](https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setcamera) – camera projection and related options (verify names against your version).
+- [Mapbox Styles API](https://docs.mapbox.com/api/maps/styles/) – Standard and Standard Satellite style URLs.
+- [GeoJSON specification](https://geojson.org/) – geometry types and rules.
+- [Mapbox GL JS example: Display buildings in 3D](https://docs.mapbox.com/mapbox-gl-js/example/3d-buildings/) – `fill-extrusion` from composite source.
+- Tom MacWright, [GeoJSON is widely loved](https://macwright.com/lonlat/) – approachable notes on lng/lat ordering confusion.
+- Mapbox blog / developers site – search for “Mapbox GL JS” + “terrain” or “extrusion” for current feature overviews.
