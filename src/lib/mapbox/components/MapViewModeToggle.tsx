@@ -1,8 +1,5 @@
 import { Field, FieldLabel } from '../../../components/ui/field';
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '../../../components/ui/toggle-group';
+import { Switch } from '../../../components/ui/switch';
 
 import type { MapViewMode } from '../types/MapViewMode';
 
@@ -19,28 +16,14 @@ export function MapViewModeToggle({
 }: MapViewModeToggleProps) {
   return (
     <Field orientation="horizontal" className={className}>
-      <FieldLabel className="shrink-0">View Mode</FieldLabel>
-      <ToggleGroup
-        multiple={false}
-        value={[mode]}
-        onValueChange={(values) => {
-          const next = values[0];
-          if (next === '2d' || next === '3d') {
-            onModeChange(next);
-          }
-        }}
-        variant="outline"
-        size="sm"
-        spacing={0}
-        aria-label="Map view mode"
-      >
-        <ToggleGroupItem value="2d" aria-label="2D">
-          2D
-        </ToggleGroupItem>
-        <ToggleGroupItem value="3d" aria-label="3D">
-          3D
-        </ToggleGroupItem>
-      </ToggleGroup>
+      <FieldLabel className="shrink-0" htmlFor="map-view-3d-switch">
+        Enable 3D
+      </FieldLabel>
+      <Switch
+        id="map-view-3d-switch"
+        checked={mode === '3d'}
+        onCheckedChange={(checked) => onModeChange(checked ? '3d' : '2d')}
+      />
     </Field>
   );
 }
