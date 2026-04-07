@@ -35,10 +35,10 @@ export function computeModelTransform(originMerc: MercatorCoordinate): Matrix4 {
  * Pixels per meter at the map center latitude (for experimental near-clip offset).
  */
 export function getPixelsPerMeter(map: MapboxMap): number {
-  const t = map.transform;
-  const tileSize = t.tileSize;
-  const scale = t.scale;
-  const lat = t.center.lat;
+  const mapTransform = map.transform;
+  const tileSize = mapTransform.tileSize;
+  const scale = mapTransform.scale;
+  const lat = mapTransform.center.lat;
   if (Number.isNaN(lat)) {
     return 1;
   }
