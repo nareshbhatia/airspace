@@ -1,6 +1,7 @@
 /.turbo/
 /build-storybook.log
 /coverage/
+/docs/
 /dist/
 /node_modules/
 /src/gen/
