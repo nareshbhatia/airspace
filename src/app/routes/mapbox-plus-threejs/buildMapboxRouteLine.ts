@@ -44,9 +44,7 @@ function horizontalDistanceMeters(
 }
 
 function altitudeMetersForRoute(altitudeMetersAgl: number): number {
-  return altitudeMetersAgl > 0
-    ? altitudeMetersAgl
-    : ROUTE_ZERO_AGL_LIFT_METERS;
+  return altitudeMetersAgl > 0 ? altitudeMetersAgl : ROUTE_ZERO_AGL_LIFT_METERS;
 }
 
 /**
@@ -76,11 +74,7 @@ function buildDenseRoutePoints(
       terrainElevationMeters - centerTerrainElevationMeters;
     const routeAltitudeMeters = altitudeMetersForRoute(altitudeMetersAgl);
     points.push(
-      new Vector3(
-        local.x,
-        local.y,
-        terrainDeltaMeters + routeAltitudeMeters,
-      ),
+      new Vector3(local.x, local.y, terrainDeltaMeters + routeAltitudeMeters),
     );
   };
 
@@ -141,8 +135,7 @@ export function buildMapboxRouteLine(
   const originMercator = MercatorCoordinate.fromLngLat(centerLngLat, 0);
   const originScale = originMercator.meterInMercatorCoordinateUnits();
 
-  const terrainSampler =
-    getTerrainElevationMeters ?? (() => 0);
+  const terrainSampler = getTerrainElevationMeters ?? (() => 0);
 
   const points = buildDenseRoutePoints(
     sortedRoute,
@@ -155,10 +148,7 @@ export function buildMapboxRouteLine(
   if (points.length < 2) return undefined;
 
   const routeCurve = new CatmullRomCurve3(points, false);
-  const tubularSegments = Math.min(
-    Math.max(points.length * 4, 48),
-    384,
-  );
+  const tubularSegments = Math.min(Math.max(points.length * 4, 48), 384);
   const geometry = new TubeGeometry(
     routeCurve,
     tubularSegments,

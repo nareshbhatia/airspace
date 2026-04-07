@@ -18,9 +18,10 @@ import { buildMapboxPoleGroup } from './buildMapboxPoleGroup';
 import { buildMapboxRouteLine } from './buildMapboxRouteLine';
 import { getSceneCenterLngLat } from './georeference';
 import {
-  computeModelTransform,
-  getPixelsPerMeter,
-} from '../../../lib/mapbox/utils/mercatorUtils';
+  composeThreeCameraProjectionMatrixFromMapboxCustomLayer,
+  computeMapboxNearClipOffsetPixelsForOverlay,
+} from './mapboxCustomLayerCameraBridge';
+import { computeModelTransform } from '../../../lib/mapbox/utils/mercatorUtils';
 
 import type {
   MapboxPlusThreeLayerApi,
@@ -50,9 +51,11 @@ interface BuiltContentGroups {
  *
  * Flow summary:
  * 1. Mapbox drives each frame and provides a per-frame projection matrix.
- * 2. Three.js uses that matrix with a georeference model transform.
- * 3. In orthographic mode, map near-clip offset and optional vertical compression
- *    are applied to reduce clipping/precision artifacts.
+ * 2. Three.js `projectionMatrix` is composed in `mapboxCustomLayerCameraBridge.ts`
+ *    (matrix × georeference).
+ * 3. Orthographic mode: `setNearClipOffset` for **near-plane / frustum** clipping
+ *    of tall overlays; optional root-group Y scale for **depth-range** mitigation
+ *    when the far plane cannot be tuned (see file-level doc on the bridge module).
  */
 export class MapboxThreeCustomLayer
   implements CustomLayerInterface, MapboxPlusThreeLayerApi
@@ -71,7 +74,7 @@ export class MapboxThreeCustomLayer
 
   private readonly threeScene = new Scene();
 
-  private bridgeProjectionMode: ProjectionMode;
+  private overlayProjectionMode: ProjectionMode;
 
   private sceneData: ThreeSceneData;
 
@@ -98,7 +101,7 @@ export class MapboxThreeCustomLayer
   private hasRebuiltAfterTerrainResolved = false;
 
   constructor(options: MapboxThreeCustomLayerOptions) {
-    this.bridgeProjectionMode = options.initialProjectionMode;
+    this.overlayProjectionMode = options.initialProjectionMode;
     this.sceneData = options.initialSceneData;
     this.visibilityState = options.initialVisibilityState;
     this.mapOrthoMaxContentHeightM = options.maxOrthoContentHeightM;
@@ -110,7 +113,7 @@ export class MapboxThreeCustomLayer
    * Called by the page/facade when map mode changes (2D/3D).
    */
   setProjectionMode(projectionMode: ProjectionMode): void {
-    this.bridgeProjectionMode = projectionMode;
+    this.overlayProjectionMode = projectionMode;
     this.applyModeDrivenSceneTuning();
   }
 
@@ -174,13 +177,20 @@ export class MapboxThreeCustomLayer
     const renderer = this.threeRenderer;
     if (!map || !renderer) return;
 
-    const bridgeMapProjectionMatrix = new Matrix4().fromArray(mapMatrix);
-    const threeCameraProjectionMatrix = bridgeMapProjectionMatrix.multiply(
-      this.mapModelTransform,
-    );
+    const threeCameraProjectionMatrix =
+      composeThreeCameraProjectionMatrixFromMapboxCustomLayer(
+        mapMatrix,
+        this.mapModelTransform,
+      );
     this.threeCamera.projectionMatrix = threeCameraProjectionMatrix;
 
-    this.applyMapNearClipOffsetForCurrentMode();
+    const mapboxNearClipOffsetPixels =
+      computeMapboxNearClipOffsetPixelsForOverlay(
+        map,
+        this.overlayProjectionMode,
+        this.mapOrthoMaxContentHeightM,
+      );
+    map.setNearClipOffset(mapboxNearClipOffsetPixels);
 
     renderer.resetState();
     renderer.render(this.threeScene, this.threeCamera);
@@ -287,31 +297,11 @@ export class MapboxThreeCustomLayer
    */
   private applyModeDrivenSceneTuning(): void {
     if (!this.currentContentRootGroup) return;
-    if (this.bridgeProjectionMode === 'orthographic') {
+    if (this.overlayProjectionMode === 'orthographic') {
       this.currentContentRootGroup.scale.y = this.threeOrthoVerticalScale;
     } else {
       this.currentContentRootGroup.scale.y = 1;
     }
-  }
-
-  /**
-   * ---------- Map Near Clip Offset ----------
-   * Mapbox controls near/far planes. We can only offset the near plane directly.
-   */
-  private applyMapNearClipOffsetForCurrentMode(): void {
-    const map = this.mapInstance;
-    if (!map) return;
-
-    if (this.bridgeProjectionMode !== 'orthographic') {
-      map.setNearClipOffset(0);
-      return;
-    }
-
-    const mapPixelsPerMeter = getPixelsPerMeter(map);
-    const mapNearClipOffset = -(
-      this.mapOrthoMaxContentHeightM * mapPixelsPerMeter
-    );
-    map.setNearClipOffset(mapNearClipOffset);
   }
 
   /**
