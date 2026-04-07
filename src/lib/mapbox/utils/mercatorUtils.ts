@@ -3,7 +3,8 @@ import { Matrix4, Vector3 } from 'three';
 
 import type { Map as MapboxMap } from 'mapbox-gl';
 
-const EARTH_CIRCUMFERENCE_M = 40075016.68557849;
+/** Mean meridian arc meters per degree (WGS84), for a 1 m north–south offset. */
+const METERS_PER_DEGREE_LAT = 111132.954;
 
 /**
  * Converts a geographic position to a local Three.js XY offset (meters) relative
@@ -32,19 +33,21 @@ export function computeModelTransform(originMerc: MercatorCoordinate): Matrix4 {
 }
 
 /**
- * Pixels per meter at the map center latitude (for experimental near-clip offset).
+ * Pixels per meter at the map center, using public APIs only (`getCenter`, `project`).
+ * Projects a 1 m north–south offset and measures pixel length (matches current zoom/bearing).
  */
 export function getPixelsPerMeter(map: MapboxMap): number {
-  const mapTransform = map.transform;
-  const tileSize = mapTransform.tileSize;
-  const scale = mapTransform.scale;
-  const lat = mapTransform.center.lat;
+  const center = map.getCenter();
+  const lat = center.lat;
   if (Number.isNaN(lat)) {
     return 1;
   }
-  const worldSize = tileSize * scale;
-  const metersPerMercatorUnitAtLat =
-    EARTH_CIRCUMFERENCE_M * Math.cos((lat * Math.PI) / 180);
-  const mercatorUnitsPerMeter = 1 / metersPerMercatorUnitAtLat;
-  return mercatorUnitsPerMeter * worldSize;
+  const deltaLat = 1 / METERS_PER_DEGREE_LAT;
+  const p0 = map.project([center.lng, center.lat]);
+  const p1 = map.project([center.lng, center.lat + deltaLat]);
+  const pixelsPerMeter = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+  if (!Number.isFinite(pixelsPerMeter) || pixelsPerMeter <= 0) {
+    return 1;
+  }
+  return pixelsPerMeter;
 }

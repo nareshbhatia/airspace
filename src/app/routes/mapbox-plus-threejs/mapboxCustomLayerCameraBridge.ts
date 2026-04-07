@@ -36,6 +36,8 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  * ---------------------------------------------------------------------------
  */
 
+const scratchMapboxCustomLayerProjection = new Matrix4();
+
 /**
  * Composes the Three.js camera `projectionMatrix` for this custom-layer pipeline.
  *
@@ -50,12 +52,9 @@ export function composeThreeCameraProjectionMatrixFromMapboxCustomLayer(
   mapboxCustomLayerMatrix16: number[],
   threeJsGeoreferenceModelMatrix: Matrix4,
 ): Matrix4 {
-  const mapboxCustomLayerProjectionMatrix = new Matrix4().fromArray(
-    mapboxCustomLayerMatrix16,
-  );
-  return mapboxCustomLayerProjectionMatrix.multiply(
-    threeJsGeoreferenceModelMatrix,
-  );
+  return scratchMapboxCustomLayerProjection
+    .fromArray(mapboxCustomLayerMatrix16)
+    .multiply(threeJsGeoreferenceModelMatrix);
 }
 
 /**
