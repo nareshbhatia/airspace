@@ -83,12 +83,48 @@ const poles: Pole[] = [
 ];
 
 const route: Waypoint[] = [
-  { sequence: 1, label: 'W1', lng: -71.0755, lat: 42.3491, altM: 0 },
-  { sequence: 2, label: 'W2', lng: -71.0757, lat: 42.3491, altM: 0 },
-  { sequence: 3, label: 'W3', lng: -71.0755, lat: 42.3486, altM: 0 },
-  { sequence: 4, label: 'W4', lng: -71.0763, lat: 42.3484, altM: 0 },
-  { sequence: 5, label: 'W5', lng: -71.0762, lat: 42.3482, altM: 0 },
-  { sequence: 6, label: 'W6', lng: -71.0758, lat: 42.3473, altM: 0 },
+  {
+    sequence: 1,
+    label: 'W1',
+    lng: -71.0755,
+    lat: 42.3491,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 2,
+    label: 'W2',
+    lng: -71.0757,
+    lat: 42.3491,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 3,
+    label: 'W3',
+    lng: -71.0755,
+    lat: 42.3486,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 4,
+    label: 'W4',
+    lng: -71.0763,
+    lat: 42.3484,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 5,
+    label: 'W5',
+    lng: -71.0762,
+    lat: 42.3482,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 6,
+    label: 'W6',
+    lng: -71.0758,
+    lat: 42.3473,
+    altitudeMetersAgl: 0,
+  },
 ];
 
 export const scene: AirspaceScene = {

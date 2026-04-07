@@ -451,17 +451,17 @@ interface Waypoint {
   sequence: number;
   lng: number;
   lat: number;
-  altM: number;
+  altitudeMetersAgl: number;
   label: string;
 }
 
 // Route connecting the poles in sequence
 const route: Waypoint[] = [
-  { sequence: 1, lng: -71.042, lat: 42.362, altM: 35, label: '1' },
-  { sequence: 2, lng: -71.038, lat: 42.365, altM: 35, label: '2' },
-  { sequence: 3, lng: -71.033, lat: 42.36, altM: 30, label: '3' },
-  { sequence: 4, lng: -71.028, lat: 42.368, altM: 40, label: '4' },
-  { sequence: 5, lng: -71.022, lat: 42.355, altM: 35, label: '5' },
+  { sequence: 1, lng: -71.042, lat: 42.362, altitudeMetersAgl: 35, label: '1' },
+  { sequence: 2, lng: -71.038, lat: 42.365, altitudeMetersAgl: 35, label: '2' },
+  { sequence: 3, lng: -71.033, lat: 42.36, altitudeMetersAgl: 30, label: '3' },
+  { sequence: 4, lng: -71.028, lat: 42.368, altitudeMetersAgl: 40, label: '4' },
+  { sequence: 5, lng: -71.022, lat: 42.355, altitudeMetersAgl: 35, label: '5' },
 ];
 ```
 

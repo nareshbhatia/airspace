@@ -7,7 +7,6 @@ import {
   Group,
   Mesh,
   MeshStandardMaterial,
-  Object3D,
   ShapeUtils,
   Vector2,
 } from 'three';
@@ -17,32 +16,37 @@ import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils
 import type { AirspaceZone } from '../../../lib/mapbox/types/AirspaceZone';
 
 /**
- * Builds a closed volume per zone using per-vertex floorMetersAgl.
+ * Builds zone geometry directly in the Mapbox custom-layer local coordinate system:
+ * - `x` = east-west meters
+ * - `y` = north-south meters
+ * - `z` = altitude meters
+ *
+ * This avoids the root-group rotation/flip bridge that was previously needed
+ * when reusing the standalone Three.js concepts builders.
  */
-export function buildAirspaceZoneGroup(
+export function buildMapboxAirspaceZoneGroup(
   zones: AirspaceZone[],
   centerLngLat: [number, number],
   getTerrainElevationMeters?: (lngLat: [number, number]) => number,
   centerTerrainElevationMeters = 0,
 ): Group {
-  // 1) Anchor the whole scene near a local geographic origin.
-  const originMerc = MercatorCoordinate.fromLngLat(centerLngLat, 0);
-  const originScale = originMerc.meterInMercatorCoordinateUnits();
+  const originMercator = MercatorCoordinate.fromLngLat(centerLngLat, 0);
+  const originScale = originMercator.meterInMercatorCoordinateUnits();
   const group = new Group();
 
   for (const zone of zones) {
-    // 2) Normalize ring input and build one closed mesh per zone.
     const ring = dedupeClosingRing(zone.footprint);
     if (ring.length < 3) continue;
+
     const geometry = createZoneGeometry(
       zone,
       ring,
-      originMerc,
+      originMercator,
       originScale,
       getTerrainElevationMeters,
       centerTerrainElevationMeters,
     );
-    if (geometry === undefined) continue;
+    if (!geometry) continue;
 
     const material = new MeshStandardMaterial({
       color: new Color(zone.color),
@@ -76,56 +80,75 @@ function dedupeClosingRing(
 function createZoneGeometry(
   zone: AirspaceZone,
   ring: AirspaceZone['footprint'],
-  originMerc: MercatorCoordinate,
+  originMercator: MercatorCoordinate,
   originScale: number,
   getTerrainElevationMeters?: (lngLat: [number, number]) => number,
   centerTerrainElevationMeters = 0,
 ): BufferGeometry | undefined {
-  // 3) Convert each footprint point from [lng, lat] to local horizontal meters,
-  // then map altitude to +Y: { x = east-ish, y = floorMetersAgl, z = north-ish }.
-  const localVertices = ring.map((p) => {
+  /**
+   * Build local vertices directly as:
+   * - `x` = east-west meters
+   * - `y` = north-south meters
+   * - `z` = altitude meters
+   *
+   * Known limitation:
+   * We currently sample terrain only at the zone footprint vertices, then
+   * triangulate a floor across the polygon interior. In mountainous terrain,
+   * the interior terrain can rise above that interpolated floor, so the Three.js
+   * zone can become partially or fully occluded even when the Mapbox-native
+   * extrusion still appears to wrap the mountain correctly.
+   *
+   * Proper fix:
+   * Replace this boundary-only prism with a terrain-conforming mesh:
+   *   1. tessellate the polygon interior into many smaller triangles
+   *   2. sample terrain for interior vertices as well as boundary vertices
+   *   3. build the floor from that denser terrain-aware mesh
+   *   4. extrude the ceiling/walls from the terrain-conforming floor
+   */
+  const localVertices = ring.map((point) => {
     const local = mercatorToLocalPosition(
-      [p.lng, p.lat],
-      originMerc,
+      [point.lng, point.lat],
+      originMercator,
       originScale,
     );
     const terrainElevationMeters =
-      getTerrainElevationMeters?.([p.lng, p.lat]) ?? 0;
+      getTerrainElevationMeters?.([point.lng, point.lat]) ?? 0;
     const terrainDeltaMeters =
       terrainElevationMeters - centerTerrainElevationMeters;
     return {
       x: local.x,
-      y: terrainDeltaMeters + p.floorMetersAgl,
-      z: local.y,
+      y: local.y,
+      z: terrainDeltaMeters + point.floorMetersAgl,
     };
   });
-  const shapePoints = localVertices.map((v) => new Vector2(v.x, v.z));
-  // 4) Triangulate the horizontal footprint to create floor/ceiling faces.
+
+  const shapePoints = localVertices.map(
+    (vertex) => new Vector2(vertex.x, vertex.y),
+  );
   const triangles = ShapeUtils.triangulateShape(shapePoints, []);
   if (triangles.length === 0) return undefined;
 
-  const n = localVertices.length;
+  const vertexCount = localVertices.length;
   const positions: number[] = [];
-  for (const v of localVertices) {
-    positions.push(v.x, v.y, v.z);
+
+  for (const vertex of localVertices) {
+    positions.push(vertex.x, vertex.y, vertex.z);
   }
-  for (const v of localVertices) {
-    // Ceiling keeps the same per-vertex footprint, raised by zone ceiling height.
-    positions.push(v.x, v.y + zone.ceilingHeightM, v.z);
+  for (const vertex of localVertices) {
+    positions.push(vertex.x, vertex.y, vertex.z + zone.ceilingHeightM);
   }
 
   const indices: number[] = [];
-  for (const tri of triangles) {
-    const [a, b, c] = tri;
+  for (const triangle of triangles) {
+    const [a, b, c] = triangle;
     indices.push(a, b, c);
-    indices.push(n + a, n + c, n + b);
+    indices.push(vertexCount + a, vertexCount + c, vertexCount + b);
   }
 
-  for (let i = 0; i < n; i++) {
-    // 5) Build wall quads (as two triangles) between floor and ceiling edges.
-    const j = (i + 1) % n;
-    indices.push(i, j, n + j);
-    indices.push(i, n + j, n + i);
+  for (let i = 0; i < vertexCount; i++) {
+    const j = (i + 1) % vertexCount;
+    indices.push(i, j, vertexCount + j);
+    indices.push(i, vertexCount + j, vertexCount + i);
   }
 
   const geometry = new BufferGeometry();
@@ -133,21 +156,4 @@ function createZoneGeometry(
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
-}
-
-/**
- * Disposes geometries and materials for meshes under this group.
- */
-export function disposeAirspaceZoneGroup(group: Object3D): void {
-  group.traverse((child) => {
-    if (child instanceof Mesh) {
-      child.geometry.dispose();
-      const mat = child.material;
-      if (Array.isArray(mat)) {
-        mat.forEach((m) => m.dispose());
-      } else {
-        mat.dispose();
-      }
-    }
-  });
 }

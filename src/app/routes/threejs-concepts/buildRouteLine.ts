@@ -11,6 +11,8 @@ import type { Waypoint } from '../../../lib/mapbox/types/Waypoint';
 export function buildRouteLine(
   route: Waypoint[],
   centerLngLat: [number, number],
+  getTerrainElevationMeters?: (lngLat: [number, number]) => number,
+  centerTerrainElevationMeters = 0,
 ): Line<BufferGeometry, LineBasicMaterial> | undefined {
   if (route.length < 2) return undefined;
 
@@ -24,11 +26,19 @@ export function buildRouteLine(
       originMerc,
       originScale,
     );
+    const terrainElevationMeters =
+      getTerrainElevationMeters?.([wp.lng, wp.lat]) ?? 0;
+    const terrainDeltaMeters =
+      terrainElevationMeters - centerTerrainElevationMeters;
     // Intentional Z flip:
     // - Zones/poles use z = local.y and are already aligned in this scene.
     // - Route appeared mirrored north/south with that same mapping for current data.
     // - Keep route at z = -local.y so it renders in the expected southwest area.
-    return new Vector3(local.x, wp.altM, -local.y);
+    return new Vector3(
+      local.x,
+      terrainDeltaMeters + wp.altitudeMetersAgl,
+      -local.y,
+    );
   });
 
   const geometry = new BufferGeometry().setFromPoints(points);

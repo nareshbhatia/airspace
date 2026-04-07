@@ -2,6 +2,6 @@ export interface Waypoint {
   sequence: number;
   lng: number;
   lat: number;
-  altM: number;
+  altitudeMetersAgl: number;
   label: string;
 }
