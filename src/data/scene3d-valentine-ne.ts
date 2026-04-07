@@ -90,11 +90,41 @@ const poles: Pole[] = [
 ];
 
 const route: Waypoint[] = [
-  { sequence: 1, label: 'W1', lng: -100.5479, lat: 42.8613, altM: 0 },
-  { sequence: 2, label: 'W2', lng: -100.5473, lat: 42.8609, altM: 0 },
-  { sequence: 3, label: 'W3', lng: -100.5483, lat: 42.8599, altM: 0 },
-  { sequence: 4, label: 'W4', lng: -100.5494, lat: 42.8589, altM: 0 },
-  { sequence: 5, label: 'W5', lng: -100.5552, lat: 42.853, altM: 0 },
+  {
+    sequence: 1,
+    label: 'W1',
+    lng: -100.5479,
+    lat: 42.8613,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 2,
+    label: 'W2',
+    lng: -100.5473,
+    lat: 42.8609,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 3,
+    label: 'W3',
+    lng: -100.5483,
+    lat: 42.8599,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 4,
+    label: 'W4',
+    lng: -100.5494,
+    lat: 42.8589,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 5,
+    label: 'W5',
+    lng: -100.5552,
+    lat: 42.853,
+    altitudeMetersAgl: 0,
+  },
 ];
 
 export const scene: AirspaceScene = {

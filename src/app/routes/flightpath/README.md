@@ -138,7 +138,7 @@ export interface MAVLinkService extends Service {
   sendTakeoffCommand(
     systemId: number,
     componentId: number,
-    altM: number,
+    altitudeMetersAgl: number,
   ): Promise<void>;
   sendReturnToLaunchCommand(
     systemId: number,

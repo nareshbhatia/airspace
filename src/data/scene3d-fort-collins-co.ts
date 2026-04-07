@@ -173,14 +173,62 @@ const poles: Pole[] = [
 ];
 
 const route: Waypoint[] = [
-  { sequence: 1, label: 'W1', lng: -105.1494, lat: 40.5427, altM: 0 },
-  { sequence: 2, label: 'W2', lng: -105.1491, lat: 40.5431, altM: 0 },
-  { sequence: 3, label: 'W3', lng: -105.1492, lat: 40.5434, altM: 0 },
-  { sequence: 4, label: 'W4', lng: -105.149, lat: 40.5445, altM: 100 },
-  { sequence: 5, label: 'W5', lng: -105.1482, lat: 40.5434, altM: 0 },
-  { sequence: 6, label: 'W6', lng: -105.1482, lat: 40.5429, altM: 0 },
-  { sequence: 7, label: 'W7', lng: -105.1472, lat: 40.5441, altM: 100 },
-  { sequence: 8, label: 'W8', lng: -105.1469, lat: 40.5441, altM: 0 },
+  {
+    sequence: 1,
+    label: 'W1',
+    lng: -105.1494,
+    lat: 40.5427,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 2,
+    label: 'W2',
+    lng: -105.1491,
+    lat: 40.5431,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 3,
+    label: 'W3',
+    lng: -105.1492,
+    lat: 40.5434,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 4,
+    label: 'W4',
+    lng: -105.149,
+    lat: 40.5445,
+    altitudeMetersAgl: 100,
+  },
+  {
+    sequence: 5,
+    label: 'W5',
+    lng: -105.1482,
+    lat: 40.5434,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 6,
+    label: 'W6',
+    lng: -105.1482,
+    lat: 40.5429,
+    altitudeMetersAgl: 0,
+  },
+  {
+    sequence: 7,
+    label: 'W7',
+    lng: -105.1472,
+    lat: 40.5441,
+    altitudeMetersAgl: 100,
+  },
+  {
+    sequence: 8,
+    label: 'W8',
+    lng: -105.1469,
+    lat: 40.5441,
+    altitudeMetersAgl: 0,
+  },
 ];
 
 export const scene: AirspaceScene = {
