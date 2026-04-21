@@ -3,6 +3,7 @@ import { FlightpathPage } from './app/routes/flightpath/FlightpathPage';
 import { FlightpathOLPage } from './app/routes/flightpath-ol/FlightpathOLPage';
 import { MapboxConceptsStandardPage } from './app/routes/mapbox-concepts-standard/MapboxConceptsStandardPage';
 import { MapboxConceptsStandardSatellitePage } from './app/routes/mapbox-concepts-standard-satellite/MapboxConceptsStandardSatellitePage';
+import { MapboxPlusGeoJsonPage } from './app/routes/mapbox-plus-geojson/MapboxPlusGeoJsonPage';
 import { MapboxPlusThreeJsPage } from './app/routes/mapbox-plus-threejs/MapboxPlusThreeJsPage';
 import { MarkPlacesPage } from './app/routes/mark-places/MarkPlacesPage';
 import { NavigatePage } from './app/routes/navigate/NavigatePage';
@@ -30,6 +31,7 @@ const navElementByPath: Record<string, ReactNode> = {
   ),
   '/threejs-concepts': <ThreejsConceptsPage />,
   '/threejs-drone': <ThreejsDronePage />,
+  '/mapbox-plus-geojson': <MapboxPlusGeoJsonPage />,
   '/mapbox-plus-threejs': <MapboxPlusThreeJsPage />,
   '/nyc-subway-stops': <NycSubwayStopsPage />,
 };

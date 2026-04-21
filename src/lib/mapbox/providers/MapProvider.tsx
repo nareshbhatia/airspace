@@ -30,7 +30,7 @@ function applyTerrainToMap(map: MapboxMap, enabled: boolean): void {
     }
     map.setTerrain({
       source: 'mapbox-dem',
-      exaggeration: 1.5,
+      exaggeration: 1.0,
     });
   } else {
     map.setTerrain(null);

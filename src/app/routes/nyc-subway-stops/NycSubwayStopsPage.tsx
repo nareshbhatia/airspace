@@ -31,7 +31,6 @@ export function NycSubwayStopsPage() {
     useState<GeoJSON.FeatureCollection>();
   const [stopsGeoJson, setStopsGeoJson] = useState<GeoJSON.FeatureCollection>();
   const [selectedStationId, setSelectedStationId] = useState<number>();
-  const [loadError, setLoadError] = useState<string>();
 
   // Load routes GeoJSON data
   useEffect(() => {
@@ -45,9 +44,6 @@ export function NycSubwayStopsPage() {
       .then((json) => setRoutesGeoJson(json as GeoJSON.FeatureCollection))
       .catch((err) => {
         console.error('NYC subway routes load error:', err);
-        setLoadError(
-          err instanceof Error ? err.message : 'Failed to load routes',
-        );
       });
   }, []);
 
@@ -63,9 +59,6 @@ export function NycSubwayStopsPage() {
       .then((json) => setStopsGeoJson(json as GeoJSON.FeatureCollection))
       .catch((err) => {
         console.error('NYC subway stops load error:', err);
-        setLoadError(
-          err instanceof Error ? err.message : 'Failed to load stops',
-        );
       });
   }, []);
 
@@ -91,14 +84,6 @@ export function NycSubwayStopsPage() {
 
   return (
     <div className="relative flex-1">
-      {loadError && (
-        <div
-          className="absolute top-4 left-4 right-4 z-10 rounded bg-destructive/90 px-3 py-2 text-sm text-destructive-foreground"
-          role="alert"
-        >
-          {loadError}
-        </div>
-      )}
       <MapProvider
         style={MAPBOX_DARK_STYLE}
         center={[-73.92, 40.74]}

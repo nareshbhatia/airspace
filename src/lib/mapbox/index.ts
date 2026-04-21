@@ -26,6 +26,7 @@ export type { MapboxDrawOptions } from './hooks/useDraw';
 export type { UseFitBoundsOptions } from './hooks/useFitBounds';
 export type { UseFlyToOptions } from './hooks/useFlyTo';
 export type { MapLayerSpec, UseMapLayerReturn } from './hooks/useMapLayer';
+export type { AirspaceRoute } from './types/AirspaceRoute';
 export type { AirspaceScene } from './types/AirspaceScene';
 export type { LayerGroup } from './types/LayerGroup';
 export type { LngLat } from './types/LngLat';

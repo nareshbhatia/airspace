@@ -3,6 +3,7 @@ import {
   Axis3D,
   Box,
   Compass,
+  FileJson,
   Globe,
   Layers,
   Map,
@@ -38,6 +39,7 @@ export const mainNavItems: NavItem[] = [
   },
   { path: '/threejs-concepts', title: 'Three.js Concepts', icon: Axis3D },
   { path: '/threejs-drone', title: 'Three.js Drone', icon: Axis3D },
+  { path: '/mapbox-plus-geojson', title: 'Mapbox + GeoJSON', icon: FileJson },
   { path: '/mapbox-plus-threejs', title: 'Mapbox + Three.js', icon: Box },
   { path: '/nyc-subway-stops', title: 'NYC Subway Stops', icon: Train },
 ];
