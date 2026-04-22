@@ -7,7 +7,7 @@ import {
   Vector3,
 } from 'three';
 
-import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
+import { lngLatToLocalPosition } from '../../../lib/mapbox';
 
 import type { Waypoint } from '../../../lib/mapbox/types/Waypoint';
 
@@ -38,8 +38,8 @@ function horizontalDistanceMeters(
   originMercator: MercatorCoordinate,
   originScale: number,
 ): number {
-  const pa = mercatorToLocalPosition(aLngLat, originMercator, originScale);
-  const pb = mercatorToLocalPosition(bLngLat, originMercator, originScale);
+  const pa = lngLatToLocalPosition(aLngLat, originMercator, originScale);
+  const pb = lngLatToLocalPosition(bLngLat, originMercator, originScale);
   return Math.hypot(pb.x - pa.x, pb.y - pa.y);
 }
 
@@ -64,7 +64,7 @@ function buildDenseRoutePoints(
   const points: Vector3[] = [];
 
   const pushSample = (lng: number, lat: number, altitudeMetersAgl: number) => {
-    const local = mercatorToLocalPosition(
+    const local = lngLatToLocalPosition(
       [lng, lat],
       originMercator,
       originScale,

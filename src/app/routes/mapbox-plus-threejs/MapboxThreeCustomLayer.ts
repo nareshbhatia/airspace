@@ -18,10 +18,10 @@ import { buildMapboxPoleGroup } from './buildMapboxPoleGroup';
 import { buildMapboxRouteLine } from './buildMapboxRouteLine';
 import { getSceneCenterLngLat } from './georeference';
 import {
-  composeThreeCameraProjectionMatrixFromMapboxCustomLayer,
+  computeModelTransform,
   computeMapboxNearClipOffsetPixelsForOverlay,
-} from './mapboxCustomLayerCameraBridge';
-import { computeModelTransform } from '../../../lib/mapbox/utils/mercatorUtils';
+  multiplyMapboxViewProjectionByModelTransform,
+} from '../../../lib/mapbox';
 
 import type {
   MapboxPlusThreeLayerApi,
@@ -178,7 +178,7 @@ export class MapboxThreeCustomLayer
     if (!map || !renderer) return;
 
     const threeCameraProjectionMatrix =
-      composeThreeCameraProjectionMatrixFromMapboxCustomLayer(
+      multiplyMapboxViewProjectionByModelTransform(
         mapMatrix,
         this.mapModelTransform,
       );

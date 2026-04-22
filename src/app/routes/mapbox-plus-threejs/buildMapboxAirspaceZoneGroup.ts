@@ -11,7 +11,7 @@ import {
   Vector2,
 } from 'three';
 
-import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
+import { lngLatToLocalPosition } from '../../../lib/mapbox';
 
 import type { AirspaceZone } from '../../../lib/mapbox/types/AirspaceZone';
 
@@ -106,7 +106,7 @@ function createZoneGeometry(
    *   4. extrude the ceiling/walls from the terrain-conforming floor
    */
   const localVertices = ring.map((point) => {
-    const local = mercatorToLocalPosition(
+    const local = lngLatToLocalPosition(
       [point.lng, point.lat],
       originMercator,
       originScale,

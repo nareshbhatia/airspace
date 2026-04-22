@@ -7,10 +7,20 @@ import type { Map as MapboxMap } from 'mapbox-gl';
 const METERS_PER_DEGREE_LAT = 111132.954;
 
 /**
- * Converts a geographic position to a local Three.js XY offset (meters) relative
- * to a Mercator origin and scale.
+ * Converts a WGS84 longitude/latitude pair into local planar XY offsets.
+ *
+ * The input `lngLat` is first projected into Web Mercator, then translated
+ * relative to `originMerc`, and finally scaled by `originScale` so the output
+ * is in local meter-space used by Three.js scene builders.
+ *
+ * @param lngLat - Geographic coordinate `[longitude, latitude]` in degrees (WGS84).
+ * @param originMerc - Mercator origin used as local `(0, 0)` anchor.
+ * @param originScale - Mercator-units-per-meter at `originMerc`
+ * (typically `originMerc.meterInMercatorCoordinateUnits()`).
+ * @returns Local planar offsets where `x` is east-west meters and `y` is
+ * north-south meters (with sign convention aligned to this project).
  */
-export function mercatorToLocalPosition(
+export function lngLatToLocalPosition(
   lngLat: [number, number],
   originMerc: MercatorCoordinate,
   originScale: number,

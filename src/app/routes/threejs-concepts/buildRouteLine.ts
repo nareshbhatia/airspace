@@ -1,7 +1,7 @@
 import { MercatorCoordinate } from 'mapbox-gl';
 import { BufferGeometry, Line, LineBasicMaterial, Vector3 } from 'three';
 
-import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
+import { lngLatToLocalPosition } from '../../../lib/mapbox';
 
 import type { Waypoint } from '../../../lib/mapbox/types/Waypoint';
 
@@ -21,7 +21,7 @@ export function buildRouteLine(
   const originScale = originMerc.meterInMercatorCoordinateUnits();
 
   const points = sortedRoute.map((wp) => {
-    const local = mercatorToLocalPosition(
+    const local = lngLatToLocalPosition(
       [wp.lng, wp.lat],
       originMerc,
       originScale,

@@ -59,13 +59,13 @@ This page follows Mapbox’s documented custom-layer pattern:
 So we **trust Mapbox’s `matrix`** for the main projection path and only add
 **placement** (model matrix) and a **small Mapbox API shim** for near clipping.
 
-### Implementation: `mapboxCustomLayerCameraBridge.ts`
+### Implementation: `src/lib/mapbox/utils/mapboxCustomLayerCameraBridge.ts`
 
 The camera **bridge** lives in code as pure helpers (not a second sync
 strategy):
 
-- `composeThreeCameraProjectionMatrixFromMapboxCustomLayer` — Mapbox `render`
-  `matrix` × georeference model matrix → Three.js `Camera.projectionMatrix`.
+- `multiplyMapboxViewProjectionByModelTransform` — Mapbox `render` `matrix` ×
+  georeference model matrix → Three.js `Camera.projectionMatrix`.
 - `computeMapboxNearClipOffsetPixelsForOverlay` — orthographic
   `setNearClipOffset` policy (perspective resets to `0`).
 

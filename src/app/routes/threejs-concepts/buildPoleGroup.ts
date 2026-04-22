@@ -1,11 +1,11 @@
 import { MercatorCoordinate } from 'mapbox-gl';
 import { CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three';
 
+import { lngLatToLocalPosition } from '../../../lib/mapbox';
 import {
   POLE_RADIUS_M,
   POLE_STATUS_COLORS,
 } from '../../../lib/mapbox/types/Pole';
-import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
 
 import type { Pole } from '../../../lib/mapbox/types/Pole';
 
@@ -25,7 +25,7 @@ export function buildPoleGroup(
   const group = new Group();
 
   for (const pole of poles) {
-    const local = mercatorToLocalPosition(
+    const local = lngLatToLocalPosition(
       [pole.lng, pole.lat],
       originMerc,
       originScale,

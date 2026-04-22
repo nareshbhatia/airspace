@@ -59,15 +59,24 @@ export function useMapLayer(
   sourceOptions?: Record<string, unknown>,
 ): UseMapLayerReturn {
   const { map } = useMap();
+
+  // memoize layers source options to avoid unnecessary re-renders
   const layersRef = useRef<MapLayerSpec[]>(layers);
+
+  // memoize source options to avoid unnecessary re-renders
   const sourceOptionsRef = useRef(sourceOptions);
+
+  // update layersRef when layers change
   useEffect(() => {
     layersRef.current = layers;
-  });
+  }, [layers]);
+
+  // update sourceOptionsRef when sourceOptions change
   useEffect(() => {
     sourceOptionsRef.current = sourceOptions;
   }, [sourceOptions]);
 
+  // update the source data when sourceId or map changes
   const setData = useCallback(
     (data: GeoJSON.FeatureCollection) => {
       if (!map) return;
@@ -78,6 +87,7 @@ export function useMapLayer(
     [sourceId, map],
   );
 
+  // register layers when sourceId or map changes
   useEffect(() => {
     if (!map) return;
     const layerSpecs = layersRef.current;

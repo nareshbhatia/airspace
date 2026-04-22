@@ -20,6 +20,15 @@ export { useMapBuildingsToggle } from './hooks/useMapBuildingsToggle';
 export { useMapEvent } from './hooks/useMapEvent';
 export { useMapLayer } from './hooks/useMapLayer';
 export { useMapViewMode, MAP_PITCH_3D_DEG } from './hooks/useMapViewMode';
+export {
+  multiplyMapboxViewProjectionByModelTransform,
+  computeMapboxNearClipOffsetPixelsForOverlay,
+} from './utils/mapboxCustomLayerCameraBridge';
+export {
+  lngLatToLocalPosition,
+  computeModelTransform,
+  getPixelsPerMeter,
+} from './utils/mercatorUtils';
 
 export type { UseControlOptions } from './hooks/useControl';
 export type { MapboxDrawOptions } from './hooks/useDraw';
