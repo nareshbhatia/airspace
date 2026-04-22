@@ -28,8 +28,6 @@ import type { Map as MapboxMap } from 'mapbox-gl';
  * z-fighting or wrong occlusion due to limited depth buffer precision.
  */
 
-const scratchMapboxCustomLayerProjection = new Matrix4();
-
 /**
  * Builds the final Three.js camera projection matrix for a Mapbox custom layer.
  *
@@ -46,15 +44,15 @@ const scratchMapboxCustomLayerProjection = new Matrix4();
  * custom-layer `render(gl, matrix)`, encoded as a 16-element column-major array.
  * @param modelTransform - Georeference transform that maps local scene meters to
  * Mapbox Mercator world coordinates.
- * @returns Combined matrix to assign to `threeCamera.projectionMatrix`.
+ * @param out - Destination matrix that receives the multiplication result.
+ * @returns The same `out` matrix for fluent usage.
  */
 export function multiplyMapboxViewProjectionByModelTransform(
   mapboxViewProjectionMatrix16: number[],
   modelTransform: Matrix4,
+  out: Matrix4,
 ): Matrix4 {
-  return scratchMapboxCustomLayerProjection
-    .fromArray(mapboxViewProjectionMatrix16)
-    .multiply(modelTransform);
+  return out.fromArray(mapboxViewProjectionMatrix16).multiply(modelTransform);
 }
 
 /**

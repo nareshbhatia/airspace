@@ -177,12 +177,11 @@ export class MapboxThreeCustomLayer
     const renderer = this.threeRenderer;
     if (!map || !renderer) return;
 
-    const threeCameraProjectionMatrix =
-      multiplyMapboxViewProjectionByModelTransform(
-        mapMatrix,
-        this.mapModelTransform,
-      );
-    this.threeCamera.projectionMatrix = threeCameraProjectionMatrix;
+    multiplyMapboxViewProjectionByModelTransform(
+      mapMatrix,
+      this.mapModelTransform,
+      this.threeCamera.projectionMatrix,
+    );
 
     const mapboxNearClipOffsetPixels =
       computeMapboxNearClipOffsetPixelsForOverlay(

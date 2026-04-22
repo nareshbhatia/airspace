@@ -114,11 +114,11 @@ export function attachThreejsRouteLayer(
       const renderer = threeRenderer;
       if (!renderer) return;
 
-      const projectionMatrix = multiplyMapboxViewProjectionByModelTransform(
+      multiplyMapboxViewProjectionByModelTransform(
         mapboxViewProjectionMatrix,
         mapModelTransform,
+        threeCamera.projectionMatrix,
       );
-      threeCamera.projectionMatrix.copy(projectionMatrix);
 
       renderer.resetState();
       renderer.render(threeScene, threeCamera);
