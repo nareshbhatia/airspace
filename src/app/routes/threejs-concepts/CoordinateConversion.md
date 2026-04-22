@@ -47,7 +47,7 @@ In `src/app/routes/threejs-concepts/buildAirspaceZoneGroup.ts`:
 1. Build a Mercator origin from `centerLngLat`.
 2. For each zone footprint point:
    - Convert `[lng, lat]` to local horizontal offsets via
-     `mercatorToLocalPosition(...)`.
+     `lngLatToLocalPosition(...)`.
    - Build local vertex `{ x, y, z }` with:
      - `x = local.x`
      - `z = local.y`

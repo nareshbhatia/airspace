@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { MapBoxRouteFit } from './MapBoxRouteFit';
 import { MapboxRouteLayer } from './MapboxRouteLayer';
+import { ThreejsRouteLayer } from './ThreejsRouteLayer';
 import { MAPBOX_STANDARD_SATELLITE_STYLE } from '../../../config/MapConfig';
 import {
   BearingDisplay,
@@ -84,6 +85,7 @@ export function MapboxPlusGeoJsonPage() {
         />
         <MapBoxRouteFit route={route} />
         <MapboxRouteLayer route={route} />
+        <ThreejsRouteLayer route={route} />
       </MapProvider>
     </div>
   );

@@ -8,15 +8,15 @@ import { useMapLayer } from '../../../lib/mapbox';
 
 import type { AirspaceRoute, MapLayerSpec } from '../../../lib/mapbox';
 
-const ROUTE_SOURCE_ID = 'route';
-const ROUTE_LINE_LAYER_ID = 'route-line';
+const MAPBOX_ROUTE_SOURCE_ID = 'mapbox-route';
+const MAPBOX_ROUTE_LINE_LAYER_ID = 'mapbox-route-line';
 const ROUTE_COLOR = '#1d4ed8';
 
 const layers: MapLayerSpec[] = [
   {
-    id: ROUTE_LINE_LAYER_ID,
+    id: MAPBOX_ROUTE_LINE_LAYER_ID,
     type: 'line',
-    source: ROUTE_SOURCE_ID,
+    source: MAPBOX_ROUTE_SOURCE_ID,
     layout: {
       'line-elevation-reference': 'ground',
       'line-z-offset': [
@@ -33,12 +33,12 @@ const layers: MapLayerSpec[] = [
   },
 ];
 
-interface RouteLayerProps {
+interface MapboxRouteLayerProps {
   route: AirspaceRoute | undefined;
 }
 
-export function MapboxRouteLayer({ route }: RouteLayerProps) {
-  const { setData } = useMapLayer(ROUTE_SOURCE_ID, layers, {
+export function MapboxRouteLayer({ route }: MapboxRouteLayerProps) {
+  const { setData } = useMapLayer(MAPBOX_ROUTE_SOURCE_ID, layers, {
     lineMetrics: true,
   });
 

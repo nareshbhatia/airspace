@@ -12,7 +12,7 @@ import {
   Vector2,
 } from 'three';
 
-import { mercatorToLocalPosition } from '../../../lib/mapbox/utils/mercatorUtils';
+import { lngLatToLocalPosition } from '../../../lib/mapbox';
 
 import type { AirspaceZone } from '../../../lib/mapbox/types/AirspaceZone';
 
@@ -84,7 +84,7 @@ function createZoneGeometry(
   // 3) Convert each footprint point from [lng, lat] to local horizontal meters,
   // then map altitude to +Y: { x = east-ish, y = floorMetersAgl, z = north-ish }.
   const localVertices = ring.map((p) => {
-    const local = mercatorToLocalPosition(
+    const local = lngLatToLocalPosition(
       [p.lng, p.lat],
       originMerc,
       originScale,
