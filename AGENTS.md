@@ -34,6 +34,90 @@ server.
   [examples](https://github.com/bluenviron/gomavlib/tree/main/examples)
   directory to understand MAVLink workflows to achieve specific goals.
 
+## Project documentation
+
+Internal guides live under `docs/`. Before changing map, Three.js, coordinate,
+or Zustand store code, read the matching doc below.
+
+### Mapbox
+
+When working with Mapbox GL JS, map layers, GeoJSON sources, or
+[`src/lib/mapbox`](src/lib/mapbox), read [Mapbox 101](docs/mapbox-101.md)
+(`docs/mapbox-101.md`) first.
+
+Summary (full mental model and examples in that doc):
+
+- Think in **style**, **sources**, and **layers**; coordinates are
+  **`[lng, lat]`** (longitude first).
+- Mapbox is a 3D renderer; a familiar “2D” map is usually **orthographic
+  projection + pitch 0**.
+- Live data loop: **add source → add layer → `setData`** on the source.
+
+### Three.js
+
+When working with Three.js scenes, cameras, meshes, or
+[`src/lib/threejs`](src/lib/threejs), read [Three.js 101](docs/threejs-101.md)
+(`docs/threejs-101.md`) first.
+
+Summary:
+
+- **Scene**, **camera**, and **renderer**; draw with
+  `renderer.render(scene, camera)`.
+- Default axes: **y up**, **z toward the viewer**; `PerspectiveCamera` looks
+  along **negative z**.
+- Use **`Group`** for hierarchies; choose **near/far** carefully (matters when
+  combining with maps).
+
+### Three.js in Mapbox
+
+When embedding Three.js in a **Mapbox custom layer** or debugging camera
+alignment, read [Using Three.js in Mapbox](docs/using-threejs-in-mapbox.md)
+(`docs/using-threejs-in-mapbox.md`) first.
+
+Summary:
+
+- **One WebGL context** on the map canvas; Mapbox and Three.js must not fight
+  over GL state.
+- **Camera/projection must match** the map or content slides, clips, or z-fights
+  with terrain; Threebox **`CameraSync`** rebuilds projection from
+  `map.transform` with explicit **near/far**.
+- Call **`map.triggerRepaint()`** when the Three.js scene keeps updating outside
+  map camera moves.
+
+### Geospatial coordinates (WGS84 vs Web Mercator)
+
+When converting **lng/lat** to map or Three.js space, using
+`src/lib/mapbox/utils/mercatorUtils.ts`, or working on custom-layer route
+rendering, read
+[WGS84 vs Web Mercator](docs/wgs84-vs-web-mercator-coordinate-system.md)
+(`docs/wgs84-vs-web-mercator-coordinate-system.md`) first.
+
+Summary:
+
+- **WGS84** (`lng`, `lat`, altitude) is geographic input; **Web Mercator** is
+  Mapbox’s render/projection space (`MercatorCoordinate`, tiles).
+- Custom layers need a **georeference origin** (map center + terrain elevation)
+  so local Three.js coordinates stay numerically stable and vertically aligned.
+- Pipeline in this repo: WGS84 → Mercator → **local offsets** → Three geometry →
+  **`mapMatrix * modelTransform`** in the custom layer `render` pass.
+
+### State management (Zustand)
+
+When adding or changing Zustand stores—especially a feature `store/` directory
+with multiple slices—read [Zustand conventions](docs/zustand-conventions.md)
+(`docs/zustand-conventions.md`) first and follow it.
+
+Summary (full layout, naming, and merge order in that doc):
+
+- Use the `store/` layout (`types/`, `slices/`, `selectors/`,
+  `create<Feature>Store.ts`) when one feature needs several slices in a single
+  `StoreApi` instance.
+- Keep `store/types/` declarative; put slice logic in `store/slices/` and
+  derived read logic in `store/selectors/` (no React in `store/`).
+- Merge slices in a documented order when later slices call `get()` on earlier
+  state; export a **factory** (`create<Feature>Store`), not a global singleton,
+  when tests need isolated instances.
+
 ## Coding Style
 
 - **Use TypeScript** for all new files.
