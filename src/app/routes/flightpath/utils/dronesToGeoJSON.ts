@@ -1,4 +1,4 @@
-import type { DroneState } from '../../../../stores/droneStore';
+import type { DroneState } from '../../../../stores/DroneStore/types/DroneStoreDomainTypes';
 
 /**
  * Converts drone state to a GeoJSON FeatureCollection of Points for use with

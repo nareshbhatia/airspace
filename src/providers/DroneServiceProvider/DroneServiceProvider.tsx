@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 
 import { DroneServiceContext } from './DroneServiceContext';
 import { airportById } from '../../gen/airports';
@@ -6,6 +6,7 @@ import {
   DroneServiceImpl,
   type SimulationConfig,
 } from '../../services/DroneServiceImpl';
+import { DroneStoreContext } from '../DroneStoreProvider/DroneStoreContext';
 import { ServiceProvider } from '../ServiceProvider/ServiceProvider';
 
 import type { ReactNode } from 'react';
@@ -38,7 +39,18 @@ interface DroneServiceProviderProps {
  * onDestroy on unmount) through the generic ServiceProvider.
  */
 export function DroneServiceProvider({ children }: DroneServiceProviderProps) {
-  const droneService = useMemo(() => new DroneServiceImpl(config), []);
+  const storeApi = useContext(DroneStoreContext);
+
+  if (!storeApi) {
+    throw new Error(
+      'DroneServiceProvider must be used within DroneStoreProvider',
+    );
+  }
+
+  const droneService = useMemo(
+    () => new DroneServiceImpl(config, storeApi),
+    [storeApi],
+  );
 
   return (
     <ServiceProvider

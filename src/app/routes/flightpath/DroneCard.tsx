@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
   Card,
@@ -6,10 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card';
-import { useDroneStore } from '../../../stores/droneStore';
+import { useDroneSelection } from '../../../hooks/useDroneSelection';
+import { useDroneStore } from '../../../hooks/useDroneStore';
+import { createDroneByIdSelector } from '../../../stores/DroneStore/selectors/droneFleetSelectors';
 import { cn } from '../../../utils/cn';
-
-import type { DroneStoreState } from '../../../stores/droneStore';
 
 interface DroneCardProps {
   droneId: string;
@@ -21,13 +21,9 @@ interface DroneCardProps {
  * Click selects the drone (UI state).
  */
 export function DroneCard({ droneId }: DroneCardProps) {
-  const selector = useCallback(
-    (state: DroneStoreState) => state.drones.get(droneId),
-    [droneId],
-  );
+  const selector = useMemo(() => createDroneByIdSelector(droneId), [droneId]);
   const drone = useDroneStore(selector);
-  const selectedDroneId = useDroneStore((state) => state.selectedDroneId);
-  const selectDrone = useDroneStore((state) => state.selectDrone);
+  const { selectedDroneId, selectDrone } = useDroneSelection();
 
   const handleClick = useCallback(() => {
     selectDrone(droneId);

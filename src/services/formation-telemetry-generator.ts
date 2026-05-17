@@ -52,7 +52,7 @@
  *   drone formation, where errors are sub-millimeter).
  */
 
-import type { DroneState } from '../stores/droneStore';
+import type { DroneState } from '../stores/DroneStore/types/DroneStoreDomainTypes';
 
 // ---------------------------------------------------------------------------
 // Types

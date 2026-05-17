@@ -65,7 +65,6 @@ import { EMPTY, interval, merge, Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
 import { createTelemetryGenerator } from './formation-telemetry-generator';
-import { droneStore } from '../stores/droneStore';
 import { playbackStore } from '../stores/playbackStore';
 
 import type { DroneService } from './DroneService';
@@ -73,6 +72,7 @@ import type {
   FormationConfig,
   TelemetryGenerator,
 } from './formation-telemetry-generator';
+import type { DroneStoreApi } from '../stores/DroneStore/types/DroneStoreApi';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -130,6 +130,9 @@ export class DroneServiceImpl implements DroneService {
   /** The telemetry generator that produces DroneState[] on each tick */
   private readonly generator: TelemetryGenerator;
 
+  /** Zustand store for fleet positions and selection (injected from DroneStoreProvider). */
+  private readonly store: DroneStoreApi;
+
   /**
    * Interval period in milliseconds, derived from tickRateHz.
    * Used for both the RxJS interval and the generator.tick() dtMs argument.
@@ -152,9 +155,10 @@ export class DroneServiceImpl implements DroneService {
    *     tickRateHz: 10,        // 10 telemetry updates per second
    *   });
    */
-  constructor(config: SimulationConfig) {
+  constructor(config: SimulationConfig, store: DroneStoreApi) {
     this.generator = createTelemetryGenerator(config);
     this.periodMs = 1000 / config.tickRateHz;
+    this.store = store;
   }
 
   /**
@@ -220,7 +224,7 @@ export class DroneServiceImpl implements DroneService {
         const states = this.generator.tick(this.periodMs);
 
         // 2. Batch-update the drone store (single Map copy, single set() call)
-        droneStore.getState()._updateDrones(states);
+        this.store.getState()._updateDrones(states);
 
         // 3. Update elapsed time for UI display
         //    tick is 0-indexed; when tick = n, (n+1) periods have elapsed.
@@ -273,7 +277,7 @@ export class DroneServiceImpl implements DroneService {
   reset(): void {
     this.pause();
     this.generator.reset();
-    droneStore.getState()._clearDrones();
+    this.store.getState()._clearDrones();
     playbackStore.getState().reset();
     this.play();
   }
