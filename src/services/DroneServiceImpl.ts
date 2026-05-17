@@ -18,8 +18,8 @@
  *   └──────────┬───────────┘
  *              │ _updateDrones() — single Zustand transaction
  *   ┌──────────▼───────────┐
- *   │   Zustand Stores     │  droneStore (drone positions)
- *   │                      │  playbackStore (isPlaying, elapsedMs)
+ *   │   Zustand Stores     │  DroneStore (drone positions)
+ *   │                      │  PlaybackStore (isPlaying, elapsedMs)
  *   └──────────┬───────────┘
  *              │ useDroneStore() — selective subscriptions
  *   ┌──────────▼───────────┐
@@ -49,7 +49,7 @@
  *   This means the interval stops if EITHER pause or unmount occurs.
  *
  * Elapsed Time Tracking:
- *   The playbackStore.elapsedMs is computed as:
+ *   The PlaybackStore.elapsedMs is computed as:
  *     elapsedMs = initialElapsedMs + (tick + 1) * periodMs
  *   where initialElapsedMs is captured at the start of each play() run and
  *   tick is the 0-indexed value from interval(periodMs) (0, 1, 2, ...). The
@@ -65,7 +65,6 @@ import { EMPTY, interval, merge, Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
 import { createTelemetryGenerator } from './formation-telemetry-generator';
-import { playbackStore } from '../stores/playbackStore';
 
 import type { DroneService } from './DroneService';
 import type {
@@ -73,6 +72,7 @@ import type {
   TelemetryGenerator,
 } from './formation-telemetry-generator';
 import type { DroneStoreApi } from '../stores/DroneStore/types/DroneStoreApi';
+import type { PlaybackStoreApi } from '../stores/PlaybackStore/types/PlaybackStoreApi';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -130,8 +130,11 @@ export class DroneServiceImpl implements DroneService {
   /** The telemetry generator that produces DroneState[] on each tick */
   private readonly generator: TelemetryGenerator;
 
-  /** Zustand store for fleet positions and selection (injected from DroneStoreProvider). */
-  private readonly store: DroneStoreApi;
+  /** Zustand store for fleet positions (injected from DroneStoreProvider). */
+  private readonly droneStore: DroneStoreApi;
+
+  /** Zustand store for playback UI state (injected from PlaybackStoreProvider). */
+  private readonly playbackStore: PlaybackStoreApi;
 
   /**
    * Interval period in milliseconds, derived from tickRateHz.
@@ -155,10 +158,15 @@ export class DroneServiceImpl implements DroneService {
    *     tickRateHz: 10,        // 10 telemetry updates per second
    *   });
    */
-  constructor(config: SimulationConfig, store: DroneStoreApi) {
+  constructor(
+    config: SimulationConfig,
+    droneStore: DroneStoreApi,
+    playbackStore: PlaybackStoreApi,
+  ) {
     this.generator = createTelemetryGenerator(config);
     this.periodMs = 1000 / config.tickRateHz;
-    this.store = store;
+    this.droneStore = droneStore;
+    this.playbackStore = playbackStore;
   }
 
   /**
@@ -166,7 +174,7 @@ export class DroneServiceImpl implements DroneService {
    * Auto-starts the simulation immediately.
    */
   onInit(): void {
-    playbackStore.getState().play();
+    this.playbackStore.getState().play();
     this.startPlayback();
   }
 
@@ -194,7 +202,7 @@ export class DroneServiceImpl implements DroneService {
    * On each tick:
    *   1. generator.tick(periodMs) — advances the formation and returns DroneState[]
    *   2. droneStore._updateDrones(states) — batch-updates the store in one transaction
-   *   3. playbackStore._tick(elapsedMs) — updates the elapsed time for the UI
+   *   3. PlaybackStore._tick(elapsedMs) — updates the elapsed time for the UI
    *
    * The interval automatically stops when either:
    *   - runStop$ emits (user pressed pause)
@@ -209,7 +217,7 @@ export class DroneServiceImpl implements DroneService {
 
     // Capture the current elapsed time so we can continue from here
     // after a pause/resume cycle (tick number resets to 0 on each run).
-    const initialElapsedMs = playbackStore.getState().elapsedMs;
+    const initialElapsedMs = this.playbackStore.getState().elapsedMs;
 
     interval(this.periodMs)
       .pipe(
@@ -224,12 +232,12 @@ export class DroneServiceImpl implements DroneService {
         const states = this.generator.tick(this.periodMs);
 
         // 2. Batch-update the drone store (single Map copy, single set() call)
-        this.store.getState()._updateDrones(states);
+        this.droneStore.getState()._updateDrones(states);
 
         // 3. Update elapsed time for UI display
         //    tick is 0-indexed; when tick = n, (n+1) periods have elapsed.
         const elapsedMs = initialElapsedMs + (tick + 1) * this.periodMs;
-        playbackStore.getState()._tick(elapsedMs);
+        this.playbackStore.getState()._tick(elapsedMs);
       });
   }
 
@@ -237,12 +245,12 @@ export class DroneServiceImpl implements DroneService {
    * Resume the simulation.
    *
    * Idempotent — if already playing, this is a no-op. Otherwise:
-   *   1. Sets playbackStore.isPlaying = true
+   *   1. Sets PlaybackStore.isPlaying = true
    *   2. Starts a new interval from the current elapsed time
    */
   play(): void {
-    if (!playbackStore.getState().isPlaying) {
-      playbackStore.getState().play();
+    if (!this.playbackStore.getState().isPlaying) {
+      this.playbackStore.getState().play();
       this.startPlayback();
     }
   }
@@ -253,7 +261,7 @@ export class DroneServiceImpl implements DroneService {
    * Stops the current RxJS interval by emitting on runStop$.
    * The generator's internal leader position is preserved, so
    * play() will resume from exactly where we left off.
-   * The playbackStore.elapsedMs is also preserved for the same reason.
+   * The PlaybackStore.elapsedMs is also preserved for the same reason.
    */
   pause(): void {
     if (this.runStop$) {
@@ -261,7 +269,7 @@ export class DroneServiceImpl implements DroneService {
       this.runStop$.complete();
       this.runStop$ = null;
     }
-    playbackStore.getState().pause();
+    this.playbackStore.getState().pause();
   }
 
   /**
@@ -277,8 +285,8 @@ export class DroneServiceImpl implements DroneService {
   reset(): void {
     this.pause();
     this.generator.reset();
-    this.store.getState()._clearDrones();
-    playbackStore.getState().reset();
+    this.droneStore.getState()._clearDrones();
+    this.playbackStore.getState().reset();
     this.play();
   }
 }
