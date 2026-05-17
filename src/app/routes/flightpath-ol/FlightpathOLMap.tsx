@@ -13,9 +13,12 @@ import View from 'ol/View';
 
 import droneIconUrl from '../../../assets/airplane.svg?url';
 import { airportById } from '../../../gen/airports';
-import { useDroneStore } from '../../../stores/droneStore';
+import { useDroneSelection } from '../../../hooks/useDroneSelection';
+import { useDroneStoreApi } from '../../../hooks/useDroneStoreApi';
+import { getSelectedDrone } from '../../../stores/DroneStore/selectors/droneSelectionSelectors';
 import { cn } from '../../../utils/cn';
 
+import type { DroneStoreApi } from '../../../stores/DroneStore/types/DroneStoreApi';
 import type { FeatureLike } from 'ol/Feature';
 
 import 'ol/ol.css';
@@ -68,28 +71,58 @@ function createDroneStyle(iconUrl: string) {
   };
 }
 
+function syncDroneFeatures(
+  source: VectorSource<Feature<Point>>,
+  storeApi: DroneStoreApi,
+) {
+  const { drones, selectedDroneId } = storeApi.getState();
+  const droneList = Array.from(drones.values());
+  const toAdd: Feature<Point>[] = [];
+  const existingIds = new Set(drones.keys());
+
+  for (const drone of droneList) {
+    let feature = source.getFeatureById(drone.droneId) as
+      | Feature<Point>
+      | undefined;
+    if (!feature) {
+      feature = new Feature<Point>();
+      feature.setId(drone.droneId);
+      toAdd.push(feature);
+    }
+    feature.setGeometry(new Point(fromLonLat([drone.lng, drone.lat])));
+    feature.set('heading', drone.heading);
+    feature.set('selected', drone.droneId === selectedDroneId);
+  }
+
+  if (toAdd.length > 0) {
+    source.addFeatures(toAdd);
+  }
+
+  const toRemove = source
+    .getFeatures()
+    .filter(
+      (f) => !existingIds.has((f.getId() as string) ?? ''),
+    ) as Feature<Point>[];
+  if (toRemove.length > 0) {
+    source.removeFeatures(toRemove);
+  }
+}
+
 interface FlightpathOLMapProps {
   className?: string;
 }
 
 /**
- * OpenLayers map panel for the Flightpath (OL) page. Same functionality as the
- * Mapbox FlightpathMap: renders all drones from the drone store with the
- * airplane icon, rotated by heading. Selected drone full opacity, others
- * dimmed. Click on marker selects; click on map deselects. Pointer cursor on
- * hover over markers.
+ * OpenLayers map panel for the Flightpath (OL) page. Syncs drones via
+ * `useDroneStoreApi` subscribe (~10 Hz) without React re-renders on telemetry.
  */
 export function FlightpathOLMap({ className }: FlightpathOLMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
   const droneSourceRef = useRef<VectorSource<Feature<Point>> | null>(null);
 
-  const drones = useDroneStore((state) => state.drones);
-  const selectedDroneId = useDroneStore((state) => state.selectedDroneId);
-  const selectDrone = useDroneStore((state) => state.selectDrone);
-  const selectedDrone = selectedDroneId
-    ? drones.get(selectedDroneId)
-    : undefined;
+  const storeApi = useDroneStoreApi();
+  const { selectedDroneId, selectDrone } = useDroneSelection();
 
   useEffect(() => {
     if (!mapContainerRef.current) return undefined;
@@ -150,54 +183,38 @@ export function FlightpathOLMap({ className }: FlightpathOLMapProps) {
 
   useEffect(() => {
     const source = droneSourceRef.current;
-    if (!source) return;
+    if (!source || !storeApi) return;
 
-    const droneList = Array.from(drones.values());
-    const toAdd: Feature<Point>[] = [];
-    const existingIds = new Set(drones.keys());
+    const sync = () => {
+      syncDroneFeatures(source, storeApi);
+    };
 
-    for (const drone of droneList) {
-      let feature = source.getFeatureById(drone.droneId) as
-        | Feature<Point>
-        | undefined;
-      if (!feature) {
-        feature = new Feature<Point>();
-        feature.setId(drone.droneId);
-        toAdd.push(feature);
-      }
-      feature.setGeometry(new Point(fromLonLat([drone.lng, drone.lat])));
-      feature.set('heading', drone.heading);
-      feature.set('selected', drone.droneId === selectedDroneId);
-    }
+    sync();
+    const unsubDrones = storeApi.subscribe((state) => state.drones, sync);
+    const unsubSelection = storeApi.subscribe(
+      (state) => state.selectedDroneId,
+      sync,
+    );
+    return () => {
+      unsubDrones();
+      unsubSelection();
+    };
+  }, [storeApi]);
 
-    if (toAdd.length > 0) {
-      source.addFeatures(toAdd);
-    }
-
-    const toRemove = source
-      .getFeatures()
-      .filter(
-        (f) => !existingIds.has((f.getId() as string) ?? ''),
-      ) as Feature<Point>[];
-    if (toRemove.length > 0) {
-      source.removeFeatures(toRemove);
-    }
-  }, [drones, selectedDroneId]);
-
-  // Fly to selected drone when selection changes (same as FlightpathFlyToSelected)
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !selectedDrone) return;
+    if (!map || !storeApi || selectedDroneId == null) return;
+    const drone = getSelectedDrone(storeApi.getState());
+    if (!drone) return;
     const view = map.getView();
     if (view.getAnimating()) return;
     view.animate({
-      center: fromLonLat([selectedDrone.lng, selectedDrone.lat]),
+      center: fromLonLat([drone.lng, drone.lat]),
       zoom: 14,
       duration: 1500,
     });
     // Only run when selection changes, not on every position update
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDroneId]);
+  }, [storeApi, selectedDroneId]);
 
   return (
     <div

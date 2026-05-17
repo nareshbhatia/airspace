@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
 
 import { CirclePause, CirclePlay, Rewind } from 'lucide-react';
-import { useShallow } from 'zustand/react/shallow';
 
 import { DroneCard } from './DroneCard';
 import { Button } from '../../../components/ui/button';
+import { useDroneIds } from '../../../hooks/useDroneIds';
 import { useDroneService } from '../../../providers/DroneServiceProvider/useDroneService';
-import { useDroneStore } from '../../../stores/droneStore';
 import { usePlaybackStore } from '../../../stores/playbackStore';
 import { cn } from '../../../utils/cn';
 
@@ -22,9 +21,7 @@ export function FlightpathSidebar({ className }: FlightpathSidebarProps) {
   const droneService = useDroneService();
   const isPlaying = usePlaybackStore((state) => state.isPlaying);
   const elapsedMs = usePlaybackStore((state) => state.elapsedMs);
-  const droneIds = useDroneStore(
-    useShallow((state) => Array.from(state.drones.keys())),
-  );
+  const droneIds = useDroneIds();
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {

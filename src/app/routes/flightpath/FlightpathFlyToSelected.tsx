@@ -1,31 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
+import { useDroneSelection } from '../../../hooks/useDroneSelection';
+import { useDroneStoreApi } from '../../../hooks/useDroneStoreApi';
 import { useFlyTo } from '../../../lib/mapbox';
-import { useDroneStore } from '../../../stores/droneStore';
+import { getSelectedDrone } from '../../../stores/DroneStore/selectors/droneSelectionSelectors';
 
 /**
  * Flies the map to the currently selected drone when selection changes.
  * Zoom 14, duration 1500 ms. Does nothing when no drone is selected.
  */
 export function FlightpathFlyToSelected() {
-  const selectedDroneId = useDroneStore((state) => state.selectedDroneId);
-  const drones = useDroneStore((state) => state.drones);
-  const selectedDrone = selectedDroneId
-    ? drones.get(selectedDroneId)
-    : undefined;
-  // Only fly when selection changes, not when position updates (avoids 10 Hz re-renders)
-  const [centerOnSelection, setCenterOnSelection] = useState<
-    { lat: number; lng: number } | undefined
-  >(undefined);
-  useEffect(() => {
-    if (selectedDrone) {
-      setCenterOnSelection({ lat: selectedDrone.lat, lng: selectedDrone.lng });
-    } else {
-      setCenterOnSelection(undefined);
+  const storeApi = useDroneStoreApi();
+  const { selectedDroneId } = useDroneSelection();
+
+  const centerOnSelection = useMemo(() => {
+    if (!storeApi || selectedDroneId === undefined) {
+      return undefined;
     }
-    // Intentionally depend only on selectedDroneId so we don't fly on every position update
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDroneId]);
+    const drone = getSelectedDrone(storeApi.getState());
+    if (!drone) {
+      return undefined;
+    }
+    return { lat: drone.lat, lng: drone.lng };
+  }, [storeApi, selectedDroneId]);
+
   useFlyTo(centerOnSelection, { zoom: 14, duration: 1500 });
   return null;
 }

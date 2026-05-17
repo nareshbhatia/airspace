@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react';
 
 import { dronesToFeatureCollection } from './utils/dronesToGeoJSON';
 import droneIconUrl from '../../../assets/airplane.svg?url';
+import { useDroneSelection } from '../../../hooks/useDroneSelection';
+import { useDroneStoreApi } from '../../../hooks/useDroneStoreApi';
 import { useMap, useMapEvent, useMapLayer } from '../../../lib/mapbox';
-import { useDroneStore } from '../../../stores/droneStore';
 
 import type { DataDrivenPropertyValueSpecification } from 'mapbox-gl';
 
@@ -21,28 +22,32 @@ const iconOpacityExpression: DataDrivenPropertyValueSpecification<number> = [
 ];
 
 /**
- * Renders all drones as a Mapbox symbol layer. Subscribes to the drone store,
- * converts the Map to GeoJSON on each update, and calls setData so the layer
- * updates at 10 Hz without React re-renders. Uses a custom directional icon
- * rotated by each drone's heading. Click on a marker selects the drone;
- * click on map background deselects. Selection is reflected via feature-state.
+ * Renders all drones as a Mapbox symbol layer. Syncs store → GeoJSON via
+ * `useDroneStoreApi` subscribe (~10 Hz) so React does not re-render on every
+ * telemetry tick. Selection uses `useDroneSelection`; feature-state updates
+ * when selectedDroneId changes.
  */
 export function DroneLayer() {
   const { map } = useMap();
   const { setData } = useMapLayer(DRONES_SOURCE_ID, [], {
     promoteId: 'droneId',
   });
-  const drones = useDroneStore((state) => state.drones);
-  const selectedDroneId = useDroneStore((state) => state.selectedDroneId);
-  const selectDrone = useDroneStore((state) => state.selectDrone);
+  const storeApi = useDroneStoreApi();
+  const { selectedDroneId, selectDrone } = useDroneSelection();
   const prevSelectedIdRef = useRef<string | undefined>(undefined);
 
-  // Sync store → GeoJSON source on every drones update (~10 Hz)
   useEffect(() => {
-    setData(dronesToFeatureCollection(Array.from(drones.values())));
-  }, [drones, setData]);
+    if (!storeApi) return;
 
-  // Sync Mapbox feature-state with selectedDroneId (selected marker gets full opacity)
+    const syncGeoJson = () => {
+      const { drones } = storeApi.getState();
+      setData(dronesToFeatureCollection(Array.from(drones.values())));
+    };
+
+    syncGeoJson();
+    return storeApi.subscribe((state) => state.drones, syncGeoJson);
+  }, [storeApi, setData]);
+
   useEffect(() => {
     if (!map || !map.getLayer(DRONE_SYMBOL_LAYER_ID)) return;
     const prevId = prevSelectedIdRef.current;
@@ -66,7 +71,6 @@ export function DroneLayer() {
     }
   }, [map, selectedDroneId]);
 
-  // Load drone icon and add symbol layer (Mapbox requires image in style before layer)
   useEffect(() => {
     if (!map) return;
     let cancelled = false;
@@ -128,7 +132,6 @@ export function DroneLayer() {
     };
   }, [map]);
 
-  // Click on drone marker → select that drone
   useMapEvent(
     'click',
     (e: unknown) => {
@@ -146,7 +149,6 @@ export function DroneLayer() {
     DRONE_SYMBOL_LAYER_ID,
   );
 
-  // Click on map background → deselect
   useMapEvent('click', (e: unknown) => {
     if (!map) return;
     const ev = e as { point?: { x: number; y: number } };
@@ -160,7 +162,6 @@ export function DroneLayer() {
     }
   });
 
-  // Pointer cursor when hovering over drone markers
   useMapEvent(
     'mouseenter',
     () => {
