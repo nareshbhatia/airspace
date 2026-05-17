@@ -1,6 +1,7 @@
 import { FlightpathOLMap } from './FlightpathOLMap';
 import { DroneServiceProvider } from '../../../providers/DroneServiceProvider/DroneServiceProvider';
 import { DroneStoreProvider } from '../../../providers/DroneStoreProvider/DroneStoreProvider';
+import { PlaybackStoreProvider } from '../../../providers/PlaybackStoreProvider/PlaybackStoreProvider';
 import { cn } from '../../../utils/cn';
 import { FlightpathSidebar } from '../flightpath/FlightpathSidebar';
 
@@ -13,12 +14,14 @@ import { FlightpathSidebar } from '../flightpath/FlightpathSidebar';
 export function FlightpathOLPage() {
   return (
     <DroneStoreProvider>
-      <DroneServiceProvider>
-        <div className={cn('flex flex-1 min-h-0')}>
-          <FlightpathSidebar className="w-[280px] shrink-0" />
-          <FlightpathOLMap className="flex-1 min-w-0" />
-        </div>
-      </DroneServiceProvider>
+      <PlaybackStoreProvider>
+        <DroneServiceProvider>
+          <div className={cn('flex flex-1 min-h-0')}>
+            <FlightpathSidebar className="w-[280px] shrink-0" />
+            <FlightpathOLMap className="flex-1 min-w-0" />
+          </div>
+        </DroneServiceProvider>
+      </PlaybackStoreProvider>
     </DroneStoreProvider>
   );
 }

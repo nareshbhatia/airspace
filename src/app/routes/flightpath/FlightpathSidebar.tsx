@@ -5,8 +5,8 @@ import { CirclePause, CirclePlay, Rewind } from 'lucide-react';
 import { DroneCard } from './DroneCard';
 import { Button } from '../../../components/ui/button';
 import { useDroneIds } from '../../../hooks/useDroneIds';
+import { usePlaybackStore } from '../../../hooks/usePlaybackStore';
 import { useDroneService } from '../../../providers/DroneServiceProvider/useDroneService';
-import { usePlaybackStore } from '../../../stores/playbackStore';
 import { cn } from '../../../utils/cn';
 
 interface FlightpathSidebarProps {
